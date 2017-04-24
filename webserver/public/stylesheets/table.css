@@ -1,0 +1,124 @@
+hr {
+    color: #d5d5d5;
+    height: 1px;
+    border: none;
+    border-top: 1px dashed #aaa;
+    font-size: 10pt;
+}
+
+th {
+    color: #000;
+    font-family: arial, helvetica, sans-serif;
+    font-size: 10pt;
+    border: 1px solid #d5d5d5;
+    text-align: center;
+    padding: 2px;
+    background-color: #efefef;
+}
+
+select {
+    background-color: transparent;
+}
+
+td {
+    background-color: transparent;
+    border: 1px solid #d5d5d5;
+    color: black;
+    font-family: arial, helvetica, verdana, sans-serif, 'times new roman';
+    font-size: 10pt;
+    padding: 2px;
+}
+
+.hidden,
+.windowIdx {
+    display: none;
+}
+
+div.submit {
+    text-align: center;
+    padding: 5px 0px 1px 0px;
+    color: #ffcc00;
+}
+
+table#gridlayout {
+    border: 1px solid black;
+    /*table-layout: fixed;*/
+    
+    margin-top: 20px;
+    margin-bottom: 20px;
+    
+    width: 100%;
+    /*border-collapse: separate;*/
+}
+
+table#gridlayout col.time {
+    width: 5%;
+}
+
+table#gridlayout col.day {
+    width: 19%;
+}
+
+table#gridlayout thead th {
+    text-align: center;
+    border: 0px;
+    padding: 0px;
+}
+
+table#gridlayout thead tr th div.grid {
+    height: 19px;
+    border: 1px solid black;
+    line-height: 19px;
+}
+
+table#gridlayout thead tr th div.time {
+    height: 19px;
+    border: 1px solid black;
+}
+
+.dayname {
+    padding-left: 10px;
+}
+
+table#gridlayout td {
+    vertical-align: top;
+    border: 0px;
+}
+
+table#gridlayout tbody td div.grid {
+    border: 1px solid #eee;
+    height: 26px;
+}
+
+table#gridlayout tbody td div.time {
+    font-size: 8pt;
+    border: 1px solid #eee;
+    height: 24px;
+    text-align: center;
+    padding-top: 2px;
+}
+
+div#schedulegrid {
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div#courseslots div#slot{
+    position: absolute;
+    border: 1px solid black;
+    font-size: 8pt;
+    font-weight: bold;
+    text-align: center;
+}
+
+div#schedulegrid div.slot div {
+    font-size: 8pt;
+    padding: 1px 1px 0px 1px;
+}
+
+div#schedulegrid div.studentinfo {
+    text-align: right;
+    font-size: 10pt;
+    padding-top: 5px;
+}

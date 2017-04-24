@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+<%- include ./headings/header.ejs %>
+        <title>Home</title>
+    </head>
+    
+    <script>
+    
+    var schedules;
+    var scheduleSize;
+    var scheduleStart = 0;
+    
+    function getCourseInfo(courseCode, callback_)
+    {
+        var toReturn;
+        
+        $.ajax({
+            type: "POST",
+            url: "getInfo",
+            data: {"Code" : courseCode},
+            
+            error : function(request, status, error) {
+                callback_(error);
+            },
+            
+            success : function(request, status, error) {
+                callback_(request);
+            }
+        });
+    }
+    
+    function getSchedules(start, end)
+    {
+        addCover();
+        $.ajax({
+            type: "POST",
+            url: "getSchedules",
+            data: {"start":start, "end":end},
+            
+            error : function(request, status, error) {
+                console.log(error);
+            },
+            
+            success : function(request, status, error) {
+                removeCover();
+                
+                if (!('error' in request))
+                {
+                    schedules = request['schedules'].slice(0, request['schedules'].length - 1);
+                    scheduleSize = request['schedules'][request['schedules'].length - 1];
+                    
+                    scheduleStart = start
+                    refreshTable(schedules[0]);
+                    $(".numberOfInputs").html(scheduleSize);
+                    $(".showingNumber").html(scheduleStart+1);
+                } else {
+                    schedules = [];
+                    scheduleSize = 0;
+                    
+                    console.log(request.error);
+                    classList = [];
+                    
+                    for (x in request['schedules'])
+                        addToList(request['schedules'][x]);
+                    
+                    scheduleStart = 0;
+                    $(".numberOfInputs").html(0);
+                    $(".showingNumber").html(0);
+                    refreshTable(-1);
+                    initCircles(-1);
+                }
+            }
+        });
+    }
+    
+    function makeBlock(toMake)
+    {
+        addBlock();
+        currentBlock = blocks[blocks.length-1];
+        
+        days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
+        
+        currentBlock[0]['childNodes'][1].value = toMake['Time_Start']
+        currentBlock[0]['childNodes'][4].value = toMake['Time_End']
+        
+        for (y in days)
+        {
+            if (toMake['Day'].indexOf(days[y]) > -1) {
+                blocks[x][parseInt(y)+2]['childNodes'][0].checked = true;
+            }
+        }
+        
+    }
+    
+    function init()
+    {
+        addCover();
+        $.ajax({
+            type: "POST",
+            url: "init",
+            data: "",
+            error : function(request, status, error) {
+                console.log(error);
+            },
+            success : function(request, status, error) {
+                removeCover();
+                
+                for (x in request['blocks']['Offerings']) {
+                    makeBlock(request['blocks']['Offerings'][x]);
+                }
+                
+                if (!('error' in request))
+                {
+                    schedules = request['schedules'].slice(0, request['schedules'].length - 1);
+                    scheduleSize = request['schedules'][request['schedules'].length - 1];
+                    refreshTable(schedules[0]);
+                    $(".numberOfInputs").html(scheduleSize);
+                    
+                    for (x in request['schedules'][0])
+                    {
+                        getCourseInfo(request['schedules'][0][x]['Course'], function(data) {
+                            addToList(data);
+                        });
+                    }
+                    $(".showingNumber").html(1);
+                } else {
+                    for (x in request['schedules'])
+                        addToList(request['schedules'][x]);
+                    
+                    $(".numberOfInputs").html(0);
+                    $(".showingNumber").html(0);
+                }
+            }
+        });
+    }
+    
+    function updateBlock()
+    {
+        jsonObject = jsonBlocks();
+        
+        $.ajax({
+            type: "POST",
+            url: "updateBlock",
+            data: {"Offerings" : jsonObject},
+            error : function(request, status, error) {
+                console.log(error);
+            },
+            success : function(request, status, error) {
+                getSchedules(0, 9);
+            }
+        });
+    }
+    
+    function jsonBlocks()
+    {
+        days = ["Mon, ", "Tues, ", "Wed, ", "Thur, ", "Fri, "]
+        objects = []
+        
+        for (x in blocks)
+        {
+            tempObject = {}
+            tempObject['Time_Start'] = blocks[x][0]['childNodes'][1].value;
+            tempObject['Time_End'] = blocks[x][0]['childNodes'][4].value;
+            
+            dayString = ""
+            
+            for (y in days)
+            {
+                if (blocks[x][parseInt(y)+2]['childNodes'][0].checked)
+                    dayString += days[y]
+            }
+            
+            tempObject['Day'] = dayString.slice(0,-2);
+            objects.push(tempObject);
+        }
+        
+        return objects;
+    }
+    
+    function timeToPixels(time, multiplyHeight) {
+		return multiplyHeight*(Math.floor(time/100))*2 + multiplyHeight*(time - Math.floor(time/100)*100)/30
+	}
+    
+    var elements = [];
+    
+    function initCircles(number)
+    {
+        $(".numberCircles").html("");
+        
+        for (x = 0; x < number; x++)
+        {
+            var element = "<div class=\"numberCircle\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
+            $(".numberCircles").append(element);
+        }
+    }
+    
+    function createSlot(day, starttime, endtime, info) {
+        days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
+        
+		starttime = parseInt(starttime)-800
+		endtime = parseInt(endtime)-800
+		
+		startY = $("#startY").outerHeight();
+		startX = $("#startX").outerWidth() + 2;
+		multiplyHeight = $("#findHeightGrid").outerHeight();
+		gridWidth = $("#findHeightGrid").outerWidth();
+		
+		topPlace = timeToPixels(starttime, multiplyHeight);
+		bottomPlace = timeToPixels(endtime, multiplyHeight);
+        
+		startY += topPlace;
+		startX += days.indexOf(day) * gridWidth;
+		divHeight = bottomPlace - topPlace;
+		
+		var element = '<div id="slot" style="left: '+startX+'px; top: '+startY+'px; height: ' + divHeight + 'px;">' + info + '</div>';
+		element = $(element).width(gridWidth);
+        
+		elements.push(element);
+		$("#courseslots").append(element);
+	}
+    
+    function refreshTable(schedule) {
+		for(var x in elements) {
+			elements[x].remove()
+		}
+        
+		elements = []
+        
+        if (schedule != -1)
+            showSchedule(schedule)
+	}
+    
+    function showSchedule(schedule)
+    {
+        if (schedules.length > 9)
+        {
+            initCircles(9);
+        } else {
+            initCircles(schedules.length);
+        }
+        
+        if (schedules.indexOf(schedule) >= 0)
+            $(".showingNumber").html(schedules.indexOf(schedule) + 1 + scheduleStart)
+        
+        for (course in schedule)
+            for (offering in schedule[course]["Offerings"])
+            {
+                offeringDays = schedule[course]["Offerings"][offering]["Day"].split(", ");
+                
+                for (day in offeringDays)
+                {
+                    createSlot(offeringDays[day], schedule[course]["Offerings"][offering]["Time_Start"], schedule[course]["Offerings"][offering]["Time_End"], 
+                        schedule[course]["Offerings"][offering]["Course"] + "*" + schedule[course]["Meeting_Section"] + " (" + schedule[course]["Offerings"][offering]["Section_Type"] + ")<br>" + schedule[course]["Offerings"][offering]["Location"] + "  - " + schedule[course]["Enrollment"] + "/" + schedule[course]["Size"] + " enrolled<br>" + schedule[course]["Instructors"]);
+                }
+            }
+    }
+    
+    $(function() {
+        init();
+        reloadCriteria();
+        
+        $('.nav-tabs a').click(function(){
+            $(this).tab('show');
+        })
+        
+        $('.typeahead').autocomplete({
+            minLength: 1,
+            
+            appendTo: "#results",
+            
+            dataType: "json",
+            contentType: "application/json",
+            source: function(req, res) {
+                $.get('/searchClass/' + req.term, function(data) {
+                    res(data);
+                });
+            },
+            select: function (event, ui) {
+                $("#searchbar").val(ui.item.Code);
+                return false;
+            },
+            
+            focus: function (event, ui) {
+                //$("#searchbar").val(ui.item.Code);
+                //bug: arrow keys clears field
+                
+                return false;
+                //return true
+            }
+        
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+            return $("<li></li>")
+                .data("item.autocomplete", item)
+                .append("<div class=\"divider\"><div class=\"left\"><b>" + item.Code + "</b> - " + item.Name + "</div><div class=\"right\"><i>" + item.Level + " [" + item.Num_Credits + "] " + "</i></div></div>")
+                .appendTo(ul);
+        };
+    });  
+    
+    var classList = []
+    
+    function deleteClass(courseCode)
+    {
+        $.ajax({
+            type: "POST",
+            url: "delete",
+            data: {"Code" : courseCode},
+            
+            error : function(request, status, error) {
+                console.log(error);
+            },
+            
+            success : function(request, status, error) {
+                getSchedules(0,9);
+                
+                for (x in classList)
+                {
+                    if (classList[x].Code == courseCode) {
+                        $("div[index='" + classList[x].Code + "']").html("");
+                        classList.splice(x, 1);
+                    }
+                }
+                
+                if ('error' in request) {
+                    console.log(request.error);
+                }
+            }
+        });
+    }
+    
+    function getInfo(courseCode)
+    {
+        console.log(courseCode);
+    }
+    
+    function addToList(object)
+    {
+        $("#classList").html("")
+        classList.push(object)
+        
+        for (x in classList)
+        {
+            var element1 = '<div class="classList divider" index="' + classList[x].Code + '">';
+            var element2 = '<div class="left">' + classList[x].Code + '<br>' + classList[x].Name + '<br>' + classList[x].Num_Credits + '</div>';
+            var element3 = '<div class="right">';
+            
+            var element4 = '<div class="hoverButton btn btn-primary"><span class="moveDown glyphicon glyphicon-search"></span></div>';
+            element4 = $(element4).attr('onClick', 'getInfo("' + classList[x].Code + '");')[0].outerHTML;
+            
+            var element5 = '<div class="hoverButton btn btn-danger"><span class="moveDown glyphicon glyphicon-remove"></span></div>';
+            element5 = $(element5).attr('onClick', 'deleteClass("' + classList[x].Code + '");')[0].outerHTML;
+            
+            var element6 = '</div><br><br><br><hr class="style-seven" index="' + classList[x].Code + '"></hr></div>';
+            
+            element = element1 + element2 + element3 + element4 + element5 + element6
+            
+            $("#classList").append(element);
+        }
+    }
+    
+    var cover = null;
+    
+    function addCover() {
+        if (cover === null) {
+            startY = $("#startY").outerHeight();
+            startX = $("#startX").outerWidth() + 2;
+            
+            multiplyHeight = $("#findHeightGrid").outerHeight();
+            gridWidth = $("#findHeightGrid").outerWidth();
+            
+            cover = '<div id="loadingCover" style="left: '+startX+'px; top: '+startY+'px;">Loading Courses...</div>'
+            cover = $(cover).width(gridWidth*5-1)
+            cover = $(cover).height(multiplyHeight*28-1)
+            $("#courseslots").append(cover)
+        }
+	}
+	
+	function removeCover() {
+        if (cover !== null) {
+            cover[0].outerHTML = "";
+            delete cover[0];
+            cover = null;
+        }
+	}
+    
+    function reloadAll()
+    {
+        addCover();
+        $.ajax({
+            type: "POST",
+            url: "reload",
+            data: {},
+            
+            error : function(request, status, error) {
+                console.log(error);
+            },
+            
+            success : function(request, status, error) {
+                $("#searchbar").val("");
+                classList = [];
+                init();
+            }
+        });
+    }
+    
+    function addClass(object)
+    {
+        var found = false;
+        var courseCode = $("#searchbar").val();
+        $("#searchbar").val("");
+        
+        for (x in classList)
+        {
+            if (classList[x]['Code'] == courseCode)
+                found = true;
+        }
+        
+        if (!found)
+        {
+            addCover();
+            
+            $.ajax({
+                type: "POST",
+                url: "add",
+                data: {"Code" : courseCode},
+                
+                error : function(request, status, error) {
+                    console.log(error);
+                },
+                
+                success : function(request, status, error) {
+                    addToList(request.course);
+                    getSchedules(0,9);
+                }
+            });
+        }
+    }
+    
+    function schedulesLeft()
+    {
+        if (scheduleStart > 8)
+        {
+            scheduleStart -= 9;
+            getSchedules(scheduleStart, scheduleStart+9);
+        }
+    }
+    
+    function schedulesRight()
+    {
+        if (scheduleStart < scheduleSize - 9)
+        {
+            scheduleStart += 9;
+            getSchedules(scheduleStart, scheduleStart+9);
+        }
+    }
+    
+    function schedulesAllLeft()
+    {
+        scheduleStart = 0;
+        getSchedules(scheduleStart, scheduleStart+9);
+    }
+    
+    function schedulesAltRight()
+    {
+        if (scheduleSize-9 >= 0)
+        {
+            scheduleStart = scheduleSize-9
+            getSchedules(scheduleStart, scheduleStart+9);
+        }
+    }
+    
+    var blocks = []
+    
+    function reloadCriteria()
+    {
+        rateForm = $("#rateForm")
+        console.log(rateForm[0])
+    }
+    
+    function removeBlock(idNumber)
+    {
+        blocks[idNumber].remove();
+        delete blocks[idNumber];
+    }
+    
+    function addBlock()
+    {
+        var place = blocks.length
+        
+        element = '<div class="input-group"><span class="input-group-addon">Start</span><select class="starttime form-control"><option value=""></option><option value="0800">08:00 - 8am</option><option value="0900">09:00 - 9am</option><option value="1000">10:00 - 10am</option><option value="1100">1100 - 11am</option><option value="1200">12:00 - 12pm</option><option value="1300">13:00 - 1pm</option><option value="1400">14:00 - 2pm</option><option value="1500">15:00 - 3pm</option><option value="1600">16:00 - 4pm</option><option value="1700">17:00 - 5pm</option><option value="1800">18:00 - 6pm</option><option value="1900">19:00 - 7pm</option><option value="2000">20:00 - 8pm</option><option value="2100">21:00 - 9pm</option><option value="2200">22:00 - 10pm</option></select><span class="input-group-btn" style="width:0px;"></span><span class="input-group-addon">End</span><select class="endtime form-control"><option value=""></option><option value="0800">08:00 - 8am</option><option value="0900">09:00 - 9am</option><option value="1000">10:00 - 10am</option><option value="1100">1100 - 11am</option><option value="1200">12:00 - 12pm</option><option value="1300">13:00 - 1pm</option><option value="1400">14:00 - 2pm</option><option value="1500">15:00 - 3pm</option><option value="1600">16:00 - 4pm</option><option value="1700">17:00 - 5pm</option><option value="1800">18:00 - 6pm</option><option value="1900">19:00 - 7pm</option><option value="2000">20:00 - 8pm</option><option value="2100">21:00 - 9pm</option><option value="2200">22:00 - 10pm</option></select></div></div> \
+        \
+        <label class="checkbox-inline dayname"><input type="checkbox" value="">Mon</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Tues</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Wed</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Thur</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Fri</label> \
+        <div class="hoverButton btn btn-danger" onclick="removeBlock(' + place + ')" style="margin-left: 90%; margin-top: 0px; margin-bottom: 5%;"><span class="moveDown glyphicon glyphicon-remove"></span></div>\
+\
+        <hr class="style-seven">'
+        
+        element = $(element);
+        blocks.push(element);
+        $("#blockedTimes").append(element);
+    }
+    
+    </script>
+    
+    <body>
+        <div class="container-fluid full-width">
+            <div class="row">
+                <div class="col-lg-1 col-md-1 col-sm-1">
+                    <b>Showing Schedule</b> <div class="showingNumber"></div>
+                    <div class="hoverButton btn btn-primary" style="float: left;" onclick="schedulesLeft();"><span class="moveDown glyphicon glyphicon-chevron-left"></span></div>
+                    <div class="hoverButton btn btn-primary" style="float: right;" onclick="schedulesRight();"><span class="moveDown glyphicon glyphicon-chevron-right"></span></div>
+                    <br><br><br><br>
+                    
+                    <div class="numberCircles" style="padding-left:25%"></div>
+                    <div class="hoverButton btn btn-primary" style="float: left;" onclick="schedulesAllLeft();"><span class="moveDown glyphicon glyphicon-backward"></span></div>
+                    <div class="hoverButton btn btn-primary" style="float: right;" onclick="schedulesAltRight();"><span class="moveDown glyphicon glyphicon-forward"></span></div>
+                    <br><br><br>
+                    <div class="numberOfInputs"></div> <b>Schedules Generated</b>
+                </div>
+                
+                <div class="col-lg-8 col-md-8 col-sm-8">
+                    <div class="input-group">
+                        <input id="searchbar" type="text" class="form-control typeahead" placeholder="Search" autocomplete="off" spellcheck="false">
+                        <div class="input-group-btn">
+                            <a class="btn btn-default" onclick="addClass();"><i class="glyphicon glyphicon-search"></i></a>
+                        </div>
+                        <div id="results"></div>
+                    </div>
+                    
+                    <%- include ./table.ejs %>
+                    
+                </div>
+                
+                <div class="col-lg-3 col-md-3 col-sm-3 rightTab">
+                    <ul class="nav nav-tabs" style="font-size: 0.9em;">
+                        <li class="active"><a href data-target="#classes" role="tab" data-toggle="tab">Classes</a></li>
+                        <li><a href data-target="#criteria" role="tab" data-toggle="tab">Criteria</a></li>
+                        <li><a href data-target="#blocked" role="tab" data-toggle="tab">Blocked Times</a></li>
+                        <li><a href data-target="#warnings" role="tab" data-toggle="tab">Warnings</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="classes" class="tab-pane fade">
+                            <h3>CLASSES&nbsp;<span style="float:right; cursor: pointer;" onclick="reloadAll()" class="glyphicon glyphicon-refresh" style="font-size: 0.75em;"></span></h3>
+                            <hr class="style-seven">
+                            <div id="classList"></div>
+                        </div>
+                        
+                        <div id="criteria" class="tab-pane fade in active">
+                            <h3>CRITERIA&nbsp;<span style="float:right; cursor: pointer;" onclick="reloadCriteria()" class="glyphicon glyphicon-refresh" style="font-size: 0.75em;"></span></h3>
+                            <hr class="style-seven">
+                            
+                            <div id="rateForm">
+                                <div class="input-group"><span class="input-group-addon">Class Time Start</span>			<input type="number" class="classStart" name="startTime" min="0" max="9" value="0"></div>
+                                <label class="radio-inline"><input type="radio" class="classStart1" name="startTimeRadio" id="0">Early Start</label><label class="radio-inline"><input class="classStart2" type="radio" name="startTimeRadio" id="1">Late Start</label><br><br>
+                                <div class="input-group"><span class="input-group-addon">Class Time End</span>				<input type="number" class="classEnd" name="endTime" min="0" max="9" value="0"></div>
+                                <label class="radio-inline"><input type="radio" class="classEnd1" name="endTimeRadio" id="0">Early End</label><label class="radio-inline"><input type="radio" name="endTimeRadio" id="1">Late End</label><br><br>
+                                <div class="input-group"><span class="input-group-addon">Short or long Class Times</span>	<input type="number" class="shortOrLong" name="classLength" min="0" max="9" value="0"></div>
+                                <label class="radio-inline"><input class="shortOrLong1" type="radio" name="classLengthRadio" id="0">Short Classes</label><label class="radio-inline"><input class="shortOrLong2" type="radio" name="classLengthRadio" id="1">Long Classes</label><br><br>
+                                <div class="input-group"><span class="input-group-addon">Time between classes</span>					<input type="number" class="ratingNumber" name="timeBetween" min="0" max="9" value="0"></div>
+                                <label class="radio-inline"><input type="radio" name="timeBetweenRadio" id="0">Minimal time</label><label class="radio-inline"><input type="radio" name="timeBetweenRadio" id="1">Lots of time</label><br><br>
+                            </div>
+
+                        </div>
+                        
+                        <div id="blocked" class="tab-pane fade">
+                            <h3>BLOCKED TIMES&nbsp;</span><span style="float:right; cursor: pointer;" onclick="addBlock()" class="glyphicon glyphicon-plus" style="font-size: 0.75em;"></span><span style="float:right; cursor: pointer; margin-right: 10px;" onclick="updateBlock()" class="glyphicon glyphicon-refresh" style="font-size: 0.75em;"></h3>
+                            <hr class="style-seven">
+                            <div id="blockedTimes"></div>
+                        </div>
+                        
+                        <div id="warnings" class="tab-pane fade">
+                            <h3>WARNINGS</h3>
+                            <p>Coming Soon</p>
+                        </div>
+                    
+                    
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    <script>
+    
+    $('#searchbar').keypress(function(event){
+        var keycode = (event.keyCode ? event.keyCode : event.which);
+        if(keycode == '13'){
+           addClass();
+        }
+    });
+    
+    </script>
+    
+    </body>
+    <%- include ./headings/footer.ejs %>
+</html>

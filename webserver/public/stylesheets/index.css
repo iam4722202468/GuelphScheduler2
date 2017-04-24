@@ -1,0 +1,89 @@
+.rightTab
+{
+    margin-top: 20px;
+}
+
+body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+}
+
+.container-fluid.full-width {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin: 0;
+    overflow-x: hidden;
+    flex: 1 0 auto;
+}
+
+.divider
+{
+    overflow: hidden;
+}
+.left
+{
+    float:left;
+}
+.right
+{
+    float:right;
+}
+
+.numberCircle {
+    border-radius: 50%;
+    width: 54px; 
+    font-size: 20px;
+    border: 2px solid #666;
+}
+.numberCircle span {
+    text-align: center;
+    line-height: 48px;
+    display: block;
+}
+
+.hoverButton
+{
+    border-radius: 50% !important;
+    -moz-border-radius: 50% !important; 
+    -webkit-border-radius: 50% !important; 
+    border-radius: 50% !important;
+    margin-top: 20%;
+    
+    width: 2em;
+    height: 2em;
+}
+
+#loadingCover {
+	background:rgba(26,178,255,0.5);
+    position: absolute;
+}
+
+.moveDown
+{
+    margin-left: -6px;
+    top: 0px !important;
+}
+
+/* Flaired edges, by Tomas Theunissen */ 
+hr.style-seven {
+    height: 10px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px 0 0 0;
+    border-radius: 20px;
+    margin-bottom: 0px;
+}
+
+hr.style-seven:before { 
+    /* Not really supposed to work, but does */ 
+    display: block;
+    content: "";
+    height: 10px;
+    margin-top: -11px;
+    border-style: solid;
+    border-color: black;
+    border-width: 0 0 1px 0;
+    border-radius: 20px;
+}
