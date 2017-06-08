@@ -312,12 +312,12 @@ int getTimeTogether(std::vector<SectionObject*> unsorted)
 }
 
 //crashes with only one schedule
-std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<SectionObject*>> unsorted)
+std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<SectionObject*>> unsorted, int criteria[2][5])
 {
-    int weight[] = {0,0,0,1,0};
     // 1: 1 - lots time before; 2: 1 - lots of time after; 3: 0 - classes closer together; 4: average class start time 0 - later start
     // 5: 0 - short classes
-    int direction[] = {0,0,0,1,0};
+    int weight[5] = {criteria[1][0], criteria[1][1], criteria[1][2], criteria[1][3], criteria[1][4]};
+    int direction[5] = {criteria[0][0], criteria[0][1], criteria[0][2], criteria[0][3], criteria[0][4]};
     
     Totals max;
     Totals min;
@@ -381,7 +381,7 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
         tempAverage = (max.timeAfter + min.timeAfter)/2;
         tempValue = (min.timeAfter - getTimeAfter(unsorted.at(x)))/tempAverage*10;
         
-        if (direction[1] == 0)
+        if (direction[1] == 1)
             tempValue = 10 - tempValue;
         tempScore += tempValue*weight[1];
         
@@ -391,7 +391,7 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
         tempAverage = (max.timeTogether + min.timeTogether)/2;
         tempValue = (getTimeTogether(unsorted.at(x)) - tempAverage)/tempAverage*10;
         
-        if (direction[2] == 0)
+        if (direction[2] == 1)
             tempValue = 10 - tempValue;
         tempScore += tempValue*weight[2];
 
@@ -440,7 +440,7 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
     return unsorted;
 }
 
-std::vector<std::vector<SectionObject*>> mapSchedules(std::vector<SectionObject*> *workingSections)
+std::vector<std::vector<SectionObject*>> mapSchedules(std::vector<SectionObject*> *workingSections, int criteria[2][5])
 {
     std::vector<std::vector<SectionObject*>> sorted;
     std::vector<SectionObject*> current;
@@ -458,7 +458,7 @@ std::vector<std::vector<SectionObject*>> mapSchedules(std::vector<SectionObject*
     
     sorted.push_back(current);
     
-    return sortSchedule(sorted);
+    return sortSchedule(sorted, criteria);
 }
 
 int main (int argc, char *argv[])
@@ -499,6 +499,34 @@ int main (int argc, char *argv[])
         str = bson_as_json (doc, NULL);
         bool parsedSuccess = reader.parse(str, root2, false);
         bson_free (str);
+    }
+    
+    collection = mongoc_client_get_collection (client, "scheduler", "criteria");
+    query = bson_new ();
+    BSON_APPEND_UTF8 (query, "sessionID", argv[1]);
+    cursor = mongoc_collection_find(collection, MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
+    
+    Json::Value root3;
+    
+    while (mongoc_cursor_next (cursor, &doc)) {
+        str = bson_as_json (doc, NULL);
+        bool parsedSuccess = reader.parse(str, root3, false);
+        bson_free (str);
+    }
+    
+    int criteria[2][5];
+    
+    if(root3.size() == 0)
+    {
+        for (int x = 0; x < 5; ++x) {
+            criteria[0][x] = 0;
+            criteria[1][x] = 0;
+        }
+    } else {
+        for (int x = 0; x < 5; ++x) {
+            criteria[0][x] = std::stoi((root3["Direction"][x]).asString());
+            criteria[1][x] = std::stoi((root3["Weight"][x]).asString());
+        }
     }
     
     std::vector<Json::Value> objectVector;
@@ -550,7 +578,7 @@ int main (int argc, char *argv[])
     int totalSchedules = 0;
     
     std::string temp = "";
-    std::vector<std::vector<SectionObject*>> sortedSchedules = mapSchedules(&workingSections);
+    std::vector<std::vector<SectionObject*>> sortedSchedules = mapSchedules(&workingSections, criteria);
     
     temp += "[[";
     

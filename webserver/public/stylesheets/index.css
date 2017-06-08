@@ -55,6 +55,14 @@ body {
     height: 2em;
 }
 
+.numberCircle:hover {
+    background-color: #48D3FE;
+}
+
+.selected {
+    background-color: #7834FE !important;
+}
+
 #loadingCover {
 	background:rgba(26,178,255,0.5);
     position: absolute;

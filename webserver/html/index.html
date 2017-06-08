@@ -106,8 +106,10 @@
             success : function(request, status, error) {
                 removeCover();
                 
-                for (x in request['blocks']['Offerings']) {
-                    makeBlock(request['blocks']['Offerings'][x]);
+                if (['blocks']['Offerings'] in request) {
+                    for (x in request['blocks']['Offerings']) {
+                        makeBlock(request['blocks']['Offerings'][x]);
+                    }
                 }
                 
                 if (!('error' in request))
@@ -138,6 +140,7 @@
     function updateBlock()
     {
         jsonObject = jsonBlocks();
+        addCover();
         
         $.ajax({
             type: "POST",
@@ -190,7 +193,10 @@
         
         for (x = 0; x < number; x++)
         {
-            var element = "<div class=\"numberCircle\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
+            if ((parseInt($(".showingNumber")[0].innerHTML)-1)%9 == x)
+                var element = "<div class=\"numberCircle selected\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
+            else
+                var element = "<div class=\"numberCircle\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
             $(".numberCircles").append(element);
         }
     }
@@ -258,7 +264,6 @@
     
     $(function() {
         init();
-        reloadCriteria();
         
         $('.nav-tabs a').click(function(){
             $(this).tab('show');
@@ -301,6 +306,7 @@
     
     function deleteClass(courseCode)
     {
+        addCover();
         $.ajax({
             type: "POST",
             url: "delete",
@@ -396,6 +402,7 @@
             },
             
             success : function(request, status, error) {
+                removeCover();
                 $("#searchbar").val("");
                 classList = [];
                 init();
@@ -429,8 +436,12 @@
                 },
                 
                 success : function(request, status, error) {
-                    addToList(request.course);
-                    getSchedules(0,9);
+                    removeCover();
+                    
+                    if (!('error' in request)) {
+                        addToList(request.course);
+                        getSchedules(0,9);
+                    }
                 }
             });
         }
@@ -473,8 +484,31 @@
     
     function reloadCriteria()
     {
-        rateForm = $("#rateForm")
-        console.log(rateForm[0])
+        criteria = {}
+        titles = ['.classStart', '.classEnd', '.timeBetween', '.averageTime', '.shortOrLong'];
+        
+        weight = []
+        direction = []
+        
+        for (x in titles) {
+            weight.push($(titles[x])[0].valueAsNumber)
+            direction.push($(titles[x]+'2')[0].checked | 0)
+        }
+        
+        criteria['Weight'] = weight;
+        criteria['Direction'] = direction;
+        
+        $.ajax({
+            type: "POST",
+            url: "updateCriteria",
+            data: {"Criteria" : criteria},
+            error : function(request, status, error) {
+                console.log(error);
+            },
+            success : function(request, status, error) {
+                getSchedules(0, 9);
+            }
+        });
     }
     
     function removeBlock(idNumber)
@@ -505,7 +539,7 @@
         <div class="container-fluid full-width">
             <div class="row">
                 <div class="col-lg-1 col-md-1 col-sm-1">
-                    <b>Showing Schedule</b> <div class="showingNumber"></div>
+                    <b>Showing Schedule</b> <div class="showingNumber">1</div>
                     <div class="hoverButton btn btn-primary" style="float: left;" onclick="schedulesLeft();"><span class="moveDown glyphicon glyphicon-chevron-left"></span></div>
                     <div class="hoverButton btn btn-primary" style="float: right;" onclick="schedulesRight();"><span class="moveDown glyphicon glyphicon-chevron-right"></span></div>
                     <br><br><br><br>
@@ -538,27 +572,28 @@
                         <li><a href data-target="#warnings" role="tab" data-toggle="tab">Warnings</a></li>
                     </ul>
                     <div class="tab-content">
-                        <div id="classes" class="tab-pane fade">
+                        <div id="classes" class="tab-pane fade in active">
                             <h3>CLASSES&nbsp;<span style="float:right; cursor: pointer;" onclick="reloadAll()" class="glyphicon glyphicon-refresh" style="font-size: 0.75em;"></span></h3>
                             <hr class="style-seven">
                             <div id="classList"></div>
                         </div>
                         
-                        <div id="criteria" class="tab-pane fade in active">
+                        <div id="criteria" class="tab-pane fade">
                             <h3>CRITERIA&nbsp;<span style="float:right; cursor: pointer;" onclick="reloadCriteria()" class="glyphicon glyphicon-refresh" style="font-size: 0.75em;"></span></h3>
                             <hr class="style-seven">
                             
                             <div id="rateForm">
                                 <div class="input-group"><span class="input-group-addon">Class Time Start</span>			<input type="number" class="classStart" name="startTime" min="0" max="9" value="0"></div>
-                                <label class="radio-inline"><input type="radio" class="classStart1" name="startTimeRadio" id="0">Early Start</label><label class="radio-inline"><input class="classStart2" type="radio" name="startTimeRadio" id="1">Late Start</label><br><br>
+                                <label class="radio-inline"><input type="radio" checked="true" class="classStart1" name="startTimeRadio" id="0">Early Start</label><label class="radio-inline"><input class="classStart2" type="radio" name="startTimeRadio" id="1">Late Start</label><br><br>
                                 <div class="input-group"><span class="input-group-addon">Class Time End</span>				<input type="number" class="classEnd" name="endTime" min="0" max="9" value="0"></div>
-                                <label class="radio-inline"><input type="radio" class="classEnd1" name="endTimeRadio" id="0">Early End</label><label class="radio-inline"><input type="radio" name="endTimeRadio" id="1">Late End</label><br><br>
+                                <label class="radio-inline"><input type="radio" checked="true" class="classEnd1" name="endTimeRadio" id="0">Early End</label><label class="radio-inline"><input type="radio" class="classEnd2" name="endTimeRadio" id="1">Late End</label><br><br>
                                 <div class="input-group"><span class="input-group-addon">Short or long Class Times</span>	<input type="number" class="shortOrLong" name="classLength" min="0" max="9" value="0"></div>
-                                <label class="radio-inline"><input class="shortOrLong1" type="radio" name="classLengthRadio" id="0">Short Classes</label><label class="radio-inline"><input class="shortOrLong2" type="radio" name="classLengthRadio" id="1">Long Classes</label><br><br>
-                                <div class="input-group"><span class="input-group-addon">Time between classes</span>					<input type="number" class="ratingNumber" name="timeBetween" min="0" max="9" value="0"></div>
-                                <label class="radio-inline"><input type="radio" name="timeBetweenRadio" id="0">Minimal time</label><label class="radio-inline"><input type="radio" name="timeBetweenRadio" id="1">Lots of time</label><br><br>
+                                <label class="radio-inline"><input class="shortOrLong1" checked="true" type="radio" name="classLengthRadio" id="0">Short Classes</label><label class="radio-inline"><input class="shortOrLong2" type="radio" name="classLengthRadio" id="1">Long Classes</label><br><br>
+                                <div class="input-group"><span class="input-group-addon">Time between classes</span>					<input type="number" class="timeBetween" name="timeBetween" min="0" max="9" value="0"></div>
+                                <label class="radio-inline"><input type="radio" checked="true" class="timeBetween1" name="timeBetweenRadio" id="0">Minimal time</label><label class="radio-inline"><input type="radio" class="timeBetween2" name="timeBetweenRadio" id="1">Lots of time</label><br><br>
+                                <div class="input-group"><span class="input-group-addon">Average class time</span>					<input type="number" class="averageTime" name="averageTime" min="0" max="9" value="0"></div>
+                                <label class="radio-inline"><input type="radio" checked="true" class="averageTime1" name="averageTimeRadio" id="0">Early</label><label class="radio-inline"><input type="radio" class="averageTime2" name="averageTimeRadio" id="1">Late</label><br><br>
                             </div>
-
                         </div>
                         
                         <div id="blocked" class="tab-pane fade">
@@ -569,12 +604,11 @@
                         
                         <div id="warnings" class="tab-pane fade">
                             <h3>WARNINGS</h3>
-                            <p>Coming Soon</p>
+                            <p>If a course is not being added when you add it, it may have no empty sections, or be a DE course</p>
+                            <hr class="style-seven">
+                            <p>Webadivsor goes down between around 2am and 4am some nights, which stop this program from working</p>
                         </div>
-                    
-                    
                     </div>
-                    
                 </div>
             </div>
         </div>

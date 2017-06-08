@@ -93,8 +93,8 @@ def getData(dataToSend):
         
         #don't include closed courses
         #############################################################
-        #if spots == '\n' or cols[2].getText() == 'Closed':
-        #    continue
+        if spots == '\n' or cols[2].getText() == 'Closed':
+            continue
         #############################################################
                 
         courseIndex = findIndex(courseObjects, Code)

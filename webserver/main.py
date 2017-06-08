@@ -42,7 +42,11 @@ else:
         collection.insert_one(newOutput)
         print "Created"
     else:
-        collection.update({"sessionID" : sys.argv[1]}, {'$push': {'Data': output[0]}}, True)
-        print "Updated"
+        if len(output) == 0:
+            print "Error: No sections"
+            print "1"
+        else:
+            collection.update({"sessionID" : sys.argv[1]}, {'$push': {'Data': output[0]}}, True)
+            print "Updated"
 
     print "0"

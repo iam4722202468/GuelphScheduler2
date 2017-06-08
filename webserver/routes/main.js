@@ -58,7 +58,6 @@ function checkDatabase(checkFor, callback_)
     }
 }
 
-//returns objectID of block object
 function addBlock(blockString, sessionID, callback_)
 {
     //add block and delete it after every use instead of modifying it
@@ -103,6 +102,49 @@ function getBlock(sessionID, callback_)
     });
 }
 
+function addCriteria(criteriaString, sessionID, callback_)
+{
+    MongoClient.connect(url, function (err, db) {
+        if (err)
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+        else {
+            var collection = db.collection('criteria');
+            
+            criteriaString = JSON.parse(criteriaString);
+            criteriaString['sessionID'] = sessionID;
+            
+            collection.remove({'sessionID': sessionID}, function(err, result) {
+                collection.insert(criteriaString, function(err, records){
+                    callback_();
+                    db.close();
+                });
+            });
+        }
+    });
+}
+
+function getCriteria(sessionID, callback_)
+{
+    MongoClient.connect(url, function (err, db) {
+        if (err)
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+        else {
+            var collection = db.collection('criteria');
+            
+            collection.find({"sessionID": sessionID}).toArray(function(err, docs){
+                if (docs.length > 0)
+                {
+                    db.close();
+                    callback_(docs[0]);
+                } else {
+                    db.close();
+                    callback_(null);
+                }
+            });
+        }
+    });
+}
+
 function checkSession(cookie, callback_)
 {
     MongoClient.connect(url, function (err, db) {
@@ -112,7 +154,6 @@ function checkSession(cookie, callback_)
             var collection = db.collection('userData');
             
             collection.find({"sessionID": cookie}).toArray(function(err, docs){
-                console.log(cookie)
                 if (docs.length > 0)
                 {
                     db.close();
@@ -224,7 +265,7 @@ router.post('/getSchedules', function(req,res) {
                     });
                 }
             });
-        }
+        } else res.end('{"error" : "SessionID not found"}');
     });
 });
 
@@ -360,10 +401,43 @@ router.post('/updateBlock', function(req,res) {
     
 });
 
+
+router.post('/updateCriteria', function(req,res) {
+    res.setHeader('Content-type', 'application/json');
+    sessionID = req.cookies.sessionID;
+    
+    working = true;
+    
+    if (req.body["Criteria"]["Weight"].length == 5 &&
+        req.body["Criteria"]["Direction"].length == 5) {
+            
+        for (x in [0,1,2,3,4]) {
+            if (!(parseInt(req.body["Criteria"]["Weight"][x]) in [0,1,2,3,4,5,6,7,8,9] &&
+                parseInt(req.body["Criteria"]["Direction"][x]) in [0,1])) {
+                
+                working = false;
+                break;
+            }
+        }
+    } else {
+        working = false;
+    }
+    
+    if (working) {
+        addCriteria(JSON.stringify(req.body["Criteria"]), sessionID, function() {
+            res.end('{"Success":"true"}');
+        });
+    } else
+        res.end('{"error":"criteria inputted incorrectly"}');
+    
+});
+
 router.post('/add', function(req,res) {
     res.setHeader('Content-type', 'application/json');
     
     sessionID = req.cookies.sessionID;
+    
+    console.log(req.body.Code);
     
     checkDatabase(req.body.Code, function(isFound) {
         if (isFound!== null) {
@@ -372,7 +446,6 @@ router.post('/add', function(req,res) {
                 
                 if(outputArray !== null)
                 {
-                    console.log(outputArray)
                     if (outputArray[1] == "1")
                     {
                         res.end('{"error" : "Already added"}');
