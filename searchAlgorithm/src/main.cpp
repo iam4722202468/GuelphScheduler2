@@ -25,8 +25,10 @@ class OfferingObject {
         
         time_start = std::stoi(thisObject["Time_Start"].asString());
         time_end = std::stoi(thisObject["Time_End"].asString());
+        
+        /*std::cout << "Adding " << thisObject["Day"] << " " << time_start << " to " << time_end << std::endl;
+        std::cout << thisObject << std::endl << std::endl;*/
     }
-    
 };
 
 class SectionObject {
@@ -35,6 +37,8 @@ class SectionObject {
     std::vector<OfferingObject> offerings;
     Json::Value thisSection;
     
+    double instructorRating = 0;
+    
     SectionObject(Json::Value thisObject)
     {
         for (unsigned int place = 0; place < thisObject["Offerings"].size(); ++place)
@@ -42,6 +46,16 @@ class SectionObject {
                 offerings.push_back(thisObject["Offerings"][place]);
         
         thisSection = thisObject;
+        
+        if (offerings.size() > 0)
+        {
+            std::string ratingString = thisObject["Instructors_Rating"].asString();
+            
+            if (ratingString == "")
+                instructorRating = 0;
+            else
+                instructorRating = std::stod(thisObject["Instructors_Rating"].asString());
+        }
     }
 };
 
@@ -79,13 +93,11 @@ int getBlock(int time)
 bool checkConflict(std::vector<SectionObject*> checkArray, std::vector<SectionObject> *blockedTimes)
 {
     //dimensions of day and weeks
-    char schedule[5][28];
+    char schedule[5][29];
     
     for (int j = 0; j < 5; ++j)
-        for (int i = 0; i < 28; ++i)
-        {
+        for (int i = 0; i < 29; ++i)
             schedule[j][i] = 0;
-        }
     
     //for courses
     for (unsigned int coursePlace = 0; coursePlace < checkArray.size(); coursePlace++)
@@ -102,6 +114,7 @@ bool checkConflict(std::vector<SectionObject*> checkArray, std::vector<SectionOb
                             return 1;
                         
                         schedule[place][blockTime] = 1;
+                        
                     }
                 }
     
@@ -114,7 +127,7 @@ bool checkConflict(std::vector<SectionObject*> checkArray, std::vector<SectionOb
                 {
                     int startBlock = getBlock(blockedTimes->at(coursePlace).offerings.at(offeringPlace).time_start);
                     int endBlock = getBlock(blockedTimes->at(coursePlace).offerings.at(offeringPlace).time_end);
-                    
+
                     for (int blockTime = startBlock; blockTime <= endBlock; blockTime++)
                     {
                         if (schedule[place][blockTime] == 1)
@@ -168,6 +181,7 @@ struct Totals
     double timeTogether = -1;
     double averageClassTime = -1;
     double classLength = -1;
+    double teacherRating = -1;
 };
 
 struct ToSort
@@ -247,6 +261,20 @@ int getAverageClassTime(std::vector<SectionObject*> unsorted)
     return counter;
 }
 
+int getTeacherRatings(std::vector<SectionObject*> unsorted)
+{
+    double counter = 0;
+    
+    for (int x = 0; x < unsorted.size(); ++x)
+    {
+        counter += unsorted.at(x)->instructorRating;
+    
+        //std::cout << unsorted.at(x)->instructorRating << std::endl;
+    }
+    
+    return counter*100;
+}
+
 int getTimeTogether(std::vector<SectionObject*> unsorted)
 {
     int counter = 0;
@@ -271,7 +299,7 @@ int getTimeTogether(std::vector<SectionObject*> unsorted)
                         schedule[blockTime] = 1;
                 }
             }
-            
+        
         int first = 0;
         int last = 0;
         bool inside = false;
@@ -302,22 +330,26 @@ int getTimeTogether(std::vector<SectionObject*> unsorted)
             }
         }
         
+        if (first == 0 && last == 0)
+            continue;
+        
         //find out what percentage of time is in class
         tempCounter = (float)totalClass/((float)totalBlank + (float)totalClass);
         tempCounter *= 100;
-        
+        //std::cout << tempCounter << std::endl;
         counter += (int)tempCounter;
     }
+    
     return counter;
 }
 
 //crashes with only one schedule
-std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<SectionObject*>> unsorted, int criteria[2][5])
+std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<SectionObject*>> unsorted, int criteria[2][6])
 {
     // 1: 1 - lots time before; 2: 1 - lots of time after; 3: 0 - classes closer together; 4: average class start time 0 - later start
-    // 5: 0 - short classes
-    int weight[5] = {criteria[1][0], criteria[1][1], criteria[1][2], criteria[1][3], criteria[1][4]};
-    int direction[5] = {criteria[0][0], criteria[0][1], criteria[0][2], criteria[0][3], criteria[0][4]};
+    // 5: 0 - short classes; 6: 
+    int weight[6] = {criteria[1][0], criteria[1][1], criteria[1][2], criteria[1][3], criteria[1][4], criteria[1][5]};
+    int direction[6] = {criteria[0][0], criteria[0][1], criteria[0][2], criteria[0][3], criteria[0][4], criteria[0][5]};
     
     Totals max;
     Totals min;
@@ -330,6 +362,10 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
         int timeTogether = getTimeTogether(unsorted.at(x));
         int averageClassTime = getAverageClassTime(unsorted.at(x));
         int classLength = getClassLength(unsorted.at(x));
+        int teacherRating = getTeacherRatings(unsorted.at(x));
+        
+        if (timeTogether < -100)
+            std::cout << timeTogether << std::endl;
         
         if (max.timeBefore < timeBefore || max.timeBefore == -1)
             max.timeBefore = timeBefore;
@@ -355,6 +391,11 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
             max.classLength = classLength;
         if (min.classLength > classLength || min.classLength == -1)
             min.classLength = classLength;
+        
+        if (max.teacherRating < teacherRating || max.teacherRating == -1)
+            max.teacherRating = teacherRating;
+        if (min.teacherRating > teacherRating || min.teacherRating == -1)
+            min.teacherRating = teacherRating;
     }
     
     std::vector<ToSort> sortArray;
@@ -374,7 +415,7 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
         if (direction[0] == 0)
             tempValue = 10 - tempValue;
         tempScore += tempValue*weight[0];
-
+        
         //
         
         tempValue = 0;
@@ -394,7 +435,7 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
         if (direction[2] == 1)
             tempValue = 10 - tempValue;
         tempScore += tempValue*weight[2];
-
+        
         //
         
         tempValue = 0;
@@ -415,6 +456,18 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
             tempValue = 10 - tempValue;
         tempScore += tempValue*weight[4];
 
+        //
+        
+        tempValue = 0;
+        tempAverage = (max.teacherRating + min.teacherRating)/2;
+        
+        if (tempAverage != 0)
+            tempValue = (getTeacherRatings(unsorted.at(x)) - tempAverage)/tempAverage*10;
+        
+        if (direction[5] == 0)
+            tempValue = 10 - tempValue;
+        tempScore += tempValue*weight[5];
+        
         //
         
         sortArray.push_back(ToSort());
@@ -440,7 +493,7 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
     return unsorted;
 }
 
-std::vector<std::vector<SectionObject*>> mapSchedules(std::vector<SectionObject*> *workingSections, int criteria[2][5])
+std::vector<std::vector<SectionObject*>> mapSchedules(std::vector<SectionObject*> *workingSections, int criteria[2][6])
 {
     std::vector<std::vector<SectionObject*>> sorted;
     std::vector<SectionObject*> current;
@@ -479,6 +532,7 @@ int main (int argc, char *argv[])
     
     collection = mongoc_client_get_collection (client, "scheduler", "userData");
     query = bson_new ();
+    
     BSON_APPEND_UTF8 (query, "sessionID", argv[1]);
     cursor = mongoc_collection_find(collection, MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
     
@@ -514,16 +568,16 @@ int main (int argc, char *argv[])
         bson_free (str);
     }
     
-    int criteria[2][5];
+    int criteria[2][6];
     
     if(root3.size() == 0)
     {
-        for (int x = 0; x < 5; ++x) {
+        for (int x = 0; x < 6; ++x) {
             criteria[0][x] = 0;
             criteria[1][x] = 0;
         }
     } else {
-        for (int x = 0; x < 5; ++x) {
+        for (int x = 0; x < 6; ++x) {
             criteria[0][x] = std::stoi((root3["Direction"][x]).asString());
             criteria[1][x] = std::stoi((root3["Weight"][x]).asString());
         }
@@ -534,10 +588,14 @@ int main (int argc, char *argv[])
     
     /* sort list based on sizes for speed increase */
     for(unsigned int x = 0; x < root["Data"].size(); x++)
+    {
         objectVector.push_back(root["Data"][x]);
+    }
     
     /* sort list based on sizes for speed increase */
     blockedTimes.push_back(root2);
+    
+    //std::cout << root2 << std::endl;
     
     /* return if there are no elements */
     if (objectVector.size() == 0)
@@ -559,9 +617,7 @@ int main (int argc, char *argv[])
     std::vector<SectionObject*> workingSections;
     
     for(unsigned int x = 0; x < root["Data"].size(); x++)
-    {
         courseObjects.push_back(objectVector[x]);
-    }
     
     generateSchedules(&courseObjects, 0, empty, &workingSections, &blockedTimes);
     

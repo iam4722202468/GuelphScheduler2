@@ -54,6 +54,7 @@
                     refreshTable(schedules[0]);
                     $(".numberOfInputs").html(scheduleSize);
                     $(".showingNumber").html(scheduleStart+1);
+                    
                 } else {
                     schedules = [];
                     scheduleSize = 0;
@@ -68,8 +69,10 @@
                     $(".numberOfInputs").html(0);
                     $(".showingNumber").html(0);
                     refreshTable(-1);
-                    initCircles(-1);
                 }
+                
+                $("#canvases").html("");
+                createThumbnails(schedules);
             }
         });
     }
@@ -93,9 +96,21 @@
         
     }
     
+    function createThumbnails(schedules)
+    {
+        $("#canvases").html("")
+        for (var x in schedules)
+        {
+            var canvasName = "canvas" + x
+            $("#canvases").append('<canvas id="' + canvasName + '"></canvas>')
+            scheduleThumbnail(schedules[x], canvasName)
+        }
+    }
+    
     function init()
     {
         addCover();
+        
         $.ajax({
             type: "POST",
             url: "init",
@@ -106,15 +121,16 @@
             success : function(request, status, error) {
                 removeCover();
                 
-                if (['blocks']['Offerings'] in request) {
-                    for (x in request['blocks']['Offerings']) {
+                if ('blocks' in request && 'Offerings' in request['blocks'])
+                    for (x in request['blocks']['Offerings'])
                         makeBlock(request['blocks']['Offerings'][x]);
-                    }
-                }
                 
                 if (!('error' in request))
                 {
                     schedules = request['schedules'].slice(0, request['schedules'].length - 1);
+                    
+                    createThumbnails(schedules)
+                    
                     scheduleSize = request['schedules'][request['schedules'].length - 1];
                     refreshTable(schedules[0]);
                     $(".numberOfInputs").html(scheduleSize);
@@ -187,20 +203,6 @@
     
     var elements = [];
     
-    function initCircles(number)
-    {
-        $(".numberCircles").html("");
-        
-        for (x = 0; x < number; x++)
-        {
-            if ((parseInt($(".showingNumber")[0].innerHTML)-1)%9 == x)
-                var element = "<div class=\"numberCircle selected\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
-            else
-                var element = "<div class=\"numberCircle\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
-            $(".numberCircles").append(element);
-        }
-    }
-    
     function createSlot(day, starttime, endtime, info) {
         days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
         
@@ -237,17 +239,15 @@
             showSchedule(schedule)
 	}
     
+    var showingSchedule = 0
+    
     function showSchedule(schedule)
     {
-        if (schedules.length > 9)
-        {
-            initCircles(9);
-        } else {
-            initCircles(schedules.length);
-        }
-        
         if (schedules.indexOf(schedule) >= 0)
-            $(".showingNumber").html(schedules.indexOf(schedule) + 1 + scheduleStart)
+        {
+            showingSchedule = schedules.indexOf(schedule)
+            $(".showingNumber").html(showingSchedule + 1 + scheduleStart)
+        }
         
         for (course in schedule)
             for (offering in schedule[course]["Offerings"])
@@ -262,7 +262,123 @@
             }
     }
     
+    function drawGrid(canvasID)
+    {
+        var x = $("#left-panel").outerWidth() * 0.85;
+        var y = x*0.6
+        
+        var c = document.getElementById(canvasID);
+        var ctx = c.getContext("2d");
+        
+        ctx.rect(0, 0, c.width, c.height);
+        
+        x = c.width
+        y = c.height
+        
+        for (var i = 0; i <= 5; ++i)
+        {
+            ctx.moveTo(x/5*i,0);
+            ctx.lineTo(x/5*i,y);
+            ctx.stroke();
+        }
+        
+        for (var i = 0; i <= 7; ++i)
+        {
+            ctx.moveTo(0,y/7*i);
+            ctx.lineTo(x,y/7*i);
+            ctx.stroke();
+        }
+    }
+    
+    function drawSchedule(schedule, canvasID)
+    {
+        var days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
+        var c = document.getElementById(canvasID);
+        var ctx = c.getContext("2d");
+        
+        var x = $("#left-panel").outerWidth() * 0.85;
+        var y = x*0.6
+        
+        x = c.width
+        y = c.height
+        
+        for (w in schedule)
+            for (w_ in schedule[w]['Offerings'])
+            {
+                var courseInfo = schedule[w]['Offerings'][w_]
+                var dayArray = courseInfo['Day'].split(", ")
+                
+                var start = parseInt(courseInfo['Time_Start']) - 800
+                var end = parseInt(courseInfo['Time_End']) - 800
+                start = start/1330*y
+                end = end/1330*y
+                
+                for (day in dayArray)
+                {
+                    var dayNumber = days.indexOf(dayArray[day])
+                    ctx.fillStyle="#0058f0";
+                    ctx.fillRect(dayNumber*x/5,start,x/5,end-start); 
+                }
+            }
+    }
+    
+    function scheduleThumbnail(schedule, canvasID)
+    {
+        var days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
+        
+        var c = document.getElementById(canvasID);
+        var ctx = c.getContext("2d");
+        
+        var x = $("#left-panel").outerWidth() * 0.85;
+        var y = x*0.6
+        
+        $("#" + canvasID).width(x);
+        $("#" + canvasID).height(y);
+        $("#" + canvasID).css("border", "1px solid #000000")
+        $("#" + canvasID).css("cursor", "pointer")
+        
+        x = c.width
+        y = c.height
+        
+        drawGrid(canvasID)
+        
+        /*         for (x = 0; x < number; x++)
+        {
+            if ((parseInt($(".showingNumber")[0].innerHTML)-1)%9 == x)
+                var element = "<div class=\"numberCircle selected\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
+            else
+                var element = "<div class=\"numberCircle\" style=\"cursor:pointer\" onclick=\"showSchedule(refreshTable(schedules[" + x + "]))\"><span>" + (x+1+scheduleStart) + "</span></div>"
+            $(".numberCircles").append(element);
+        }
+        
+        */
+        
+        c.onmouseenter = function (e) {
+            ctx.rect(0, 0, c.width, c.height);
+            ctx.fillStyle = "#719dea";
+            ctx.fill();
+            
+            drawGrid(e.target.id)
+            drawSchedule(schedule, canvasID)
+        };
+        
+        c.onmouseleave = function (e) {
+            ctx.clearRect(0, 0, c.width, c.height);
+            drawGrid(e.target.id)
+            drawSchedule(schedule, canvasID)
+        };
+        
+        drawSchedule(schedule, canvasID)
+    }
+    
     $(function() {
+        
+        $("#canvases").on('click', function(e) {
+            var canvasClick = parseInt(e.target.id.substr(6));
+            if (e.target.id != "canvases")
+                showSchedule(refreshTable(schedules[canvasClick]))
+        });
+    
         init();
         
         $('.nav-tabs a').click(function(){
@@ -332,11 +448,6 @@
                 }
             }
         });
-    }
-    
-    function getInfo(courseCode)
-    {
-        console.log(courseCode);
     }
     
     function addToList(object)
@@ -417,10 +528,8 @@
         $("#searchbar").val("");
         
         for (x in classList)
-        {
             if (classList[x]['Code'] == courseCode)
                 found = true;
-        }
         
         if (!found)
         {
@@ -436,11 +545,17 @@
                 },
                 
                 success : function(request, status, error) {
+                    console.log(request)
                     removeCover();
                     
                     if (!('error' in request)) {
                         addToList(request.course);
                         getSchedules(0,9);
+                    } else {
+                        console.log(courseCode)
+                        $("#modal-course-name_").html(" " + courseCode)
+                        $("#modal-course-error").html(request['error'])
+                        $("#noSections").modal()
                     }
                 }
             });
@@ -485,7 +600,7 @@
     function reloadCriteria()
     {
         criteria = {}
-        titles = ['.classStart', '.classEnd', '.timeBetween', '.averageTime', '.shortOrLong'];
+        titles = ['.classStart', '.classEnd', '.timeBetween', '.averageTime', '.shortOrLong', '.teacherRating'];
         
         weight = []
         direction = []
@@ -538,17 +653,23 @@
     <body>
         <div class="container-fluid full-width">
             <div class="row">
-                <div class="col-lg-1 col-md-1 col-sm-1">
-                    <b>Showing Schedule</b> <div class="showingNumber">1</div>
-                    <div class="hoverButton btn btn-primary" style="float: left;" onclick="schedulesLeft();"><span class="moveDown glyphicon glyphicon-chevron-left"></span></div>
-                    <div class="hoverButton btn btn-primary" style="float: right;" onclick="schedulesRight();"><span class="moveDown glyphicon glyphicon-chevron-right"></span></div>
-                    <br><br><br><br>
+                <div class="col-lg-1 col-md-1 col-sm-1" id="left-panel">
                     
-                    <div class="numberCircles" style="padding-left:25%"></div>
-                    <div class="hoverButton btn btn-primary" style="float: left;" onclick="schedulesAllLeft();"><span class="moveDown glyphicon glyphicon-backward"></span></div>
-                    <div class="hoverButton btn btn-primary" style="float: right;" onclick="schedulesAltRight();"><span class="moveDown glyphicon glyphicon-forward"></span></div>
+                    <b>Schedule&nbsp;</b><br><div style="float: left" class="showingNumber">1</div><p style="float: left">/</p><div style="float: left" class="numberOfInputs"></div>
+                    
+                    <div class="btn-group buttonContainer">
+                        <button class="btn btn-default buttonChild" onclick="schedulesLeft();"><span class="glyphicon glyphicon-chevron-left"></span></button>
+                        <button class="btn btn-default buttonChild" onclick="schedulesRight();"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                    </div>
+                    
+                    <div id="canvases"></div>
+                    
+                    <div class="btn-group buttonContainer">
+                        <button class="btn btn-default buttonChild" onclick="schedulesAllLeft();"><span class="glyphicon glyphicon-backward"></span></button>
+                        <button class="btn btn-default buttonChild" onclick="schedulesAltRight();"><span class="glyphicon glyphicon-forward"></span></button>
+                    </div>
+                    
                     <br><br><br>
-                    <div class="numberOfInputs"></div> <b>Schedules Generated</b>
                 </div>
                 
                 <div class="col-lg-8 col-md-8 col-sm-8">
@@ -593,6 +714,9 @@
                                 <label class="radio-inline"><input type="radio" checked="true" class="timeBetween1" name="timeBetweenRadio" id="0">Minimal time</label><label class="radio-inline"><input type="radio" class="timeBetween2" name="timeBetweenRadio" id="1">Lots of time</label><br><br>
                                 <div class="input-group"><span class="input-group-addon">Average class time</span>					<input type="number" class="averageTime" name="averageTime" min="0" max="9" value="0"></div>
                                 <label class="radio-inline"><input type="radio" checked="true" class="averageTime1" name="averageTimeRadio" id="0">Early</label><label class="radio-inline"><input type="radio" class="averageTime2" name="averageTimeRadio" id="1">Late</label><br><br>
+                                
+                                <div class="input-group"><span class="input-group-addon">Teacher Rating</span>					<input type="number" class="teacherRating" name="teacherRating" min="0" max="9" value="0"></div>
+                                <label class="radio-inline"><input type="radio" checked="true" class="teacherRating1" name="teacherRatingRadio" id="0">Low</label><label class="radio-inline"><input type="radio" class="teacherRating2" name="teacherRatingRadio" id="1">High</label><br><br>
                             </div>
                         </div>
                         
@@ -606,7 +730,7 @@
                             <h3>WARNINGS</h3>
                             <p>If a course is not being added when you add it, it may have no empty sections, or be a DE course</p>
                             <hr class="style-seven">
-                            <p>Webadivsor goes down between around 2am and 4am some nights, which stop this program from working</p>
+                            <p>Webadivsor goes down between around 2am and 4am some nights, which will stop this program from working</p>
                         </div>
                     </div>
                 </div>
@@ -621,7 +745,111 @@
         }
     });
     
+    
+    function getInfo(courseCode)
+    {
+        getCourseInfo(courseCode, function(data) {
+            $("#courseModal").modal()
+            
+            var keys = ['Prerequisites', 'Exclusions', 'Offerings']
+            //var permKeys = ['Code', 'Name', 'Description', 'Campus', 'Num_Credits', 'Level']
+            
+            $("#modal-course-name").html(data['Code'] + ' - ' + data['Name'])
+            $("#modal-course-description").html(data['Description'])
+            $("#modal-course-campus").html("Offered at " + data['Campus'] + " Campus")
+            $("#modal-course-credits").html("Credits: " + data['Num_Credits'])
+            $("#modal-course-level").html("Level: " + data['Level'])
+            
+            $("#modal-course-enrollment").html("Error: enrollment not found")
+            $("#modal-course-instructors").html("Error: instructors not found")
+            
+            for (x in schedules[showingSchedule])
+            {
+                if (data['Code'] == schedules[showingSchedule][x]['Course'])
+                {
+                    instructorURLs = schedules[showingSchedule][x]['Instructors_URL'].split(" ")
+                    instructors = schedules[showingSchedule][x]['Instructors'].split(", ")
+                    
+                    combinedArray = []
+                    
+                    for (i in instructorURLs)
+                    {
+                        if (instructorURLs[i] == "NULL")
+                            combinedArray.push(instructors[i])
+                        else if (instructorURLs[i] == "TBA")
+                            combinedArray.push("TBA")
+                        else
+                            combinedArray.push('<a target="_blank" href="' + instructorURLs[i] + '">' + instructors[i] + '</a>')
+                    }
+                    
+                    if (schedules[showingSchedule][x]['Instructors_Rating'] == 0)
+                        schedules[showingSchedule][x]['Instructors_Rating'] = "Unrated"
+                    
+                    //console.log(data['Code'] + " found")
+                    $("#modal-course-enrollment").html("Enrollment: " + schedules[showingSchedule][x]['Enrollment'] + "/" + schedules[showingSchedule][x]['Size'])
+                    $("#modal-course-instructors").html("Instructor(s): " + combinedArray.join(", "))
+                    $("#modal-course-rating").html("Instructor(s) Rating: " + schedules[showingSchedule][x]['Instructors_Rating'])
+                }
+            }
+            
+            $("#modal-course-extra").html("")
+            
+            for (key in keys)
+                if (keys[key] in data)
+                {
+                    $("#modal-course-extra").append(keys[key] + ": " + data[keys[key]])
+                    $("#modal-course-extra").append("<br><br>")
+                }
+            
+        });
+    }
+    
     </script>
+    
+    <div class="modal fade" id="courseModal" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="modal-course-name"></h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-6 col-sm-6 content-divider-right">
+                            <p id="modal-course-description"></p>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-3 content-divider-right">
+                            <p id="modal-course-credits"></p>
+                            <p id="modal-course-level"></p>
+                            <p id="modal-course-extra"></p>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-3">
+                            <p id="modal-course-enrollment"></p>
+                            <p id="modal-course-instructors"></p>
+                            <p id="modal-course-rating"></p>
+                        </div>
+                    </div>
+                    
+                    <br>
+                    <p id="modal-course-campus"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="noSections" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="modal-course-name_"></h4>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-course-error"></p>
+                </div>
+            </div>
+        </div>
+    </div>
     
     </body>
     <%- include ./headings/footer.ejs %>

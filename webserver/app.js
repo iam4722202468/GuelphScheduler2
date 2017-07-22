@@ -9,7 +9,7 @@ var fs = require("fs");
 var home = require('./routes/main');
 
 var app = express();
-var http = require('http').Server(app);
+var http = require('http');
 
 app.use(favicon());
 app.use(logger('dev'));
@@ -50,9 +50,8 @@ app.use(function(err, req, res, next) {
 
 app.set('port', process.env.PORT || 3000);
 
-http.listen(app.get('port'), function() {
-    console.log('Server listening on port ' + app.get('port'));
-});
+http.createServer(app).listen(app.get('port'));
+console.log("Listening");
 
 function closeServer(callback_)
 {

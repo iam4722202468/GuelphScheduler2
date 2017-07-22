@@ -296,16 +296,13 @@ router.post('/init', function(req,res) {
     res.setHeader('Content-type', 'application/json');
     sessionID = req.cookies.sessionID;
     
-    //check blocks too
-    //send blocks to user
-    
     checkSession(sessionID, function(isFound) {
         if (isFound['Value'] == 1) {
             
             getBlock(sessionID, function(blockData) {
                 
                 if (blockData === null)
-                    blockData = '{"Offerings" : []}';
+                    blockData = JSON.parse('{"Offerings" : []}');
                 
                 runAlgorithm(sessionID, 0, 9, function(toReturn) {
                     if (toReturn.indexOf("null") != 0) {
@@ -401,17 +398,16 @@ router.post('/updateBlock', function(req,res) {
     
 });
 
-
 router.post('/updateCriteria', function(req,res) {
     res.setHeader('Content-type', 'application/json');
     sessionID = req.cookies.sessionID;
     
     working = true;
     
-    if (req.body["Criteria"]["Weight"].length == 5 &&
-        req.body["Criteria"]["Direction"].length == 5) {
+    if (req.body["Criteria"]["Weight"].length == 6 &&
+        req.body["Criteria"]["Direction"].length == 6) {
             
-        for (x in [0,1,2,3,4]) {
+        for (x in [0,1,2,3,4,5]) {
             if (!(parseInt(req.body["Criteria"]["Weight"][x]) in [0,1,2,3,4,5,6,7,8,9] &&
                 parseInt(req.body["Criteria"]["Direction"][x]) in [0,1])) {
                 
@@ -444,11 +440,13 @@ router.post('/add', function(req,res) {
             PythonShell.run('./main.py', {args:[sessionID, req.body.Code]}, function(err, outputArray) {
                 if (err) throw err;
                 
+                console.log (outputArray)
+                
                 if(outputArray !== null)
                 {
                     if (outputArray[1] == "1")
                     {
-                        res.end('{"error" : "Already added"}');
+                        res.end('{"error" : "' + outputArray[0] + '"}');
                     } else {
                         res.end('{"success" : "done", "course":' + JSON.stringify(isFound) + '}');
                     }
@@ -471,8 +469,18 @@ router.get('/searchClass/:query', function(req, res) {
         else {
             var collection = db.collection('cachedData');
             collection.find({"Code": { "$regex": "^" + req.params.query.toUpperCase().replace(/\\/g, "\\\\").replace(/\*/g, "\\*").replace(/\$/g, "\\$").replace(/'/g, "\\'").replace(/"/g, "\\\"")}}, { Num_Credits: 1, Code: 1, Level: 1, Campus: 1, Name: 1}).limit(10).toArray(function(err, docs){
-                db.close();
-                res.end(JSON.stringify(docs));
+                if (docs.length == 0)
+                {
+                    collection.find({"Name": { "$regex": "\W*((?i)" + req.params.query.toUpperCase().replace(/\\/g, "\\\\").replace(/\*/g, "\\*").replace(/\$/g, "\\$").replace(/'/g, "\\'").replace(/"/g, "\\\"") + "(?-i))\W*"}}, { Num_Credits: 1, Code: 1, Level: 1, Campus: 1, Name: 1}).limit(10).toArray(function(err, docs){
+                        db.close();
+                        res.end(JSON.stringify(docs));
+                    });
+                }
+                else
+                {
+                    db.close();
+                    res.end(JSON.stringify(docs));
+                }
             });
         }
     });

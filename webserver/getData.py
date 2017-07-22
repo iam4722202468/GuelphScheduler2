@@ -43,6 +43,56 @@ def findIndex(courseObject, toFind):
             return i
     return -1
 
+professorCache = {}
+
+def get_instructors_rating(instructors):
+    urlArray = []
+    ratingArray = []
+    
+    if instructors.find("TBA") > -1:
+        return ["TBA", 0]
+    
+    for x in instructors.split(", "):
+        
+        if x in professorCache:
+            urlArray.append(professorCache[x][0])
+            ratingArray.append(professorCache[x][1])
+        
+        else:
+            oldX = x
+            x = "+".join(x.replace(".", "").split(" "))
+            
+            requestURL = "http://search.mtvnservices.com/typeahead/suggest/?solrformat=true&rows=50&callback=callback&q=" + x + ".&defType=edismax&qf=teacherfullname_t^1000+autosuggest&bf=pow(total_number_of_ratings_i%2C2.1)&sort=&siteName=rmp&rows=30&start=0&fl=pk_id+teacherfirstname_t+teacherlastname_t+total_number_of_ratings_i+averageratingscore_rf+schoolname_s"
+            
+            response = requests.get(requestURL)
+            html = response.text
+            teacherObject = json.loads(html[9:-3])
+            
+            try:
+                found = False
+                
+                for school_check in teacherObject['response']['docs']:
+                    if school_check['schoolname_s'].find('Guelph') > 0:
+                        teacherUrl = "https://www.ratemyprofessors.com/ShowRatings.jsp?tid=" + str(school_check['pk_id'])
+                        teacherRating = float(school_check['averageratingscore_rf'])
+                        found = True
+                        break
+                
+                if not found:
+                    teacherUrl = "NULL"
+                    teacherRating = 0
+            except:
+                teacherUrl = "NULL"
+                teacherRating = 0
+            
+            urlArray.append(teacherUrl)
+            ratingArray.append(teacherRating)
+            
+            professorCache[oldX] = [teacherUrl, teacherRating]
+            
+    
+    return [' '.join(urlArray), reduce(lambda x, y: x + y, ratingArray) / len(ratingArray)]
+
 def getData(dataToSend):
     getURL = 'https://webadvisor.uoguelph.ca/WebAdvisor/WebAdvisor?CONSTITUENCY=WBST&type=P&pid=ST-WESTS12A&TOKENIDX='
     r = requests.get(getURL)
@@ -96,7 +146,7 @@ def getData(dataToSend):
         if spots == '\n' or cols[2].getText() == 'Closed':
             continue
         #############################################################
-                
+        
         courseIndex = findIndex(courseObjects, Code)
         
         if courseIndex == -1:
@@ -146,11 +196,18 @@ def getData(dataToSend):
         Size = spots.split(' / ')[1]
         Enrollment = spots.split(' / ')[0]
         
+        InstructorInfo = get_instructors_rating(Instructors)
+        
+        Instructors_URL = InstructorInfo[0]
+        Instructors_Rating = InstructorInfo[1]
+        
         Section['Course'] = Code
         Section['Meeting_Section'] = Meeting_Section
         Section['Size'] = Size
         Section['Enrollment'] = Enrollment
         Section['Instructors'] = Instructors
+        Section['Instructors_Rating'] = Instructors_Rating
+        Section['Instructors_URL'] = Instructors_URL
         Section['Semester'] = SEMESTER
         
         Offering = []
@@ -191,6 +248,7 @@ def getData(dataToSend):
         #, {'Section':Section}, {'Offering':Offering}]
     
     
+    courseObjects = fixOverlaps(courseObjects['Sections'])
     return courseObjects
     #with open('data.txt', 'w') as outfile:
     #    json.dump(courseObjects, outfile)

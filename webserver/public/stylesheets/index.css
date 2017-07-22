@@ -31,6 +31,11 @@ body {
     float:right;
 }
 
+.content-divider-right
+{
+    border-right: 1px dashed #333;
+}
+
 .numberCircle {
     border-radius: 50%;
     width: 54px; 
@@ -72,6 +77,16 @@ body {
 {
     margin-left: -6px;
     top: 0px !important;
+}
+
+.buttonContainer
+{
+    width: 100%;
+}
+
+.buttonChild
+{
+    width: 50%;
 }
 
 /* Flaired edges, by Tomas Theunissen */ 
