@@ -255,7 +255,9 @@ router.post('/getSchedules', function(req,res) {
         if (isFound['Value'] == 1 && !isNaN(req.body.start) && !isNaN(req.body.end)) {
             runAlgorithm(sessionID, req.body.start, req.body.end, function(toReturn) {
                 if (toReturn.indexOf("null") != 0)
+                {
                     res.end('{"course":' + JSON.stringify(isFound) + ', "schedules":' + toReturn + '}');
+                }
                 else
                 {
                     checkSession(sessionID, function(courseData) {
@@ -438,9 +440,8 @@ router.post('/add', function(req,res) {
     checkDatabase(req.body.Code, function(isFound) {
         if (isFound!== null) {
             PythonShell.run('./main.py', {args:[sessionID, req.body.Code]}, function(err, outputArray) {
-                if (err) throw err;
                 
-                console.log (outputArray)
+                if (err) throw err;
                 
                 if(outputArray !== null)
                 {

@@ -1,7 +1,13 @@
-#include <bson.h>
-#include <mongoc.h>
 #include <iostream>
 #include <algorithm>
+
+#include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/json.hpp>
+
+#include <mongocxx/client.hpp>
+#include <mongocxx/options/find.hpp>
+#include <mongocxx/instance.hpp>
+#include <mongocxx/uri.hpp>
 
 #include "json.h"
 
@@ -514,60 +520,46 @@ std::vector<std::vector<SectionObject*>> mapSchedules(std::vector<SectionObject*
     return sortSchedule(sorted, criteria);
 }
 
+using bsoncxx::builder::stream::document;
+using bsoncxx::builder::stream::open_document;
+using bsoncxx::builder::stream::close_document;
+using bsoncxx::builder::stream::open_array;
+using bsoncxx::builder::stream::close_array;
+using bsoncxx::builder::stream::finalize;
+
 int main (int argc, char *argv[])
 {
-    mongoc_client_t *client;
-    mongoc_collection_t *collection;
-    mongoc_cursor_t *cursor;
-    const bson_t *doc;
-    bson_t *query;
-    char *str;
+    mongocxx::instance inst{};
+    mongocxx::client conn{mongocxx::uri{}};
+
+    auto db = conn["scheduler"];
     
     Json::Value root;
-	Json::Reader reader;
-    
-    mongoc_init ();
-    
-    client = mongoc_client_new ("mongodb://localhost:27017/");
-    
-    collection = mongoc_client_get_collection (client, "scheduler", "userData");
-    query = bson_new ();
-    
-    BSON_APPEND_UTF8 (query, "sessionID", argv[1]);
-    cursor = mongoc_collection_find(collection, MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
-    
-    while (mongoc_cursor_next (cursor, &doc)) {
-        str = bson_as_json (doc, NULL);
-        bool parsedSuccess = reader.parse(str, root, false);
-        bson_free (str);
-    }
-    
-    collection = mongoc_client_get_collection (client, "scheduler", "blockedTimes");
-    query = bson_new ();
-    BSON_APPEND_UTF8 (query, "sessionID", argv[1]);
-    cursor = mongoc_collection_find(collection, MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
-    
     Json::Value root2;
-    
-    while (mongoc_cursor_next (cursor, &doc)) {
-        str = bson_as_json (doc, NULL);
-        bool parsedSuccess = reader.parse(str, root2, false);
-        bson_free (str);
-    }
-    
-    collection = mongoc_client_get_collection (client, "scheduler", "criteria");
-    query = bson_new ();
-    BSON_APPEND_UTF8 (query, "sessionID", argv[1]);
-    cursor = mongoc_collection_find(collection, MONGOC_QUERY_NONE, 0, 0, 0, query, NULL, NULL);
-    
     Json::Value root3;
     
-    while (mongoc_cursor_next (cursor, &doc)) {
-        str = bson_as_json (doc, NULL);
-        bool parsedSuccess = reader.parse(str, root3, false);
-        bson_free (str);
+	Json::Reader reader;
+    
+    auto cursor = db["userData"].find(document{} << "sessionID" << argv[1] << finalize);
+    for (auto&& doc : cursor) {
+        std::string tempBSON = bsoncxx::to_json(doc);
+        reader.parse(tempBSON, root, false);
     }
     
+    cursor = db["blockedTimes"].find(document{} << "sessionID" << argv[1] << finalize);
+    for (auto&& doc : cursor) {
+        std::string tempBSON = bsoncxx::to_json(doc);
+        reader.parse(tempBSON, root2, false);
+    }
+    
+    cursor = db["criteria"].find(document{} << "sessionID" << argv[1] << finalize);
+    for (auto&& doc : cursor) {
+        std::string tempBSON = bsoncxx::to_json(doc);
+        reader.parse(tempBSON, root3, false);
+    }
+    
+    std::cout << root << std::endl;
+    return 0;
     int criteria[2][6];
     
     if(root3.size() == 0)
@@ -659,12 +651,6 @@ int main (int argc, char *argv[])
     temp += "]";
     
     std::cout << temp << std::endl;
-    
-    bson_destroy (query);
-    mongoc_cursor_destroy (cursor);
-    mongoc_collection_destroy (collection);
-    mongoc_client_destroy (client);
-    mongoc_cleanup ();
     
     return 0;
 }

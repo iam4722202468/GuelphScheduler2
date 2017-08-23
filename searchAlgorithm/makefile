@@ -1,7 +1,7 @@
 CC = g++
-CFLAGS = -std=c++11 -g -I"./includes" -I"./jsoncpp/json" -Wextra `pkg-config --cflags --libs libmongoc-1.0`
+CFLAGS = -std=c++11 -g -I"./includes" -I"./jsoncpp/json" -Wextra `pkg-config --cflags --libs libmongocxx`
 
-LDFLAGS = -Wextra `pkg-config --cflags --libs libmongoc-1.0`
+LDFLAGS = -Wextra `pkg-config --cflags --libs libmongocxx`
 
 
 generate : main.o jsoncpp.o

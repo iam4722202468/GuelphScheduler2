@@ -11,6 +11,23 @@
     var scheduleSize;
     var scheduleStart = 0;
     
+    // https://stackoverflow.com/questions/3426404/create-a-hexadecimal-colour-based-on-a-string-with-javascript
+    function hashCode(str) {
+        var hash = 0;
+            for (var i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+        return hash;
+    } 
+
+    function intToRGB(i){
+        var c = (i & 0x00FFFFFF)
+            .toString(16)
+            .toUpperCase();
+
+        return "00000".substring(0, 6 - c.length) + c;
+    }
+
     function getCourseInfo(courseCode, callback_)
     {
         var toReturn;
@@ -203,6 +220,16 @@
     
     var elements = [];
     
+    function lightenColor(color, percent) {
+        var num = parseInt(color,16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) + amt,
+            B = (num >> 8 & 0x00FF) + amt,
+            G = (num & 0x0000FF) + amt;
+        
+		return (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
+    };
+    
     function createSlot(day, starttime, endtime, info) {
         days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
         
@@ -223,6 +250,12 @@
 		
 		var element = '<div id="slot" style="left: '+startX+'px; top: '+startY+'px; height: ' + divHeight + 'px;">' + info + '</div>';
 		element = $(element).width(gridWidth);
+        
+        var edgeColor = info.split(" ")[0].split("*").slice(0,2).join("");
+        var colorHash = intToRGB(hashCode(edgeColor));
+        
+        element.css("border", "1px solid #" + colorHash);
+        element.css("background-color", "#" + lightenColor(colorHash, 60));
         
 		elements.push(element);
 		$("#courseslots").append(element);
@@ -257,7 +290,7 @@
                 for (day in offeringDays)
                 {
                     createSlot(offeringDays[day], schedule[course]["Offerings"][offering]["Time_Start"], schedule[course]["Offerings"][offering]["Time_End"], 
-                        schedule[course]["Offerings"][offering]["Course"] + "*" + schedule[course]["Meeting_Section"] + " (" + schedule[course]["Offerings"][offering]["Section_Type"] + ")<br>" + schedule[course]["Offerings"][offering]["Location"] + "  - " + schedule[course]["Enrollment"] + "/" + schedule[course]["Size"] + " enrolled<br>" + schedule[course]["Instructors"]);
+                        schedule[course]["Offerings"][offering]["Course"] + "*" + schedule[course]["Meeting_Section"] + " (" + schedule[course]["Offerings"][offering]["Section_Type"] + ")<br>" + schedule[course]["Offerings"][offering]["Location"] + "  - " + schedule[course]["Enrollment"] + "/" + schedule[course]["Size"] + " available<br>" + schedule[course]["Instructors"]);
                 }
             }
     }
@@ -786,7 +819,7 @@
                         schedules[showingSchedule][x]['Instructors_Rating'] = "Unrated"
                     
                     //console.log(data['Code'] + " found")
-                    $("#modal-course-enrollment").html("Enrollment: " + schedules[showingSchedule][x]['Enrollment'] + "/" + schedules[showingSchedule][x]['Size'])
+                    $("#modal-course-enrollment").html("Enrollment: " + schedules[showingSchedule][x]['Enrollment'] + "/" + schedules[showingSchedule][x]['Size'] + " available")
                     $("#modal-course-instructors").html("Instructor(s): " + combinedArray.join(", "))
                     $("#modal-course-rating").html("Instructor(s) Rating: " + schedules[showingSchedule][x]['Instructors_Rating'])
                 }

@@ -45,7 +45,84 @@ def findIndex(courseObject, toFind):
 
 professorCache = {}
 
-def get_instructors_rating(instructors):
+def combinations(combineArray):
+    scheduleArray = []
+    
+    if len(combineArray) == 0:
+        return []
+    
+    placeArray = [0]*len(combineArray);
+    
+    totalCount = 1
+    
+    for x in combineArray:
+        totalCount *= len(x)
+    
+    for w in xrange(totalCount):
+        
+        for index in xrange(len(combineArray)):
+            if placeArray[index] >= len(combineArray[index]):
+                placeArray[index] = 0
+                placeArray[index+1] += 1
+        
+        scheduleToAdd = []
+        
+        for index, x in enumerate(combineArray):
+            scheduleToAdd.append(x[placeArray[index]])
+        
+        scheduleArray.append(scheduleToAdd)
+        
+        placeArray[0] += 1
+    
+    return scheduleArray
+
+def fixOverlaps(courses):
+    for courseNumber in xrange(len(courses)):
+        
+        newSections = []
+        
+        for index in xrange(len(courses[courseNumber]['Course']['Sections'])):
+            x = courses[courseNumber]['Course']['Sections'][index]
+            lectures = []
+            labs = []
+            seminars = []
+            
+            for y in x['Offerings']:
+                if y['Section_Type'] == 'LEC':
+                    lectures.append(y)
+                elif y['Section_Type'] == 'LAB':
+                    labs.append(y)
+                elif y['Section_Type'] == 'SEM':
+                    seminars.append(y)
+            
+            toSendArray = []
+            
+            if len(lectures) > 0:
+                toSendArray.append(lectures)
+            if len(labs) > 0:
+                toSendArray.append(labs)
+            if len(seminars) > 0:
+                toSendArray.append(seminars)
+            
+            for y in combinations(toSendArray):
+                newObject = {}
+                newObject['Meeting_Section'] = x['Meeting_Section']
+                newObject['Enrollment'] = x['Enrollment']
+                newObject['Instructors'] = x['Instructors']
+                newObject['Course'] = x['Course']
+                newObject['Semester'] = x['Semester']
+                newObject['Instructors_Rating'] = x['Instructors_Rating']
+                newObject['Instructors_URL'] = x['Instructors_URL']
+                newObject['Size'] = x['Size']
+                newObject['Offerings'] = y
+                
+                newSections.append(newObject)
+        
+        courses[courseNumber]['Course']['Sections'] = newSections
+    
+    return courses
+
+def getInstructorRating(instructors):
     urlArray = []
     ratingArray = []
     
@@ -114,9 +191,7 @@ def getData(dataToSend):
     
     r = requests.post(postURL, data=postfields, cookies=cookie)
     
-    f = r.text
-    
-    soup = BeautifulSoup(f)
+    soup = BeautifulSoup(r.text)
     
     if f.find("No available course section(s)") > 0:
         return "Error: Course not found"
@@ -143,8 +218,8 @@ def getData(dataToSend):
         
         #don't include closed courses
         #############################################################
-        if spots == '\n' or cols[2].getText() == 'Closed':
-            continue
+        #if spots == '\n' or cols[2].getText() == 'Closed':
+        #    continue
         #############################################################
         
         courseIndex = findIndex(courseObjects, Code)
@@ -196,7 +271,7 @@ def getData(dataToSend):
         Size = spots.split(' / ')[1]
         Enrollment = spots.split(' / ')[0]
         
-        InstructorInfo = get_instructors_rating(Instructors)
+        InstructorInfo = getInstructorRating(Instructors)
         
         Instructors_URL = InstructorInfo[0]
         Instructors_Rating = InstructorInfo[1]
@@ -248,7 +323,8 @@ def getData(dataToSend):
         #, {'Section':Section}, {'Offering':Offering}]
     
     
-    courseObjects = fixOverlaps(courseObjects['Sections'])
+    courseObjects = fixOverlaps(courseObjects)
     return courseObjects
+    
     #with open('data.txt', 'w') as outfile:
     #    json.dump(courseObjects, outfile)
