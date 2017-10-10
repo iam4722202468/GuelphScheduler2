@@ -229,10 +229,11 @@ router.post('/reload', function(req,res) {
         if (isFound['Value'] == 1) {
             
             addArray = []
+            
             for (x in isFound['Courses'])
             {
-                deleteClass(isFound['Courses'][x]['Course']['Course'], sessionID, function(isFound) {});
-                addArray.push(isFound['Courses'][x]['Course']['Course']);
+                deleteClass(isFound['Courses'][x], sessionID, function(isFound) {});
+                addArray.push(isFound['Courses'][x]);
                 
                 if (x == isFound['Courses'].length - 1)
                 {
@@ -271,6 +272,7 @@ router.post('/getSchedules', function(req,res) {
     });
 });
 
+/* make a list of schedules to show on right if none are generates */
 function noSchedules(isFound, callback_)
 {
     objectArray = [];
@@ -278,20 +280,7 @@ function noSchedules(isFound, callback_)
     if (isFound['Courses'].length == 0)
         callback_('{"error" : "No courses"}');
     
-    for (x in isFound['Courses'])
-    {
-        object = {}
-        
-        object['Num_Credits'] = isFound['Courses'][x]['Course']['Num_Credits']
-        object['Name'] = isFound['Courses'][x]['Course']['Name']
-        object['Level'] = isFound['Courses'][x]['Course']['Level']
-        object['Code'] = isFound['Courses'][x]['Course']['Course']
-        
-        objectArray.push(object);
-        
-        if (x == isFound['Courses'].length-1)
-            callback_('{"error" : "No schedules exist", "schedules" : ' + JSON.stringify(objectArray) + '}');
-    }
+    callback_('{"error" : "No schedules exist", "schedules" : ' + JSON.stringify(isFound['Courses']) + '}');
 }
 
 router.post('/init', function(req,res) {
@@ -338,7 +327,7 @@ function deleteClass(courseCode, sessionID, callback_)
                 if (docs.length > 0)
                 {
                     for (x in docs[0]['Data'])
-                        if (docs[0]['Data'][x]['Course']['Course'] == courseCode)
+                        if (docs[0]['Data'][x] == courseCode)
                             collection.update({"sessionID": sessionID}, {$pull: {'Data':docs[0]['Data'][x]}});
                     
                     db.close();
@@ -377,6 +366,7 @@ router.post('/updateBlock', function(req,res) {
     
     for (x in req.body['Offerings'])
     {
+        // Validate data
         if (!('Time_Start' in req.body['Offerings'][x])) continue;
         if (!('Day' in req.body['Offerings'][x])) continue;
         if (!('Time_End' in req.body['Offerings'][x])) continue;
@@ -434,23 +424,28 @@ router.post('/add', function(req,res) {
     res.setHeader('Content-type', 'application/json');
     
     sessionID = req.cookies.sessionID;
+    courseCode = req.body.Code.toUpperCase();
     
-    console.log(req.body.Code);
+    console.log("Adding " + courseCode);
     
-    checkDatabase(req.body.Code, function(isFound) {
+    checkDatabase(courseCode, function(isFound) {
+        
+        console.log("Found: " + isFound)
+        
         if (isFound!== null) {
-            PythonShell.run('./main.py', {args:[sessionID, req.body.Code]}, function(err, outputArray) {
+            PythonShell.run('./main.py', {args:[sessionID, courseCode]}, function(err, outputArray) {
                 
                 if (err) throw err;
                 
                 if(outputArray !== null)
                 {
+                    
+                    console.log(outputArray);
+                    
                     if (outputArray[1] == "1")
-                    {
                         res.end('{"error" : "' + outputArray[0] + '"}');
-                    } else {
+                    else
                         res.end('{"success" : "done", "course":' + JSON.stringify(isFound) + '}');
-                    }
                 }
                 else
                     res.end('{"error" : "Problem with python parser"}');

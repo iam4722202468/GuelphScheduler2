@@ -74,11 +74,11 @@ class CourseObject {
     
     CourseObject(Json::Value thisObject)
     {
-        courseCode = thisObject["Course"].asString();
+        courseCode = thisObject["Course"]["Course"].asString();
         
-        for (unsigned int place = 0; place < thisObject["Sections"].size(); ++place)
+        for (unsigned int place = 0; place < thisObject["Course"]["Sections"].size(); ++place)
         {
-            sections.push_back(thisObject["Sections"][place]);
+            sections.push_back(thisObject["Course"]["Sections"][place]);
         }
     }
 };
@@ -537,7 +537,6 @@ int main (int argc, char *argv[])
     Json::Value root;
     Json::Value root2;
     Json::Value root3;
-    Json::Value root4;
     
 	Json::Reader reader;
     
@@ -559,6 +558,9 @@ int main (int argc, char *argv[])
         reader.parse(tempBSON, root3, false);
     }
     
+    std::cout << root << std::endl;
+    return 0;
+    
     int criteria[2][6];
     
     if(root3.size() == 0)
@@ -576,23 +578,17 @@ int main (int argc, char *argv[])
     
     std::vector<Json::Value> objectVector;
     std::vector<SectionObject> blockedTimes;
-    std::vector<CourseObject> courseObjects;
-    std::vector<SectionObject*> empty;
-    std::vector<SectionObject*> workingSections;
     
-    for (auto&& obj : root["Data"])
+    /* sort list based on sizes for speed increase */
+    for(unsigned int x = 0; x < root["Data"].size(); x++)
     {
-        std::string courseCode = obj.asString();
-        cursor = db["cachedCourses"].find(document{} << "Course" << courseCode << finalize);
-        
-        for (auto&& doc : cursor) {
-            std::string tempBSON = bsoncxx::to_json(doc);
-            reader.parse(tempBSON, root4, false);
-            objectVector.push_back(root4["Data"]);
-        }
+        objectVector.push_back(root["Data"][x]);
     }
     
+    /* sort list based on sizes for speed increase */
     blockedTimes.push_back(root2);
+    
+    //std::cout << root2 << std::endl;
     
     /* return if there are no elements */
     if (objectVector.size() == 0)
@@ -605,11 +601,15 @@ int main (int argc, char *argv[])
     std::sort(objectVector.begin(), objectVector.end(), 
         [] (const Json::Value struct1, const Json::Value struct2)
         {
-            return (struct1["Sections"].size() < struct2["Sections"].size());
+            return (struct1["Course"]["Sections"].size() < struct2["Course"]["Sections"].size());
         }
     );
     
-    for(unsigned int x = 0; x < objectVector.size(); x++)
+    std::vector<CourseObject> courseObjects;
+    std::vector<SectionObject*> empty;
+    std::vector<SectionObject*> workingSections;
+    
+    for(unsigned int x = 0; x < root["Data"].size(); x++)
         courseObjects.push_back(objectVector[x]);
     
     generateSchedules(&courseObjects, 0, empty, &workingSections, &blockedTimes);

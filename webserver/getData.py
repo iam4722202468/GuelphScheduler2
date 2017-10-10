@@ -4,6 +4,8 @@ from BeautifulSoup import BeautifulSoup
 from HTMLParser import HTMLParser
 import json
 
+import itertools
+
 import requests
 
 from pymongo import MongoClient
@@ -13,7 +15,7 @@ db = client['scheduler']
 collection = db['cachedData']
 
 #define semester
-SEMESTER = 'F17'
+SEMESTER = 'W18'
 
 def convertTime(x):
 	if(x[-2:] == "AM"):
@@ -30,7 +32,7 @@ def getKeys(header):
     keySections = header['Set-Cookie'].split(", ")
     
     for x in keySections:
-        cookie[x.split('=')[0]] = x.split('=')[1]
+        cookie[x.split('=')[0]] = "".join(x.split('=')[1:])
         
     return cookie
 
@@ -45,66 +47,48 @@ def findIndex(courseObject, toFind):
 
 professorCache = {}
 
-def combinations(combineArray):
-    scheduleArray = []
-    
-    if len(combineArray) == 0:
-        return []
-    
-    placeArray = [0]*len(combineArray);
-    
-    totalCount = 1
-    
-    for x in combineArray:
-        totalCount *= len(x)
-    
-    for w in xrange(totalCount):
-        
-        for index in xrange(len(combineArray)):
-            if placeArray[index] >= len(combineArray[index]):
-                placeArray[index] = 0
-                placeArray[index+1] += 1
-        
-        scheduleToAdd = []
-        
-        for index, x in enumerate(combineArray):
-            scheduleToAdd.append(x[placeArray[index]])
-        
-        scheduleArray.append(scheduleToAdd)
-        
-        placeArray[0] += 1
-    
-    return scheduleArray
-
 def fixOverlaps(courses):
     for courseNumber in xrange(len(courses)):
         
         newSections = []
         
         for index in xrange(len(courses[courseNumber]['Course']['Sections'])):
+            #if there is a choice of labs then the labs will overlap perfectly
+            
+            cachedTimes = []
+            conflicts = {}
+            
             x = courses[courseNumber]['Course']['Sections'][index]
-            lectures = []
-            labs = []
-            seminars = []
+            newObjectOfferings = {}
+            newArrayOfferings = []
             
             for y in x['Offerings']:
-                if y['Section_Type'] == 'LEC':
-                    lectures.append(y)
-                elif y['Section_Type'] == 'LAB':
-                    labs.append(y)
-                elif y['Section_Type'] == 'SEM':
-                    seminars.append(y)
+                combination = y['Time_Start'] + " " + y['Day']
+                
+                if combination in cachedTimes:
+                    if not combination in conflicts:
+                        conflicts[combination] = []
+                        conflicts[combination].append(newObjectOfferings[combination])
+                    
+                    conflicts[combination].append(y)
+                    del newObjectOfferings[combination]
+                else:
+                    newObjectOfferings[combination] = y
+                    cachedTimes.append(combination)
             
-            toSendArray = []
+            combineArray = []
             
-            if len(lectures) > 0:
-                toSendArray.append(lectures)
-            if len(labs) > 0:
-                toSendArray.append(labs)
-            if len(seminars) > 0:
-                toSendArray.append(seminars)
+            for y in conflicts.keys():
+                cachedTimes.remove(y)
+                combineArray.append(conflicts[y])
             
-            for y in combinations(toSendArray):
+            for y in newObjectOfferings.keys():
+                newArrayOfferings.append(newObjectOfferings[y])
+            
+            for y in itertools.product(*combineArray):
+                tempNewArray = newArrayOfferings[:]
+                tempNewArray.append(y[0])
+                
                 newObject = {}
                 newObject['Meeting_Section'] = x['Meeting_Section']
                 newObject['Enrollment'] = x['Enrollment']
@@ -114,10 +98,10 @@ def fixOverlaps(courses):
                 newObject['Instructors_Rating'] = x['Instructors_Rating']
                 newObject['Instructors_URL'] = x['Instructors_URL']
                 newObject['Size'] = x['Size']
-                newObject['Offerings'] = y
+                newObject['Offerings'] = tempNewArray
                 
                 newSections.append(newObject)
-        
+                
         courses[courseNumber]['Course']['Sections'] = newSections
     
     return courses
@@ -171,12 +155,15 @@ def getInstructorRating(instructors):
     return [' '.join(urlArray), reduce(lambda x, y: x + y, ratingArray) / len(ratingArray)]
 
 def getData(dataToSend):
+    
+    s = requests.session()
+    
     getURL = 'https://webadvisor.uoguelph.ca/WebAdvisor/WebAdvisor?CONSTITUENCY=WBST&type=P&pid=ST-WESTS12A&TOKENIDX='
-    r = requests.get(getURL)
+    r = s.get(getURL)
     cookie = getKeys(r.headers)
     
     getURL = 'https://webadvisor.uoguelph.ca/WebAdvisor/WebAdvisor?CONSTITUENCY=WBST&type=P&pid=ST-WESTS12A&TOKENIDX=' + cookie['LASTTOKEN']
-    r = requests.get(getURL, cookies=cookie)
+    r = s.get(getURL)
     
     try:
         cookie = getKeys(r.headers)
@@ -189,9 +176,10 @@ def getData(dataToSend):
     postURL = 'https://webadvisor.uoguelph.ca/WebAdvisor/WebAdvisor?TOKENIDX=' + cookie['LASTTOKEN'] + '&SS=1&APP=ST&CONSTITUENCY=WBST'
     postfields = {"VAR1":SEMESTER, "VAR10":"Y", "VAR11":"Y","VAR12":"Y", "VAR13":"Y", "VAR14":"Y", "VAR15":"Y", "VAR16":"Y", "DATE.VAR1":"", "DATE.VAR2":"", "LIST.VAR1_CONTROLLER":"LIST.VAR1", "LIST.VAR1_MEMBERS":"LIST.VAR1*LIST.VAR2*LIST.VAR3*LIST.VAR4", "LIST.VAR1_MAX":"5", "LIST.VAR2_MAX":"5", "LIST.VAR3_MAX":"5", "LIST.VAR4_MAX":"5", "LIST.VAR1_1":dataToSend[0][0], "LIST.VAR2_1":"", "LIST.VAR3_1":dataToSend[0][1], "LIST.VAR4_1":"", "LIST.VAR1_2":dataToSend[1][0], "LIST.VAR2_2":"", "LIST.VAR3_2":dataToSend[1][1], "LIST.VAR4_2":"", "LIST.VAR1_3":dataToSend[2][0], "LIST.VAR2_3":"", "LIST.VAR3_3":dataToSend[2][1], "LIST.VAR4_3":"", "LIST.VAR1_4":dataToSend[3][0], "LIST.VAR2_4":"", "LIST.VAR3_4":dataToSend[3][1], "LIST.VAR4_4":"", "LIST.VAR1_5":dataToSend[4][0], "LIST.VAR2_5":"", "LIST.VAR3_5":dataToSend[4][1], "LIST.VAR4_5":"", "VAR7":"", "VAR8":"", "VAR3":"", "VAR6":"", "VAR21":"", "VAR9":"", "SUBMIT_OPTIONS":""}
     
-    r = requests.post(postURL, data=postfields, cookies=cookie)
+    r = s.post(postURL, data=postfields)
     
     soup = BeautifulSoup(r.text)
+    f = r.text
     
     if f.find("No available course section(s)") > 0:
         return "Error: Course not found"
@@ -218,8 +206,8 @@ def getData(dataToSend):
         
         #don't include closed courses
         #############################################################
-        #if spots == '\n' or cols[2].getText() == 'Closed':
-        #    continue
+        if spots == '\n' or cols[2].getText() == 'Closed':
+            continue
         #############################################################
         
         courseIndex = findIndex(courseObjects, Code)
@@ -287,7 +275,28 @@ def getData(dataToSend):
         
         Offering = []
         
-        for x in cols[5].find('p').contents[0].split('\n'): #meeting info
+        Meeting_Info = cols[5].find('p').contents[0]
+        
+        if Meeting_Info.find("(more)...") != -1:
+            findLink = cols[3].find('a')['onclick']
+        
+            startLink = findLink.find('\'')+1
+            endLink = findLink.find('\'', startLink)
+            
+            findLink = findLink[startLink:endLink]
+            
+            getURL = "https://webadvisor.uoguelph.ca/WebAdvisor/WebAdvisor" + findLink
+            r = s.get(getURL)
+            
+            getURL = getURL.replace("&CLONE=Y&CLONE_PROCESS=Y","&CLONE_PROCESS=Y")
+            r = s.get(getURL)
+            
+            start = r.text.find('<p id="LIST_VAR12_1">') + 21
+            end = r.text.find("</p>", start)
+            
+            Meeting_Info = r.text[start:end].split("\n")
+            
+        for x in Meeting_Info: #meeting info
             tempObject = {}
             
             splitX = x.split(' ')
@@ -320,11 +329,7 @@ def getData(dataToSend):
             courseObjects[-1]['Course']['Sections'].append(Section)
         else:
             courseObjects[courseIndex]['Course']['Sections'].append(Section)
-        #, {'Section':Section}, {'Offering':Offering}]
-    
     
     courseObjects = fixOverlaps(courseObjects)
-    return courseObjects
     
-    #with open('data.txt', 'w') as outfile:
-    #    json.dump(courseObjects, outfile)
+    return courseObjects

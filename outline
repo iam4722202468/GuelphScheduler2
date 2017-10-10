@@ -1,0 +1,55 @@
+cachedCourses database
+
+store data for course there, write to there
+entries with course
+
+*search by course*
+
+"Num_Credits":"0.50",
+"Name":"Discovering Biodiversity",
+"Level":"Undergraduate",
+"Prerequisites":"",
+"Exclusions":"",
+"Offerings":"",
+"Course":"BIOL*1070",
+"Sections":[
+    {
+        "Meeting_Section":"0101",
+        "Enrollment":"0",
+        "Instructors":"T. Gregory, S. Jacobs",
+        "Offerings":[
+            {
+                "Time_Start":"0930",
+                "Section_Type":"LEC",
+                "Time_End":"1020",
+                "Course":"BIOL*1070",
+                "Location":"ROZH, room 104",
+                "Day":"Mon, Wed"
+            },
+            {
+                "Time_Start":"1030",
+                "Section_Type":"SEM",
+                "Time_End":"1120",
+                "Course":"BIOL*1070",
+                "Location":"SSC, room 3305",
+                "Day":"Mon"
+            }
+        ],
+        "Course":"BIOL*1070",
+        "Semester":"F17",
+        "Instructors_Rating":3.1799999999999997,
+        "Instructors_URL":"https://www.ratemyprofessors.com/ShowRatings.jsp?tid=706863 https://www.ratemyprofessors.com/ShowRatings.jsp?tid=1762354",
+        "Size":"26"
+    }
+]
+
+change userData to
+
+ex.
+{
+
+    "sessionID":"SD3329J9",
+    "Data":[
+        <list of course names>
+    ]
+}

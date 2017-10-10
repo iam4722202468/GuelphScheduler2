@@ -80,7 +80,11 @@
                     classList = [];
                     
                     for (x in request['schedules'])
-                        addToList(request['schedules'][x]);
+                    {
+                        getCourseInfo(request['schedules'][x], function(data) {
+                            addToList(data);
+                        });
+                    }
                     
                     scheduleStart = 0;
                     $(".numberOfInputs").html(0);
@@ -161,7 +165,11 @@
                     $(".showingNumber").html(1);
                 } else {
                     for (x in request['schedules'])
-                        addToList(request['schedules'][x]);
+                    {
+                        getCourseInfo(request['schedules'][x], function(data) {
+                            addToList(data);
+                        });
+                    }
                     
                     $(".numberOfInputs").html(0);
                     $(".showingNumber").html(0);
@@ -777,7 +785,6 @@
            addClass();
         }
     });
-    
     
     function getInfo(courseCode)
     {
