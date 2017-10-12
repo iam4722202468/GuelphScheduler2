@@ -27,13 +27,11 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=5
+current_page=3
 FILE_NAME_0=0;Javascript;0;EUTF-8;0;1;0;%2Fhome%2Face%2FPrograms%2FNode%2FScheduler2%2Fwebserver%2Fapp.js;0;4
 FILE_NAME_1=14308;Javascript;0;EUTF-8;0;1;0;%2Fhome%2Face%2FPrograms%2FNode%2FScheduler2%2Fwebserver%2Froutes%2Fmain.js;0;4
 FILE_NAME_2=34556;HTML;0;EUTF-8;0;1;0;%2Fhome%2Face%2FPrograms%2FNode%2FScheduler2%2Fwebserver%2Fhtml%2Findex.html;0;4
 FILE_NAME_3=1084;None;0;EUTF-8;0;1;0;%2Fhome%2Face%2FPrograms%2FNode%2FScheduler2%2Fwebserver%2Fhtml%2Fheadings%2Fheader.ejs;0;8
-FILE_NAME_4=0;Python;0;EUTF-8;0;1;1;%2Fhome%2Face%2FPrograms%2FNode%2FScheduler2%2Fwebserver%2FgetData.py;0;4
-FILE_NAME_5=625;Python;0;EUTF-8;0;1;0;%2Fhome%2Face%2FPrograms%2FNode%2FScheduler2%2Fwebserver%2Fmain.py;0;4
 
 [VTE]
 last_dir=/home/ace

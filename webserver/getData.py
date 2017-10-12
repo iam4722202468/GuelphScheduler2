@@ -48,6 +48,7 @@ def findIndex(courseObject, toFind):
 professorCache = {}
 
 def fixOverlaps(courses):
+    
     for courseNumber in xrange(len(courses)):
         
         newSections = []
@@ -59,7 +60,8 @@ def fixOverlaps(courses):
             conflicts = {}
             
             x = courses[courseNumber]['Course']['Sections'][index]
-            newObjectOfferings = {}
+            
+            noConflicts = {}
             newArrayOfferings = []
             
             for y in x['Offerings']:
@@ -68,40 +70,47 @@ def fixOverlaps(courses):
                 if combination in cachedTimes:
                     if not combination in conflicts:
                         conflicts[combination] = []
-                        conflicts[combination].append(newObjectOfferings[combination])
-                    
+                        conflicts[combination].append(noConflicts[combination])
+                        del noConflicts[combination]
+                        
                     conflicts[combination].append(y)
-                    del newObjectOfferings[combination]
+                    
                 else:
-                    newObjectOfferings[combination] = y
+                    noConflicts[combination] = y
                     cachedTimes.append(combination)
             
             combineArray = []
             
             for y in conflicts.keys():
-                cachedTimes.remove(y)
-                combineArray.append(conflicts[y])
+                locationArray = []
+                
+                for z in conflicts[y]:
+                    locationArray.append(z['Location'])
+                
+                if len(conflicts[y]) > 0:
+                    conflicts[y][0]['Location'] = " or ".join(locationArray)
+                    combineArray.append(conflicts[y][0])
             
-            for y in newObjectOfferings.keys():
-                newArrayOfferings.append(newObjectOfferings[y])
+            for y in noConflicts.keys():
+                newArrayOfferings.append(noConflicts[y])
             
-            for y in itertools.product(*combineArray):
-                tempNewArray = newArrayOfferings[:]
-                tempNewArray.append(y[0])
-                
-                newObject = {}
-                newObject['Meeting_Section'] = x['Meeting_Section']
-                newObject['Enrollment'] = x['Enrollment']
-                newObject['Instructors'] = x['Instructors']
-                newObject['Course'] = x['Course']
-                newObject['Semester'] = x['Semester']
-                newObject['Instructors_Rating'] = x['Instructors_Rating']
-                newObject['Instructors_URL'] = x['Instructors_URL']
-                newObject['Size'] = x['Size']
-                newObject['Offerings'] = tempNewArray
-                
-                newSections.append(newObject)
-                
+            tempNewArray = newArrayOfferings[:]
+            tempNewArray += combineArray
+            
+            newObject = {}
+            newObject['Meeting_Section'] = x['Meeting_Section']
+            newObject['Enrollment'] = x['Enrollment']
+            newObject['Instructors'] = x['Instructors']
+            newObject['Course'] = x['Course']
+            newObject['Semester'] = x['Semester']
+            newObject['Instructors_Rating'] = x['Instructors_Rating']
+            newObject['Instructors_URL'] = x['Instructors_URL']
+            newObject['Size'] = x['Size']
+            newObject['Offerings'] = tempNewArray
+            
+            newSections.append(newObject)
+            
+            
         courses[courseNumber]['Course']['Sections'] = newSections
     
     return courses
@@ -151,7 +160,6 @@ def getInstructorRating(instructors):
             
             professorCache[oldX] = [teacherUrl, teacherRating]
             
-    
     return [' '.join(urlArray), reduce(lambda x, y: x + y, ratingArray) / len(ratingArray)]
 
 def getData(dataToSend):
@@ -294,9 +302,9 @@ def getData(dataToSend):
             start = r.text.find('<p id="LIST_VAR12_1">') + 21
             end = r.text.find("</p>", start)
             
-            Meeting_Info = r.text[start:end].split("\n")
-            
-        for x in Meeting_Info: #meeting info
+            Meeting_Info = r.text[start:end]
+        
+        for x in Meeting_Info.split("\n"): #meeting info
             tempObject = {}
             
             splitX = x.split(' ')
