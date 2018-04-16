@@ -38,9 +38,9 @@ def getDescription(courseInfo):
     
     Code = courseInfo['Code']
     Level = courseInfo['Level']
-    print (Code)
+    print Code
     
-    found = collection.find_one({'Code': Code})
+    found = collection.find_one({'Code': Code, 'School':'Guelph'})
     
     if found == None:
         if Level == "Undergraduate Guelph-Humber":
@@ -77,10 +77,12 @@ def getDescription(courseInfo):
             courseInfo['Description'] = "Description not available"
         
         toInsert = {}
+        
+        courseInfo['School'] = "Guelph"
+        
         collection.insert_one(courseInfo).inserted_id
         
         return courseInfo
-        
     else:
         return found
 

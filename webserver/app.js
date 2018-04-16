@@ -1,4 +1,6 @@
 var express = require('express');
+var subdomain = require('express-subdomain');
+
 var path = require('path');
 var favicon = require('static-favicon');
 var logger = require('morgan');
@@ -7,6 +9,7 @@ var bodyParser = require('body-parser');
 var fs = require("fs");
 
 var home = require('./routes/main');
+var selectHome = require('./routes/select');
 
 var app = express();
 var http = require('http');
@@ -21,7 +24,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'html'));
 
-app.use('/', home);
+app.use(subdomain('guelph', home));
+app.use(subdomain('humber', home));
+app.use(subdomain('*', selectHome));
+
+//app.use('/', home);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {

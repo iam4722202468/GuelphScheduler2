@@ -221,7 +221,7 @@ function addClasses(classArray, callback_)
     });
 }
 
-router.post('/reload', function(req,res) {
+/*router.post('/reload', function(req,res) {
     res.setHeader('Content-type', 'application/json');
     sessionID = req.cookies.sessionID;
     
@@ -246,7 +246,7 @@ router.post('/reload', function(req,res) {
             res.end('{"error" : "SessionID not found"}');
         }
     });
-});
+});*/
 
 router.post('/getSchedules', function(req,res) {
     res.setHeader('Content-type', 'application/json');
@@ -432,14 +432,20 @@ router.post('/add', function(req,res) {
         
         console.log("Found: " + isFound)
         
-        if (isFound!== null) {
-            PythonShell.run('./main.py', {args:[sessionID, courseCode]}, function(err, outputArray) {
-                
-                if (err) throw err;
-                
-                if(outputArray !== null)
-                {
-                    
+        if (req.subdomains.length != 1) {
+            res.end('{"error" : "School not found"}') 
+        } else if (isFound!== null) {
+            var school = req.subdomains[0];
+            
+            if (school.toLowerCase() == "guelph")
+                school = "Guelph"
+            else if (school.toLowerCase() == "humber")
+                school = "Humber"
+            
+            PythonShell.run('./main.py', {args:[sessionID, courseCode, school]}, function(err, outputArray) {
+                console.log(err)
+                console.log(outputArray)
+                if(!err && outputArray !== null) {
                     console.log(outputArray);
                     
                     if (outputArray[1] == "1")
@@ -459,27 +465,38 @@ router.post('/add', function(req,res) {
 router.get('/searchClass/:query', function(req, res) {
     res.setHeader('Content-type', 'application/json');
     
-    MongoClient.connect(url, function (err, db) {
-        if (err)
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-        else {
-            var collection = db.collection('cachedData');
-            collection.find({"Code": { "$regex": "^" + req.params.query.toUpperCase().replace(/\\/g, "\\\\").replace(/\*/g, "\\*").replace(/\$/g, "\\$").replace(/'/g, "\\'").replace(/"/g, "\\\"")}}, { Num_Credits: 1, Code: 1, Level: 1, Campus: 1, Name: 1}).limit(10).toArray(function(err, docs){
-                if (docs.length == 0)
-                {
-                    collection.find({"Name": { "$regex": "\W*((?i)" + req.params.query.toUpperCase().replace(/\\/g, "\\\\").replace(/\*/g, "\\*").replace(/\$/g, "\\$").replace(/'/g, "\\'").replace(/"/g, "\\\"") + "(?-i))\W*"}}, { Num_Credits: 1, Code: 1, Level: 1, Campus: 1, Name: 1}).limit(10).toArray(function(err, docs){
+    if (req.subdomains.length != 1)
+        res.end()
+    else {
+        var school = req.subdomains[0];
+        
+        if (school.toLowerCase() == "guelph")
+            school = "Guelph"
+        else if (school.toLowerCase() == "humber")
+            school = "Humber"
+        
+        MongoClient.connect(url, function (err, db) {
+            if (err)
+                console.log('Unable to connect to the mongoDB server. Error:', err);
+            else {
+                var collection = db.collection('cachedData');
+                collection.find({"School":school, "Code": { "$regex": "^" + req.params.query.toUpperCase().replace(/\\/g, "\\\\").replace(/\*/g, "\\*").replace(/\$/g, "\\$").replace(/'/g, "\\'").replace(/"/g, "\\\"")}}, { Num_Credits: 1, Code: 1, Level: 1, Campus: 1, Name: 1}).limit(10).toArray(function(err, docs){
+                    if (docs.length == 0)
+                    {
+                        collection.find({"School":school, "Name": { "$regex": "\W*((?i)" + req.params.query.toUpperCase().replace(/\\/g, "\\\\").replace(/\*/g, "\\*").replace(/\$/g, "\\$").replace(/'/g, "\\'").replace(/"/g, "\\\"") + "(?-i))\W*"}}, { Num_Credits: 1, Code: 1, Level: 1, Campus: 1, Name: 1}).limit(10).toArray(function(err, docs){
+                            db.close();
+                            res.end(JSON.stringify(docs));
+                        });
+                    }
+                    else
+                    {
                         db.close();
                         res.end(JSON.stringify(docs));
-                    });
-                }
-                else
-                {
-                    db.close();
-                    res.end(JSON.stringify(docs));
-                }
-            });
-        }
-    });
+                    }
+                });
+            }
+        });
+    }
 });
 
 module.exports = router;

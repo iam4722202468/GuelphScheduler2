@@ -1,25 +1,19 @@
 #!/usr/bin/python
 
+import getData
 import sys
 
 from pymongo import MongoClient
 client = MongoClient()
-    
+
 splitText = sys.argv[2].split("*")
-queryArray = [[splitText[0], splitText[1]]]
+queryArray = [[splitText[0], splitText[1]], ["",""], ["",""], ["",""], ["",""]]
 
 db = client['scheduler']
 collection = db['userData']
 cachedCourses = db['cachedCourses']
 
 foundDB = collection.find_one({"sessionID" : sys.argv[1]})
-
-sys.path.insert(0, "./Schools/" + sys.argv[3])
-
-import getData
-
-if __name__ == '__main__':
-    print queryArray
 
 if foundDB != None:
     isFound = False
@@ -62,3 +56,4 @@ else:
             
             print "Updated"
             print "0"
+
