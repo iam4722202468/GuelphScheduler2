@@ -206,7 +206,8 @@ router.post('/getInfo', function(req,res) {
     });
 });
 
-function addClasses(classArray, callback_)
+
+/*function addClasses(classArray, callback_)
 {
     toAdd = classArray.slice(0,1);
     classArray = classArray.slice(1,classArray.length);
@@ -219,7 +220,7 @@ function addClasses(classArray, callback_)
                 callback_();
             });
     });
-}
+}*/
 
 /*router.post('/reload', function(req,res) {
     res.setHeader('Content-type', 'application/json');
@@ -441,10 +442,10 @@ router.post('/add', function(req,res) {
                 school = "Guelph"
             else if (school.toLowerCase() == "humber")
                 school = "Humber"
+            else if (school.toLowerCase() == "waterloo")
+                school = "Waterloo"
             
             PythonShell.run('./main.py', {args:[sessionID, courseCode, school]}, function(err, outputArray) {
-                console.log(err)
-                console.log(outputArray)
                 if(!err && outputArray !== null) {
                     console.log(outputArray);
                     
@@ -474,6 +475,8 @@ router.get('/searchClass/:query', function(req, res) {
             school = "Guelph"
         else if (school.toLowerCase() == "humber")
             school = "Humber"
+        else if (school.toLowerCase() == "waterloo")
+            school = "Waterloo"
         
         MongoClient.connect(url, function (err, db) {
             if (err)

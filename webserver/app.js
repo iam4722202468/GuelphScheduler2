@@ -26,6 +26,7 @@ app.set('views', path.join(__dirname, 'html'));
 
 app.use(subdomain('guelph', home));
 app.use(subdomain('humber', home));
+app.use(subdomain('waterloo', home));
 app.use(subdomain('*', selectHome));
 
 //app.use('/', home);
