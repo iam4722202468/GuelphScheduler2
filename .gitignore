@@ -1,5 +1,6 @@
 *.swp
 *.pyc
+webserver/dist/
 webserver/node_modules/
 apis/
 searchAlgorithm/mongo/

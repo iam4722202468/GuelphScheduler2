@@ -1,3 +1,5 @@
+import * as $ from 'jquery'
+
 var schedules;
 var scheduleSize;
 var scheduleStart = 0;
@@ -38,11 +40,11 @@ function getCourseInfo(courseCode, callback_)
   });
 }
 
-$('#schedules-left').on('click', () => {
+/*$('#schedules-left').on('click', () => {
   schedulesLeft();
 }
 
-$('#schedules-right').on('click', () => {
+/*$('#schedules-right').on('click', () => {
   schedulesRight();
 }
 
@@ -63,7 +65,7 @@ $('#add-block').on('click', () => {
 }
 $('#update-block').on('click', () => {
   updateBlock();
-}
+}*/
 
 function getSchedules(start, end)
 {
@@ -581,7 +583,7 @@ function addToList(object)
     
     var element6 = '</div><br><br><br><hr class="style-seven" index="' + classList[x].Code + '"></hr></div>';
     
-    element = element1 + element2 + element3 + element4 + element5 + element6
+    let element = element1 + element2 + element3 + element4 + element5 + element6
     
     $("#classList").append(element);
   }
@@ -746,9 +748,9 @@ function removeBlock(idNumber)
 
 function addBlock()
 {
-  var place = blocks.length
+  var place = blocks.length;
   
-  element = '<div class="input-group">
+  let element = `<div class="input-group">
     <span class="input-group-addon">Start</span>
     <select class="starttime form-control">
     <option value="">
@@ -781,12 +783,29 @@ function addBlock()
     <option value="1300">13:00 - 1pm</option>
     <option value="1400">14:00 - 2pm</option>
     <option value="1500">15:00 - 3pm</option>
-    <option value="1600">16:00 - 4pm</option><option value="1700">17:00 - 5pm</option><option value="1800">18:00 - 6pm</option><option value="1900">19:00 - 7pm</option><option value="2000">20:00 - 8pm</option><option value="2100">21:00 - 9pm</option><option value="2200">22:00 - 10pm</option></select></div></div> \
-  \
-  <label class="checkbox-inline dayname"><input type="checkbox" value="">Mon</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Tues</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Wed</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Thur</label><label class="checkbox-inline dayname"><input type="checkbox" value="">Fri</label> \
-  <div class="hoverButton btn btn-danger" onclick="removeBlock(' + place + ')" style="margin-left: 90%; margin-top: 0px; margin-bottom: 5%;"><span class="moveDown glyphicon glyphicon-remove"></span></div>\
-\
-  <hr class="style-seven">'
+    <option value="1600">16:00 - 4pm</option>
+    <option value="1700">17:00 - 5pm</option>
+    <option value="1800">18:00 - 6pm</option>
+    <option value="1900">19:00 - 7pm</option>
+    <option value="2000">20:00 - 8pm</option>
+    <option value="2100">21:00 - 9pm</option>
+    <option value="2200">22:00 - 10pm</option>
+    </select></div></div>
+    <label class="checkbox-inline dayname">
+    <input type="checkbox" value="">Mon</label>
+    <label class="checkbox-inline dayname">
+    <input type="checkbox" value="">Tues</label>
+    <label class="checkbox-inline dayname">
+    <input type="checkbox" value="">Wed</label>
+    <label class="checkbox-inline dayname">
+    <input type="checkbox" value="">Thur</label>
+    <label class="checkbox-inline dayname">
+    <input type="checkbox" value="">Fri</label>
+    <div class="hoverButton btn btn-danger" 
+      onclick="removeBlock(' + place + ')" 
+      style="margin-left: 90%; margin-top: 0px; margin-bottom: 5%;">
+    <span class="moveDown glyphicon glyphicon-remove"></span></div>
+    <hr class="style-seven">`
   
   element = $(element);
   blocks.push(element);
