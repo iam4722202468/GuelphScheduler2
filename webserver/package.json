@@ -1,0 +1,29 @@
+{
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "file-loader": "^2.0.0",
+    "nodemon": "^1.18.5",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
+  },
+  "scripts": {
+    "start": "nodemon --watch ./src/html --watch ./src/public --watch ./src/routes --watch ./src/schools --watch ./src/main.py --watch ./src/app.js ./src/app.js",
+    "scrape_guelph": "python ./src/schools/Guelph/getClasses.py",
+    "clean": "mongo scheduler --eval 'db.cachedData.drop()'"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.3",
+    "css-loader": "^1.0.1",
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "express-subdomain": "^1.0.5",
+    "mongodb": "^3.1.8",
+    "morgan": "^1.9.1",
+    "node-sass": "^4.9.4",
+    "python-shell": "^1.0.6",
+    "sass-loader": "^7.1.0",
+    "static-favicon": "^2.0.0-alpha",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.24.0"
+  }
+}

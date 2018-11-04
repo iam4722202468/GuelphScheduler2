@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.9.0/css/bootstrap-slider.min.css">
+    <script src="app.bundle.js"></script>
+    <script src="dist.bundle.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.9.0/bootstrap-slider.min.js"></script>
+    <title>Home</title>
+  </head>
+  
+  <body>
+    <div class="container-fluid full-width">
+      <div class="row">
+        <div class="col-lg-1 col-md-1 col-sm-1" id="left-panel">
+          
+          <b>Schedule&nbsp;</b><br><div style="float: left" class="showingNumber">1</div><p style="float: left">/</p><div style="float: left" class="numberOfInputs"></div>
+          
+          <div class="btn-group buttonContainer">
+            <button id="schedules-left" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-chevron-left"></span></button>
+            <button id="schedules-right" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-chevron-right"></span></button>
+          </div>
+          
+          <div id="canvases"></div>
+          
+          <div class="btn-group buttonContainer">
+            <button id="schedules-all-left" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-backward"></span></button>
+            <button id="schedules-all-right" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-forward"></span></button>
+          </div>
+          
+          <br><br><br>
+        </div>
+        
+        <div class="col-lg-8 col-md-8 col-sm-8">
+          <div class="input-group" style="line-height: 1">
+            <input id="searchbar" type="text" class="form-control typeahead" placeholder="Search" autocomplete="off" spellcheck="false">
+            <div class="input-group-btn">
+              <a id="add-class" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></a>
+            </div>
+            <div id="results"></div>
+          </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-3 col-sm-3 rightTab">
+          <ul class="nav nav-tabs" style="font-size: 0.9em;">
+            <li class="active"><a href data-target="#classes" role="tab" data-toggle="tab">Classes</a></li>
+            <li><a href data-target="#criteria" role="tab" data-toggle="tab">Criteria</a></li>
+            <li><a href data-target="#blocked" role="tab" data-toggle="tab">Blocked Times</a></li>
+            <li><a href data-target="#warnings" role="tab" data-toggle="tab">Warnings</a></li>
+          </ul>
+          <div class="tab-content">
+            <div id="classes" class="tab-pane fade in active">
+              <h3>CLASSES&nbsp;</h3>
+              
+              <hr class="style-seven">
+              <div id="classList"></div>
+            </div>
+            
+            <div id="criteria" class="tab-pane fade">
+              <h3>CRITERIA&nbsp;<span id="reload-criteria" style="float:right; cursor: pointer;" class="glyphicon glyphicon-refresh" style="font-size: 0.75em;"></span></h3>
+              <hr class="style-seven">
+              
+              <div id="rateForm">
+                <div class="input-group"><span class="input-group-addon">Class Time Start</span>			<input type="number" class="classStart" name="startTime" min="0" max="9" value="0"></div>
+                <label class="radio-inline"><input type="radio" checked="true" class="classStart1" name="startTimeRadio" id="0">Early Start</label><label class="radio-inline"><input class="classStart2" type="radio" name="startTimeRadio" id="1">Late Start</label><br><br>
+                <div class="input-group"><span class="input-group-addon">Class Time End</span>				<input type="number" class="classEnd" name="endTime" min="0" max="9" value="0"></div>
+                <label class="radio-inline"><input type="radio" checked="true" class="classEnd1" name="endTimeRadio" id="0">Early End</label><label class="radio-inline"><input type="radio" class="classEnd2" name="endTimeRadio" id="1">Late End</label><br><br>
+                <div class="input-group"><span class="input-group-addon">Short or long Class Times</span>	<input type="number" class="shortOrLong" name="classLength" min="0" max="9" value="0"></div>
+                <label class="radio-inline"><input class="shortOrLong1" checked="true" type="radio" name="classLengthRadio" id="0">Short Classes</label><label class="radio-inline"><input class="shortOrLong2" type="radio" name="classLengthRadio" id="1">Long Classes</label><br><br>
+                <div class="input-group"><span class="input-group-addon">Time between classes</span>					<input type="number" class="timeBetween" name="timeBetween" min="0" max="9" value="0"></div>
+                <label class="radio-inline"><input type="radio" checked="true" class="timeBetween1" name="timeBetweenRadio" id="0">Minimal time</label><label class="radio-inline"><input type="radio" class="timeBetween2" name="timeBetweenRadio" id="1">Lots of time</label><br><br>
+                <div class="input-group"><span class="input-group-addon">Average class time</span>					<input type="number" class="averageTime" name="averageTime" min="0" max="9" value="0"></div>
+                <label class="radio-inline"><input type="radio" checked="true" class="averageTime1" name="averageTimeRadio" id="0">Early</label><label class="radio-inline"><input type="radio" class="averageTime2" name="averageTimeRadio" id="1">Late</label><br><br>
+                
+                <div class="input-group"><span class="input-group-addon">Teacher Rating</span>					<input type="number" class="teacherRating" name="teacherRating" min="0" max="9" value="0"></div>
+                <label class="radio-inline"><input type="radio" checked="true" class="teacherRating1" name="teacherRatingRadio" id="0">Low</label><label class="radio-inline"><input type="radio" class="teacherRating2" name="teacherRatingRadio" id="1">High</label><br><br>
+              </div>
+            </div>
+            
+            <div id="blocked" class="tab-pane fade">
+              <h3>BLOCKED TIMES&nbsp;</span><span id="add-block" style="float:right; cursor: pointer;" class="glyphicon glyphicon-plus" style="font-size: 0.75em;"></span><span style="float:right; cursor: pointer; margin-right: 10px;" id="update-block" class="glyphicon glyphicon-refresh" style="font-size: 0.75em;"></h3>
+              <hr class="style-seven">
+              <div id="blockedTimes"></div>
+            </div>
+            
+            <div id="warnings" class="tab-pane fade">
+              <h3>WARNINGS</h3>
+              <p>Remember to stay hydrated!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  <div class="modal fade" id="courseModal" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="modal-course-name"></h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 content-divider-right">
+              <p id="modal-course-description"></p>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3 content-divider-right">
+              <p id="modal-course-credits"></p>
+              <p id="modal-course-level"></p>
+              <p id="modal-course-extra"></p>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3">
+              <p id="modal-course-enrollment"></p>
+              <p id="modal-course-instructors"></p>
+              <p id="modal-course-rating"></p>
+            </div>
+          </div>
+          
+          <br>
+          <p id="modal-course-campus"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="noSections" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title" id="modal-course-name_"></h4>
+        </div>
+        <div class="modal-body">
+          <p id="modal-course-error"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  </body>
+  <footer>
+    <div class="container">
+      Alexander Parent - aparen01@mail.uoguelph.ca - Guelph Scheduler 3.0 BETA © 2018 - <a href="https://github.com/iam4722202468/GuelphScheduler2/">Code</a>
+    </div>
+  </footer>
+</html>
