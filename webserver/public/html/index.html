@@ -6,13 +6,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.9.0/css/bootstrap-slider.min.css">
     <script src="app.bundle.js"></script>
-    <script src="dist.bundle.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.9.0/bootstrap-slider.min.js"></script>
+    <script src="css.bundle.js"></script>
     <title>Home</title>
   </head>
   
@@ -20,19 +15,18 @@
     <div class="container-fluid full-width">
       <div class="row">
         <div class="col-lg-1 col-md-1 col-sm-1" id="left-panel">
-          
           <b>Schedule&nbsp;</b><br><div style="float: left" class="showingNumber">1</div><p style="float: left">/</p><div style="float: left" class="numberOfInputs"></div>
           
           <div class="btn-group buttonContainer">
-            <button id="schedules-left" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-chevron-left"></span></button>
-            <button id="schedules-right" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-chevron-right"></span></button>
+            <button id="schedules-left" class="btn btn-default buttonChild"><i class="fa fa-chevron-left"></i></button>
+            <button id="schedules-right" class="btn btn-default buttonChild"><i class="fa fa-chevron-right"></i></button>
           </div>
           
           <div id="canvases"></div>
           
           <div class="btn-group buttonContainer">
-            <button id="schedules-all-left" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-backward"></span></button>
-            <button id="schedules-all-right" class="btn btn-default buttonChild"><span class="glyphicon glyphicon-forward"></span></button>
+            <button id="schedules-all-left" class="btn btn-default buttonChild"><i class="fa fa-chevron-left"></i><i class="fa fa-chevron-left"></i></button>
+            <button id="schedules-all-right" class="btn btn-default buttonChild"><i class="fa fa-chevron-right"></i><i class="fa fa-chevron-right"></i></button>
           </div>
           
           <br><br><br>
@@ -46,17 +40,18 @@
             </div>
             <div id="results"></div>
           </div>
+          <div id="calendar"></div>
         </div>
         
         <div class="col-lg-3 col-md-3 col-sm-3 rightTab">
           <ul class="nav nav-tabs" style="font-size: 0.9em;">
-            <li class="active"><a href data-target="#classes" role="tab" data-toggle="tab">Classes</a></li>
-            <li><a href data-target="#criteria" role="tab" data-toggle="tab">Criteria</a></li>
-            <li><a href data-target="#blocked" role="tab" data-toggle="tab">Blocked Times</a></li>
-            <li><a href data-target="#warnings" role="tab" data-toggle="tab">Warnings</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#classes">Classes</a></li>
+            <li class="nav-item"><a class="nav-link" href="#criteria">Criteria</a></li>
+            <li class="nav-item"><a class="nav-link" href="#blocked">Blocked Times</a></li>
+            <li class="nav-item"><a class="nav-link" href="#warnings">Warnings</a></li>
           </ul>
           <div class="tab-content">
-            <div id="classes" class="tab-pane fade in active">
+            <div id="classes" class="tab-pane fade show active">
               <h3>CLASSES&nbsp;</h3>
               
               <hr class="style-seven">
@@ -99,12 +94,15 @@
       </div>
     </div>
   
-  <div class="modal fade" id="courseModal" role="dialog">
-    <div class="modal-dialog modal-lg">
+  
+  <div class="modal" id="courseModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h4 class="modal-title" id="modal-course-name"></h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
           <div class="row">

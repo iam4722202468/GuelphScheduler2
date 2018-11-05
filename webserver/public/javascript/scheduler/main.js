@@ -1,4 +1,13 @@
-import * as $ from 'jquery'
+require('jquery');
+require('webpack-jquery-ui');
+require('webpack-jquery-ui/css');
+
+require('bootstrap');
+require('bootstrap/scss/bootstrap.scss');
+require('font-awesome/css/font-awesome.css');
+
+require('fullcalendar');
+require('fullcalendar/dist/fullcalendar.css');
 
 var schedules;
 var scheduleSize;
@@ -40,32 +49,6 @@ function getCourseInfo(courseCode, callback_)
   });
 }
 
-/*$('#schedules-left').on('click', () => {
-  schedulesLeft();
-}
-
-/*$('#schedules-right').on('click', () => {
-  schedulesRight();
-}
-
-$('#schedules-all-left').on('click', () => {
-  schedulesAllLeft();
-}
-$('#schedules-all-right').on('click', () => {
-  schedulesAllRight();
-}
-$('#add-class').on('click', () => {
-  addClass();
-}
-$('#reload-criteria').on('click', () => {
-  reloadCriteria();
-}
-$('#add-block').on('click', () => {
-  addBlock();
-}
-$('#update-block').on('click', () => {
-  updateBlock();
-}*/
 
 function getSchedules(start, end)
 {
@@ -176,7 +159,7 @@ function init()
         refreshTable(schedules[0]);
         $(".numberOfInputs").html(scheduleSize);
         
-        for (x in request['schedules'][0])
+        for (let x in request['schedules'][0])
         {
           getCourseInfo(request['schedules'][0][x]['Course'], function(data) {
             addToList(data);
@@ -184,7 +167,7 @@ function init()
         }
         $(".showingNumber").html(1);
       } else {
-        for (x in request['schedules'])
+        for (let x in request['schedules'])
         {
           getCourseInfo(request['schedules'][x], function(data) {
             addToList(data);
@@ -197,17 +180,11 @@ function init()
     }
   });
 }
-$('#searchbar').keypress(function(event){
-  var keycode = (event.keyCode ? event.keyCode : event.which);
-  if(keycode == '13'){
-     addClass();
-  }
-});
+
 
 function getInfo(courseCode)
 {
   getCourseInfo(courseCode, function(data) {
-    $("#courseModal").modal()
     
     var keys = ['Prerequisites', 'Exclusions', 'Offerings']
     //var permKeys = ['Code', 'Name', 'Description', 'Campus', 'Num_Credits', 'Level']
@@ -260,6 +237,7 @@ function getInfo(courseCode)
       }
     
   });
+  $("#courseModal").modal('toggle');
 }
 
 function updateBlock()
@@ -323,22 +301,22 @@ function lightenColor(color, percent) {
 };
 
 function createSlot(day, starttime, endtime, info) {
-  days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
+  let days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
   
   starttime = parseInt(starttime)-800
   endtime = parseInt(endtime)-800
   
-  startY = $("#startY").outerHeight();
-  startX = $("#startX").outerWidth() + 2;
-  multiplyHeight = $("#findHeightGrid").outerHeight();
-  gridWidth = $("#findHeightGrid").outerWidth();
+  let startY = $("#startY").outerHeight();
+  let startX = $("#startX").outerWidth() + 2;
+  let multiplyHeight = $("#findHeightGrid").outerHeight();
+  let gridWidth = $("#findHeightGrid").outerWidth();
   
-  topPlace = timeToPixels(starttime, multiplyHeight);
-  bottomPlace = timeToPixels(endtime, multiplyHeight);
+  let topPlace = timeToPixels(starttime, multiplyHeight);
+  let bottomPlace = timeToPixels(endtime, multiplyHeight);
   
   startY += topPlace;
   startX += days.indexOf(day) * gridWidth;
-  divHeight = bottomPlace - topPlace;
+  let divHeight = bottomPlace - topPlace;
   
   var element = '<div id="slot" style="left: '+startX+'px; top: '+startY+'px; height: ' + divHeight + 'px;">' + info + '</div>';
   element = $(element).width(gridWidth);
@@ -358,8 +336,31 @@ function refreshTable(schedule) {
     elements[x].remove()
   }
   
-  elements = []
+  $('#calendar').fullCalendar('removeEvents');
   
+  elements = []
+  console.log(schedule);
+
+  dayList = { 'Mon': '01', 'Tues': '02', 'Wed': '03', 'Thur': '04', 'Fri': '05' };
+
+  schedule.forEach((course) => {
+    course.Offerings.forEach((offering) => {
+      offering.Day.split(', ').forEach((day) => {
+        var colorHash = intToRGB(hashCode(course.Course));
+
+        const event = {
+          id: course.Course,
+          title: `${course.Course} - ${course.Meeting_Section}`,
+          start: `2018-01-${dayList[day]} ${offering.Time_Start.substr(0, 2)}:${offering.Time_Start.substr(2, 4)}:00`,
+          end: `2018-01-${dayList[day]} ${offering.Time_End.substr(0, 2)}:${offering.Time_End.substr(2, 4)}:00`,
+          borderColor: `#${colorHash}`,
+          backgroundColor: `#${lightenColor(colorHash, 60)}`
+        }
+        $('#calendar').fullCalendar( 'renderEvent', event, true);
+      });
+    });
+  });
+
   if (schedule != -1)
     showSchedule(schedule)
 }
@@ -374,12 +375,12 @@ function showSchedule(schedule)
     $(".showingNumber").html(showingSchedule + 1 + scheduleStart)
   }
   
-  for (course in schedule)
-    for (offering in schedule[course]["Offerings"])
+  for (let course in schedule)
+    for (let offering in schedule[course]["Offerings"])
     {
-      offeringDays = schedule[course]["Offerings"][offering]["Day"].split(", ");
+      let offeringDays = schedule[course]["Offerings"][offering]["Day"].split(", ");
       
-      for (day in offeringDays)
+      for (let day in offeringDays)
       {
         createSlot(offeringDays[day], schedule[course]["Offerings"][offering]["Time_Start"], schedule[course]["Offerings"][offering]["Time_End"], 
           schedule[course]["Offerings"][offering]["Course"] + "*" + schedule[course]["Meeting_Section"] + " (" + schedule[course]["Offerings"][offering]["Section_Type"] + ")<br>" + schedule[course]["Offerings"][offering]["Location"] + "  - " + schedule[course]["Enrollment"] + "/" + schedule[course]["Size"] + " available<br>" + schedule[course]["Instructors"]);
@@ -427,8 +428,8 @@ function drawSchedule(schedule, canvasID)
   x = c.width
   y = c.height
   
-  for (w in schedule)
-    for (w_ in schedule[w]['Offerings'])
+  for (let w in schedule)
+    for (let w_ in schedule[w]['Offerings'])
     {
       var courseInfo = schedule[w]['Offerings'][w_]
       var dayArray = courseInfo['Day'].split(", ")
@@ -438,7 +439,7 @@ function drawSchedule(schedule, canvasID)
       start = start/1330*y
       end = end/1330*y
       
-      for (day in dayArray)
+      for (let day in dayArray)
       {
         var dayNumber = days.indexOf(dayArray[day])
         ctx.fillStyle="#0058f0";
@@ -564,42 +565,56 @@ function deleteClass(courseCode)
   });
 }
 
+function getInfoPre(e) {
+  getInfo($(e.target).closest('.get-info').attr('place'));
+}
+
+function deleteClassPre(e) {
+  deleteClass($(e.target).closest('.delete-class').attr('place'));
+}
+
 function addToList(object)
 {
   $("#classList").html("")
   classList.push(object)
   
-  for (x in classList)
+  for (let x in classList)
   {
-    var element1 = '<div class="classList divider" index="' + classList[x].Code + '">';
-    var element2 = '<div class="left">' + classList[x].Code + '<br>' + classList[x].Name + '<br>' + classList[x].Num_Credits + '</div>';
-    var element3 = '<div class="right">';
-    
-    var element4 = '<div class="hoverButton btn btn-primary"><span class="moveDown glyphicon glyphicon-search"></span></div>';
-    element4 = $(element4).attr('onClick', 'getInfo("' + classList[x].Code + '");')[0].outerHTML;
-    
-    var element5 = '<div class="hoverButton btn btn-danger"><span class="moveDown glyphicon glyphicon-remove"></span></div>';
-    element5 = $(element5).attr('onClick', 'deleteClass("' + classList[x].Code + '");')[0].outerHTML;
-    
-    var element6 = '</div><br><br><br><hr class="style-seven" index="' + classList[x].Code + '"></hr></div>';
-    
-    let element = element1 + element2 + element3 + element4 + element5 + element6
-    
+    const element = `
+      <div class="classList divider" index="${classList[x].Code}">
+      <div class="left">${classList[x].Code}<br>
+        ${classList[x].Name}<br>
+        ${classList[x].Num_Credits}
+      </div>
+      <div class="right">
+        <div place=${classList[x].Code} class="get-info hoverButton btn btn-primary">
+          <i class="moveDown fa fa-info"></i>
+        </div>
+        <div place=${classList[x].Code} class="delete-class hoverButton btn btn-danger">
+          <i class="moveDown fa fa-trash"></i>
+        </div>
+      </div>
+      <br><br><br>
+      <hr class="style-seven" index="${classList[x].Code}"></hr></div>
+    `;
     $("#classList").append(element);
   }
+
+  $('.get-info').on('click', getInfoPre);
+  $('.delete-class').on('click', deleteClassPre);
 }
 
 var cover = null;
 
 function addCover() {
   if (cover === null) {
-    startY = $("#startY").outerHeight();
-    startX = $("#startX").outerWidth() + 2;
+    let startY = $("#startY").outerHeight();
+    let startX = $("#startX").outerWidth() + 2;
     
-    multiplyHeight = $("#findHeightGrid").outerHeight();
-    gridWidth = $("#findHeightGrid").outerWidth();
+    let multiplyHeight = $("#findHeightGrid").outerHeight();
+    let gridWidth = $("#findHeightGrid").outerWidth();
     
-    cover = '<div id="loadingCover" style="left: '+startX+'px; top: '+startY+'px;">Loading Courses...</div>'
+    let cover = '<div id="loadingCover" style="left: '+startX+'px; top: '+startY+'px;">Loading Courses...</div>'
     cover = $(cover).width(gridWidth*5-1)
     cover = $(cover).height(multiplyHeight*28-1)
     $("#courseslots").append(cover)
@@ -613,27 +628,6 @@ function removeCover() {
     cover = null;
   }
 }
-
-/*function reloadAll()
-{
-  addCover();
-  $.ajax({
-    type: "POST",
-    url: "reload",
-    data: {},
-    
-    error : function(request, status, error) {
-      console.log(error);
-    },
-    
-    success : function(request, status, error) {
-      removeCover();
-      $("#searchbar").val("");
-      classList = [];
-      init();
-    }
-  });
-}*/
 
 function addClass(object)
 {
@@ -740,14 +734,16 @@ function reloadCriteria()
   });
 }
 
-function removeBlock(idNumber)
-{
+function removeBlock(idNumber) {
   blocks[idNumber].remove();
   delete blocks[idNumber];
 }
 
-function addBlock()
-{
+function removeBlockPre(e) {
+  removeBlock($(e.target).attr('place'));
+}
+
+function addBlock() {
   var place = blocks.length;
   
   let element = `<div class="input-group">
@@ -802,7 +798,8 @@ function addBlock()
     <label class="checkbox-inline dayname">
     <input type="checkbox" value="">Fri</label>
     <div class="hoverButton btn btn-danger" 
-      onclick="removeBlock(' + place + ')" 
+      class="remove-block"
+      place="${place}"
       style="margin-left: 90%; margin-top: 0px; margin-bottom: 5%;">
     <span class="moveDown glyphicon glyphicon-remove"></span></div>
     <hr class="style-seven">`
@@ -810,4 +807,60 @@ function addBlock()
   element = $(element);
   blocks.push(element);
   $("#blockedTimes").append(element);
+  $('.remove-block').on('click', removeBlockPre);
 }
+
+$(document).ready(function() {
+  $('#schedules-left').on('click', () => {
+    schedulesLeft();
+  });
+
+  $('#schedules-right').on('click', () => {
+    schedulesRight();
+  });
+
+  $('#schedules-all-left').on('click', () => {
+    schedulesAllLeft();
+  });
+
+  $('#schedules-all-right').on('click', () => {
+    schedulesAllRight();
+  });
+
+  $('#add-class').on('click', () => {
+    addClass();
+  });
+
+  $('#reload-criteria').on('click', () => {
+    reloadCriteria();
+  });
+
+  $('#add-block').on('click', () => {
+    addBlock();
+  });
+
+  $('#update-block').on('click', () => {
+    updateBlock();
+  });
+
+  $('#searchbar').on('keypress', (event) => {
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode == '13'){
+       addClass();
+    }
+  });
+
+  $('#calendar').fullCalendar({
+    header: false,
+    defaultView: 'agendaWeek',
+    allDayText: '',
+    columnHeaderFormat: 'ddd',
+    minTime: '08:00:00',
+    hiddenDays: [0, 6],
+    defaultDate: '2018-01-01',
+    navLinks: false,
+    editable: false,
+    contentHeight: 880,
+    eventLimit: false
+  });
+});

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import sys
-import getData
 
 from pymongo import MongoClient
 client = MongoClient()
@@ -14,7 +13,8 @@ cachedCourses = db['cachedCourses']
 
 foundDB = collection.find_one({"sessionID" : sys.argv[1]})
 
-sys.path.insert(0, "./Schools/" + sys.argv[3])
+sys.path.insert(0, "./schools/" + sys.argv[3])
+import getData
 
 if __name__ == '__main__':
     print queryArray

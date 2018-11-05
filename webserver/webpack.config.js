@@ -2,11 +2,19 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
+  devtool: 'eval-source-map',
   context: path.resolve(__dirname, 'public'),
   entry: {
-    app: ['./javascript/scheduler/main.js', './stylesheets/footer.scss', './stylesheets/index.scss'],
-    dist: ['./bootstrap/js/bootstrap.js', './bootstrap/css/bootstrap.css']
+    css: ['./stylesheets/footer.css', './stylesheets/index.css'],
+    app: ['./javascript/scheduler/main.js'],
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+      "window.jQuery":"jquery"
+    })
+  ],
   module: {
     rules: [
       {
@@ -16,12 +24,20 @@ module.exports = {
         loader: 'babel-loader'
       },
       {
+        test: /\.(jpe?g|png|gif)$/i,
+        loader:"file-loader",
+        options:{
+          name:'[name].[ext]',
+          outputPath:'assets/images/'
+        }
+      },
+      {
         test: /\.(scss|css)$/,
         use: [
-          "style-loader", // creates style nodes from JS strings
-          "css-loader", // translates CSS into CommonJS
-          "sass-loader" // compiles Sass to CSS, using Node Sass by default
-        ]
+          'style-loader',
+          'css-loader',
+          'sass-loader'
+        ],
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
@@ -38,5 +54,5 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].bundle.js',
-  },
+  }
 };

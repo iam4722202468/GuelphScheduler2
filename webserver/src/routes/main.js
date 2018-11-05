@@ -1,10 +1,9 @@
 var express = require('express');
 var router = express.Router();
-var ejs = require('ejs');
 var fs = require('fs');
-const { PythonShell } = require('python-shell');
+var path = require('path');
 
-var baseFilePath = '/../html/'
+const { PythonShell } = require('python-shell');
 
 var mongodb = require('mongodb'),
   MongoClient = mongodb.MongoClient,
@@ -178,14 +177,7 @@ router.get('/', function(req, res) {
     res.cookie('sessionID', generateHash(), {expires: new Date(2147483647000)});
   }
   
-  ejs.renderFile(__dirname + baseFilePath + 'index.html', {}, function(err, result) {
-    if (!err) {
-      res.end(result);
-    } else {
-      res.end(err.toString());
-      console.log(err);
-    }
-  });
+  res.sendFile(path.resolve('public/html/index.html'))
 });
 
 function runAlgorithm(sessionID, start, end, callback_)
