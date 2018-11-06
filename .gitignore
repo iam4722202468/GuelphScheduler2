@@ -1,6 +1,7 @@
 *.log
 *.swp
 *.pyc
+*.o
 webserver/dist/
 webserver/node_modules/
 apis/
