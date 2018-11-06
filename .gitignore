@@ -6,3 +6,4 @@ webserver/node_modules/
 apis/
 searchAlgorithm/mongo/
 webserver/Schools/Humber/secret
+searchAlgorithm/generate
