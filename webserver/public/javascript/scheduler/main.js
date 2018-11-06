@@ -71,19 +71,19 @@ function getSchedules(start, end)
       
       if (!('error' in request))
       {
-        let schedules = request['schedules'].slice(0, request['schedules'].length - 1);
-        let scheduleSize = request['schedules'][request['schedules'].length - 1];
+        schedules = request['schedules'].slice(0, request['schedules'].length - 1);
+        scheduleSize = request['schedules'][request['schedules'].length - 1];
         
-        let scheduleStart = start
+        scheduleStart = start
         refreshTable(schedules[0]);
         $(".numberOfInputs").html(scheduleSize);
         $(".showingNumber").html(scheduleStart+1);
         
       } else {
-        let schedules = [];
-        let scheduleSize = 0;
+        schedules = [];
+        scheduleSize = 0;
         
-        let classList = [];
+        classList = [];
 
         if (request.error) {
           $("#modal-course-name_").html('Error')
@@ -98,7 +98,7 @@ function getSchedules(start, end)
           });
         }
         
-        let scheduleStart = 0;
+        scheduleStart = 0;
         $(".numberOfInputs").html(0);
         $(".showingNumber").html(0);
         refreshTable([]);
