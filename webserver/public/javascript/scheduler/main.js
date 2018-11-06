@@ -71,19 +71,19 @@ function getSchedules(start, end)
       
       if (!('error' in request))
       {
-        schedules = request['schedules'].slice(0, request['schedules'].length - 1);
-        scheduleSize = request['schedules'][request['schedules'].length - 1];
+        let schedules = request['schedules'].slice(0, request['schedules'].length - 1);
+        let scheduleSize = request['schedules'][request['schedules'].length - 1];
         
-        scheduleStart = start
+        let scheduleStart = start
         refreshTable(schedules[0]);
         $(".numberOfInputs").html(scheduleSize);
         $(".showingNumber").html(scheduleStart+1);
         
       } else {
-        schedules = [];
-        scheduleSize = 0;
+        let schedules = [];
+        let scheduleSize = 0;
         
-        classList = [];
+        let classList = [];
 
         if (request.error) {
           $("#modal-course-name_").html('Error')
@@ -91,14 +91,14 @@ function getSchedules(start, end)
           $("#noSections").modal()
         }
 
-        for (x in request['schedules'])
+        for (let x in request['schedules'])
         {
           getCourseInfo(request['schedules'][x], function(data) {
             addToList(data);
           });
         }
         
-        scheduleStart = 0;
+        let scheduleStart = 0;
         $(".numberOfInputs").html(0);
         $(".showingNumber").html(0);
         refreshTable([]);
@@ -209,16 +209,16 @@ function getInfo(courseCode)
     $("#modal-course-enrollment").html("Error: enrollment not found")
     $("#modal-course-instructors").html("Error: instructors not found")
     
-    for (x in schedules[showingSchedule])
+    for (let x in schedules[showingSchedule])
     {
       if (data['Code'] == schedules[showingSchedule][x]['Course'])
       {
-        instructorURLs = schedules[showingSchedule][x]['Instructors_URL'].split(" ")
-        instructors = schedules[showingSchedule][x]['Instructors'].split(", ")
+        let instructorURLs = schedules[showingSchedule][x]['Instructors_URL'].split(" ")
+        let instructors = schedules[showingSchedule][x]['Instructors'].split(", ")
         
-        combinedArray = []
+        let combinedArray = []
         
-        for (i in instructorURLs)
+        for (let i in instructorURLs)
         {
           if (instructorURLs[i] == "NULL")
             combinedArray.push(instructors[i])
@@ -240,7 +240,7 @@ function getInfo(courseCode)
     
     $("#modal-course-extra").html("")
     
-    for (key in keys)
+    for (let key in keys)
       if (keys[key] in data)
       {
         $("#modal-course-extra").append(keys[key] + ": " + data[keys[key]])
@@ -503,7 +503,7 @@ function deleteClass(courseCode)
     success : function(request, status, error) {
       getSchedules(0,9);
       
-      for (x in classList)
+      for (let x in classList)
       {
         if (classList[x].Code == courseCode) {
           $("div[index='" + classList[x].Code + "']").html("");
@@ -573,7 +573,7 @@ function addClass(object)
   var courseCode = $("#searchbar").val();
   $("#searchbar").val("");
   
-  for (x in classList)
+  for (let x in classList)
     if (classList[x]['Code'] == courseCode)
       found = true;
   
