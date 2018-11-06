@@ -68,9 +68,14 @@ body {
     background-color: #7834FE !important;
 }
 
-#loadingCover {
+#loading {
 	background:rgba(26,178,255,0.5);
-    position: absolute;
+  height: 100%;
+  width: 100%;
+}
+
+.form-control:focus {
+  box-shadow: none;
 }
 
 .moveDown

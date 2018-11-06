@@ -9,6 +9,10 @@ require('font-awesome/css/font-awesome.css');
 require('fullcalendar');
 require('fullcalendar/dist/fullcalendar.css');
 
+import $ from 'jquery';
+window.jQuery = $;
+window.$ = $;
+
 var schedules;
 var scheduleSize;
 var scheduleStart = 0;
@@ -79,9 +83,14 @@ function getSchedules(start, end)
         schedules = [];
         scheduleSize = 0;
         
-        console.log(request.error);
         classList = [];
-        
+
+        if (request.error) {
+          $("#modal-course-name_").html('Error')
+          $("#modal-course-error").html(request['error'])
+          $("#noSections").modal()
+        }
+
         for (x in request['schedules'])
         {
           getCourseInfo(request['schedules'][x], function(data) {
@@ -92,7 +101,7 @@ function getSchedules(start, end)
         scheduleStart = 0;
         $(".numberOfInputs").html(0);
         $(".showingNumber").html(0);
-        refreshTable(-1);
+        refreshTable([]);
       }
       
       $("#canvases").html("");
@@ -104,20 +113,20 @@ function getSchedules(start, end)
 function makeBlock(toMake)
 {
   addBlock();
-  currentBlock = blocks[blocks.length-1];
+  const modifyBlock = $("#blockedTimes").children().last();
+  console.log(toMake);
   
-  days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
-  
-  currentBlock[0]['childNodes'][1].value = toMake['Time_Start']
-  currentBlock[0]['childNodes'][4].value = toMake['Time_End']
-  
-  for (y in days)
-  {
-    if (toMake['Day'].indexOf(days[y]) > -1) {
-      blocks[x][parseInt(y)+2]['childNodes'][0].checked = true;
+  $(modifyBlock).find('.endtime').val(toMake.Time_End);
+  $(modifyBlock).find('.starttime').val(toMake.Time_Start);
+  const days = ['Mon', 'Tues', 'Wed', 'Thur', 'Fri'];
+
+  days.forEach(day => {
+    if (toMake.Day.indexOf(day) !== -1) {
+      $(modifyBlock).find(`.${day}`).click();
     }
-  }
-  
+  });
+
+  console.log(toMake); 
 }
 
 function createThumbnails(schedules)
@@ -145,8 +154,10 @@ function init()
     success : function(request, status, error) {
       removeCover();
       
+      console.log(request);
+
       if ('blocks' in request && 'Offerings' in request['blocks'])
-        for (x in request['blocks']['Offerings'])
+        for (let x in request['blocks']['Offerings'])
           makeBlock(request['blocks']['Offerings'][x]);
       
       if (!('error' in request))
@@ -240,9 +251,36 @@ function getInfo(courseCode)
   $("#courseModal").modal('toggle');
 }
 
+function jsonBlocks()
+{
+  const days = ["Mon", "Tues", "Wed", "Thur", "Fri"];
+  let objects = [];
+
+  $('.block-time-container').each((i, el) => {
+    const endtime = $(el).find('.endtime').val();
+    const starttime = $(el).find('.starttime').val();
+    
+    let dayList = []
+    days.forEach(day => {
+      if ($(el).find(`.${day}`)[0].checked) {
+        dayList.push(day);
+      }
+    });
+
+    objects.push({
+      Day: days.join(', '),
+      Time_Start: starttime,
+      Time_End: endtime
+    });
+
+  });
+
+  return objects;
+}
+
 function updateBlock()
 {
-  jsonObject = jsonBlocks();
+  const jsonObject = jsonBlocks();
   addCover();
   
   $.ajax({
@@ -258,36 +296,6 @@ function updateBlock()
   });
 }
 
-function jsonBlocks()
-{
-  days = ["Mon, ", "Tues, ", "Wed, ", "Thur, ", "Fri, "]
-  objects = []
-  
-  for (x in blocks)
-  {
-    tempObject = {}
-    tempObject['Time_Start'] = blocks[x][0]['childNodes'][1].value;
-    tempObject['Time_End'] = blocks[x][0]['childNodes'][4].value;
-    
-    dayString = ""
-    
-    for (y in days)
-    {
-      if (blocks[x][parseInt(y)+2]['childNodes'][0].checked)
-        dayString += days[y]
-    }
-    
-    tempObject['Day'] = dayString.slice(0,-2);
-    objects.push(tempObject);
-  }
-  
-  return objects;
-}
-
-function timeToPixels(time, multiplyHeight) {
-  return multiplyHeight*(Math.floor(time/100))*2 + multiplyHeight*(time - Math.floor(time/100)*100)/30
-}
-
 var elements = [];
 
 function lightenColor(color, percent) {
@@ -300,36 +308,6 @@ function lightenColor(color, percent) {
   return (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
 };
 
-function createSlot(day, starttime, endtime, info) {
-  let days = ["Mon", "Tues", "Wed", "Thur", "Fri"]
-  
-  starttime = parseInt(starttime)-800
-  endtime = parseInt(endtime)-800
-  
-  let startY = $("#startY").outerHeight();
-  let startX = $("#startX").outerWidth() + 2;
-  let multiplyHeight = $("#findHeightGrid").outerHeight();
-  let gridWidth = $("#findHeightGrid").outerWidth();
-  
-  let topPlace = timeToPixels(starttime, multiplyHeight);
-  let bottomPlace = timeToPixels(endtime, multiplyHeight);
-  
-  startY += topPlace;
-  startX += days.indexOf(day) * gridWidth;
-  let divHeight = bottomPlace - topPlace;
-  
-  var element = '<div id="slot" style="left: '+startX+'px; top: '+startY+'px; height: ' + divHeight + 'px;">' + info + '</div>';
-  element = $(element).width(gridWidth);
-  
-  var edgeColor = info.split(" ")[0].split("*").slice(0,2).join("");
-  var colorHash = intToRGB(hashCode(edgeColor));
-  
-  element.css("border", "1px solid #" + colorHash);
-  element.css("background-color", "#" + lightenColor(colorHash, 60));
-  
-  elements.push(element);
-  $("#courseslots").append(element);
-}
 
 function refreshTable(schedule) {
   for(var x in elements) {
@@ -341,7 +319,7 @@ function refreshTable(schedule) {
   elements = []
   console.log(schedule);
 
-  dayList = { 'Mon': '01', 'Tues': '02', 'Wed': '03', 'Thur': '04', 'Fri': '05' };
+  const dayList = { 'Mon': '01', 'Tues': '02', 'Wed': '03', 'Thur': '04', 'Fri': '05' };
 
   schedule.forEach((course) => {
     course.Offerings.forEach((offering) => {
@@ -360,33 +338,9 @@ function refreshTable(schedule) {
       });
     });
   });
-
-  if (schedule != -1)
-    showSchedule(schedule)
 }
 
 var showingSchedule = 0
-
-function showSchedule(schedule)
-{
-  if (schedules.indexOf(schedule) >= 0)
-  {
-    showingSchedule = schedules.indexOf(schedule)
-    $(".showingNumber").html(showingSchedule + 1 + scheduleStart)
-  }
-  
-  for (let course in schedule)
-    for (let offering in schedule[course]["Offerings"])
-    {
-      let offeringDays = schedule[course]["Offerings"][offering]["Day"].split(", ");
-      
-      for (let day in offeringDays)
-      {
-        createSlot(offeringDays[day], schedule[course]["Offerings"][offering]["Time_Start"], schedule[course]["Offerings"][offering]["Time_End"], 
-          schedule[course]["Offerings"][offering]["Course"] + "*" + schedule[course]["Meeting_Section"] + " (" + schedule[course]["Offerings"][offering]["Section_Type"] + ")<br>" + schedule[course]["Offerings"][offering]["Location"] + "  - " + schedule[course]["Enrollment"] + "/" + schedule[course]["Size"] + " available<br>" + schedule[course]["Instructors"]);
-      }
-    }
-}
 
 function drawGrid(canvasID)
 {
@@ -487,11 +441,10 @@ function scheduleThumbnail(schedule, canvasID)
 }
 
 $(function() {
-  
   $("#canvases").on('click', function(e) {
     var canvasClick = parseInt(e.target.id.substr(6));
     if (e.target.id != "canvases")
-      showSchedule(refreshTable(schedules[canvasClick]))
+      refreshTable(schedules[canvasClick])
   });
 
   init();
@@ -604,29 +557,14 @@ function addToList(object)
   $('.delete-class').on('click', deleteClassPre);
 }
 
-var cover = null;
-
 function addCover() {
-  if (cover === null) {
-    let startY = $("#startY").outerHeight();
-    let startX = $("#startX").outerWidth() + 2;
-    
-    let multiplyHeight = $("#findHeightGrid").outerHeight();
-    let gridWidth = $("#findHeightGrid").outerWidth();
-    
-    let cover = '<div id="loadingCover" style="left: '+startX+'px; top: '+startY+'px;">Loading Courses...</div>'
-    cover = $(cover).width(gridWidth*5-1)
-    cover = $(cover).height(multiplyHeight*28-1)
-    $("#courseslots").append(cover)
-  }
+  $('#calendar').hide();
+  $('#loading').show();
 }
 
 function removeCover() {
-  if (cover !== null) {
-    cover[0].outerHTML = "";
-    delete cover[0];
-    cover = null;
-  }
+  $('#calendar').show();
+  $('#loading').hide();
 }
 
 function addClass(object)
@@ -653,17 +591,11 @@ function addClass(object)
       },
       
       success : function(request, status, error) {
-        console.log(request)
         removeCover();
         
         if (!('error' in request)) {
           addToList(request.course);
           getSchedules(0,9);
-        } else {
-          console.log(courseCode)
-          $("#modal-course-name_").html(" " + courseCode)
-          $("#modal-course-error").html(request['error'])
-          $("#noSections").modal()
         }
       }
     });
@@ -707,13 +639,13 @@ var blocks = []
 
 function reloadCriteria()
 {
-  criteria = {}
-  titles = ['.classStart', '.classEnd', '.timeBetween', '.averageTime', '.shortOrLong', '.teacherRating'];
+  let criteria = {}
+  const titles = ['.classStart', '.classEnd', '.timeBetween', '.averageTime', '.shortOrLong', '.teacherRating'];
   
-  weight = []
-  direction = []
+  let weight = []
+  let direction = []
   
-  for (x in titles) {
+  for (let x in titles) {
     weight.push($(titles[x])[0].valueAsNumber)
     direction.push($(titles[x]+'2')[0].checked | 0)
   }
@@ -746,63 +678,65 @@ function removeBlockPre(e) {
 function addBlock() {
   var place = blocks.length;
   
-  let element = `<div class="input-group">
-    <span class="input-group-addon">Start</span>
-    <select class="starttime form-control">
-    <option value="">
-    </option>
-    <option value="0800">08:00 - 8am</option>
-    <option value="0900">09:00 - 9am</option>
-    <option value="1000">10:00 - 10am</option>
-    <option value="1100">1100 - 11am</option>
-    <option value="1200">12:00 - 12pm</option>
-    <option value="1300">13:00 - 1pm</option>
-    <option value="1400">14:00 - 2pm</option>
-    <option value="1500">15:00 - 3pm</option>
-    <option value="1600">16:00 - 4pm</option>
-    <option value="1700">17:00 - 5pm</option>
-    <option value="1800">18:00 - 6pm</option>
-    <option value="1900">19:00 - 7pm</option>
-    <option value="2000">20:00 - 8pm</option>
-    <option value="2100">21:00 - 9pm</option>
-    <option value="2200">22:00 - 10pm</option>
-    </select>
-    <span class="input-group-btn" style="width:0px;"></span>
-    <span class="input-group-addon">End</span>
-    <select class="endtime form-control">
-    <option value=""></option>
-    <option value="0800">08:00 - 8am</option>
-    <option value="0900">09:00 - 9am</option>
-    <option value="1000">10:00 - 10am</option>
-    <option value="1100">1100 - 11am</option>
-    <option value="1200">12:00 - 12pm</option>
-    <option value="1300">13:00 - 1pm</option>
-    <option value="1400">14:00 - 2pm</option>
-    <option value="1500">15:00 - 3pm</option>
-    <option value="1600">16:00 - 4pm</option>
-    <option value="1700">17:00 - 5pm</option>
-    <option value="1800">18:00 - 6pm</option>
-    <option value="1900">19:00 - 7pm</option>
-    <option value="2000">20:00 - 8pm</option>
-    <option value="2100">21:00 - 9pm</option>
-    <option value="2200">22:00 - 10pm</option>
-    </select></div></div>
+  let element = `
+    <div class="block-time-container">
+      <div class="input-group">
+        <span class="input-group-addon">Start</span>
+        <select class="starttime form-control">
+          <option value="">
+          </option>
+          <option value="0800">08:00 - 8am</option>
+          <option value="0900">09:00 - 9am</option>
+          <option value="1000">10:00 - 10am</option>
+          <option value="1100">1100 - 11am</option>
+          <option value="1200">12:00 - 12pm</option>
+          <option value="1300">13:00 - 1pm</option>
+          <option value="1400">14:00 - 2pm</option>
+          <option value="1500">15:00 - 3pm</option>
+          <option value="1600">16:00 - 4pm</option>
+          <option value="1700">17:00 - 5pm</option>
+          <option value="1800">18:00 - 6pm</option>
+          <option value="1900">19:00 - 7pm</option>
+          <option value="2000">20:00 - 8pm</option>
+          <option value="2100">21:00 - 9pm</option>
+          <option value="2200">22:00 - 10pm</option>
+          </select>
+          <span class="input-group-btn" style="width:0px;"></span>
+          <span class="input-group-addon">End</span>
+          <select class="endtime form-control">
+          <option value=""></option>
+          <option value="0800">08:00 - 8am</option>
+          <option value="0900">09:00 - 9am</option>
+          <option value="1000">10:00 - 10am</option>
+          <option value="1100">1100 - 11am</option>
+          <option value="1200">12:00 - 12pm</option>
+          <option value="1300">13:00 - 1pm</option>
+          <option value="1400">14:00 - 2pm</option>
+          <option value="1500">15:00 - 3pm</option>
+          <option value="1600">16:00 - 4pm</option>
+          <option value="1700">17:00 - 5pm</option>
+          <option value="1800">18:00 - 6pm</option>
+          <option value="1900">19:00 - 7pm</option>
+          <option value="2000">20:00 - 8pm</option>
+          <option value="2100">21:00 - 9pm</option>
+          <option value="2200">22:00 - 10pm</option>
+        </select>
+      </div>
     <label class="checkbox-inline dayname">
-    <input type="checkbox" value="">Mon</label>
+    <input class="Mon" type="checkbox" value="">Mon</label>
     <label class="checkbox-inline dayname">
-    <input type="checkbox" value="">Tues</label>
+    <input class="Tues" type="checkbox" value="">Tues</label>
     <label class="checkbox-inline dayname">
-    <input type="checkbox" value="">Wed</label>
+    <input class="Wed" type="checkbox" value="">Wed</label>
     <label class="checkbox-inline dayname">
-    <input type="checkbox" value="">Thur</label>
+    <input class="Thur" type="checkbox" value="">Thur</label>
     <label class="checkbox-inline dayname">
-    <input type="checkbox" value="">Fri</label>
-    <div class="hoverButton btn btn-danger" 
-      class="remove-block"
+    <input class="Fri" type="checkbox" value="">Fri</label>
+    <div class="hoverButton btn btn-danger remove-block"
       place="${place}"
       style="margin-left: 90%; margin-top: 0px; margin-bottom: 5%;">
-    <span class="moveDown glyphicon glyphicon-remove"></span></div>
-    <hr class="style-seven">`
+    <i class="moveDown fa fa-trash"></i></div>
+    <hr class="style-seven"></div>`
   
   element = $(element);
   blocks.push(element);
@@ -861,6 +795,13 @@ $(document).ready(function() {
     navLinks: false,
     editable: false,
     contentHeight: 880,
-    eventLimit: false
+    eventLimit: false,
+    eventClick: function(calEvent, jsEvent, view) {
+      getInfo(calEvent.id);
+    },
+    eventRender: function(event, element) {
+      element.css("cursor", "pointer");
+    }
+
   });
 });
