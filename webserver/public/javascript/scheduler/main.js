@@ -635,7 +635,7 @@ function schedulesAltRight()
   }
 }
 
-var blocks = []
+var blocks = [];
 
 function reloadCriteria()
 {
@@ -667,6 +667,7 @@ function reloadCriteria()
 }
 
 function removeBlock(idNumber) {
+  console.log(blocks);
   blocks[idNumber].remove();
   delete blocks[idNumber];
 }

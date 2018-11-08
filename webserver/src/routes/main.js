@@ -41,7 +41,9 @@ function checkDatabase(checkFor, callback_)
         var collection = db.collection('cachedData');
         
         // 80% sure this is safe
-        collection.find({"Code": checkFor.toUpperCase()}).limit(2).toArray(function(err, docs){
+        collection.find({"Code": checkFor.toUpperCase()})
+          .limit(2)
+          .toArray(function(err, docs){
           if (docs.length == 2 || docs.length == 0)
           {
             client.close();
@@ -492,52 +494,25 @@ router.get('/searchClass/:query', function(req, res) {
       else {
         const db = client.db('scheduler');
         var collection = db.collection('cachedData');
+        
+        const safeQuery = req.params.query
+          .replace('*', '\\\*')
+          .replace('"', '\\\"')
+          .replace('\'', '\\\'')
+          .replace('$', '\\\$')
+
+        const searchRegex = new RegExp(`(${safeQuery})`, 'gi');
         collection.find(
           {
-            'School': school,
-            'Code': 
-              {
-                "$regex": "^" + req.params.query
-                  .toUpperCase().replace(/\\/g, "\\\\")
-                  .replace(/\*/g, "\\*").replace(/\$/g, "\\$")
-                  .replace(/'/g, "\\'").replace(/"/g, "\\\"")
-              }
-          },
-          {
-            Num_Credits: 1,
-            Code: 1,
-            Level: 1,
-            Campus: 1,
-            Name: 1
+            School: school,
+            $or: [
+              { Code: { $regex: searchRegex } },
+              { Name: { $regex: searchRegex } }
+            ]
           }
         ).limit(10).toArray((err, docs) => {
-          if (docs.length == 0)
-          {
-            collection.find(
-              {
-                'School': school,
-                'Name':
-                  { "$regex": "\W*((?i)" + req.params.query.toUpperCase()
-                      .replace(/\\/g, "\\\\").replace(/\*/g, "\\*")
-                      .replace(/\$/g, "\\$").replace(/'/g, "\\'")
-                      .replace(/"/g, "\\\"") + "(?-i))\W*"
-                  }
-              },
-              {
-                Num_Credits: 1,
-                Code: 1,
-                Level: 1,
-                Campus: 1,
-                Name: 1
-              }
-            ).limit(10).toArray((err, docs) => {
-              client.close();
-              res.end(JSON.stringify(docs));
-            });
-          } else {
-            client.close();
-            res.end(JSON.stringify(docs));
-          }
+          client.close();
+          res.end(JSON.stringify(docs));
         });
       }
     });
