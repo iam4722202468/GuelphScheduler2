@@ -534,21 +534,20 @@ function addToList(object)
   for (let x in classList)
   {
     const element = `
-      <div class="classList divider" index="${classList[x].Code}">
-      <div class="left">${classList[x].Code}<br>
-        ${classList[x].Name}<br>
-        ${classList[x].Num_Credits}
-      </div>
-      <div class="right">
-        <div place=${classList[x].Code} class="get-info hoverButton btn btn-primary">
+      <div class="row classList divider" index="${classList[x].Code}">
+        <div class="col-9">${classList[x].Code}<br>
+          ${classList[x].Name}<br>
+          ${classList[x].Num_Credits}
+        </div>
+        <div place=${classList[x].Code} class="col-1 get-info hoverButton btn btn-outline-primary">
           <i class="moveDown fa fa-info"></i>
         </div>
-        <div place=${classList[x].Code} class="delete-class hoverButton btn btn-danger">
+        <div place=${classList[x].Code} class="col-1 delete-class hoverButton btn btn-outline-danger">
           <i class="moveDown fa fa-trash"></i>
         </div>
+        <div class="col-1"></div>
       </div>
-      <br><br><br>
-      <hr class="style-seven" index="${classList[x].Code}"></hr></div>
+      <hr class="style-seven" index="${classList[x].Code}"></hr>
     `;
     $("#classList").append(element);
   }

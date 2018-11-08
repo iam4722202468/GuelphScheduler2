@@ -50,14 +50,12 @@ body {
 
 .hoverButton
 {
-    border-radius: 50% !important;
-    -moz-border-radius: 50% !important; 
-    -webkit-border-radius: 50% !important; 
-    border-radius: 50% !important;
-    margin-top: 20%;
-    
-    width: 2em;
-    height: 2em;
+  margin-top: 1em;
+  margin-right: 5px;
+  display: inline-block;
+  border-radius: 60px;
+  padding: 0.5em 0.6em;
+  height: 40px;
 }
 
 .numberCircle:hover {
@@ -70,7 +68,7 @@ body {
 
 #loading {
 	background:rgba(26,178,255,0.5);
-  height: 100%;
+  height: 900px;
   width: 100%;
 }
 
@@ -80,8 +78,7 @@ body {
 
 .moveDown
 {
-    margin-left: -6px;
-    top: 0px !important;
+    margin-left: -1px;
 }
 
 .buttonContainer
