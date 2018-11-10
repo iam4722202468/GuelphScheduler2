@@ -14,7 +14,7 @@
   <body>
     <div class="container-fluid full-width">
       <div class="row">
-        <div class="col-lg-1 col-md-1 col-sm-1" id="left-panel">
+        <div class="col-12 col-md-1 order-2 order-sm-1" id="left-panel">
           <b>Schedule&nbsp;</b><br><div style="float: left" class="showingNumber">1</div><p style="float: left">/</p><div style="float: left" class="numberOfInputs"></div>
           
           <div class="btn-group buttonContainer">
@@ -22,7 +22,7 @@
             <button id="schedules-right" class="btn btn-default buttonChild"><i class="fa fa-chevron-right"></i></button>
           </div>
           
-          <div id="canvases"></div>
+          <div id="canvases" class="row"></div>
           
           <div class="btn-group buttonContainer">
             <button id="schedules-all-left" class="btn btn-default buttonChild"><i class="fa fa-chevron-left"></i><i class="fa fa-chevron-left"></i></button>
@@ -32,7 +32,7 @@
           <br><br><br>
         </div>
         
-        <div class="col-lg-8 col-md-8 col-sm-8">
+        <div class="col-12 col-md-8 order-1 order-sm-2">
           <div class="input-group" style="margin-bottom: 30px; line-height: 1">
             <input id="searchbar" type="text" class="form-control typeahead" placeholder="Search" autocomplete="off" spellcheck="false">
             <div class="input-group-btn">
@@ -46,12 +46,12 @@
           <div id="loading">Loading...</div>
         </div>
         
-        <div class="col-lg-3 col-md-3 col-sm-3 rightTab">
+        <div class="col-12 col-md-3 order-3 order-sm-3 rightTab">
           <ul class="nav nav-tabs" style="font-size: 0.9em;">
             <li class="nav-item"><a class="nav-link active" href="#classes">Classes</a></li>
             <li class="nav-item"><a class="nav-link" href="#criteria">Criteria</a></li>
             <li class="nav-item"><a class="nav-link" href="#blocked">Blocked Times</a></li>
-            <li class="nav-item"><a class="nav-link" href="#warnings">Warnings</a></li>
+            <!--<li class="nav-item"><a class="nav-link" href="#warnings">Warnings</a></li>-->
           </ul>
           <div class="tab-content" style="margin-top: 20px;">
             <div id="classes" class="tab-pane fade show active">

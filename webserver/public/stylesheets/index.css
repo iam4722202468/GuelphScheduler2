@@ -36,6 +36,12 @@ body {
     border-right: 1px dashed #333;
 }
 
+.classlist-el {
+  margin-right: -4px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+
 .numberCircle {
     border-radius: 50%;
     width: 54px; 

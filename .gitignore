@@ -2,6 +2,7 @@
 *.swp
 *.pyc
 *.o
+*.swn
 webserver/dist/
 webserver/node_modules/
 apis/

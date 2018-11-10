@@ -125,8 +125,6 @@ function makeBlock(toMake)
       $(modifyBlock).find(`.${day}`).click();
     }
   });
-
-  console.log(toMake); 
 }
 
 function createThumbnails(schedules)
@@ -135,7 +133,10 @@ function createThumbnails(schedules)
   for (var x in schedules)
   {
     var canvasName = "canvas" + x
-    $("#canvases").append('<canvas id="' + canvasName + '"></canvas>')
+    $("#canvases").append(`
+      <div class="col-6 col-md-12">
+        <canvas id="${canvasName}"></canvas>
+      </div>`)
     scheduleThumbnail(schedules[x], canvasName)
   }
 }
@@ -154,8 +155,6 @@ function init()
     success : function(request, status, error) {
       removeCover();
       
-      console.log(request);
-
       if ('blocks' in request && 'Offerings' in request['blocks'])
         for (let x in request['blocks']['Offerings'])
           makeBlock(request['blocks']['Offerings'][x]);
@@ -319,7 +318,13 @@ function refreshTable(schedule) {
   elements = []
   console.log(schedule);
 
-  const dayList = { 'Mon': '01', 'Tues': '02', 'Wed': '03', 'Thur': '04', 'Fri': '05' };
+  const dayList = {
+    'Mon': '01',
+    'Tues': '02',
+    'Wed': '03',
+    'Thur': '04',
+    'Fri': '05'
+  };
 
   schedule.forEach((course) => {
     course.Offerings.forEach((offering) => {
@@ -416,6 +421,9 @@ function scheduleThumbnail(schedule, canvasID)
   $("#" + canvasID).height(y);
   $("#" + canvasID).css("border", "1px solid #000000")
   $("#" + canvasID).css("cursor", "pointer")
+  $("#" + canvasID).css('width', '100%');
+  $("#" + canvasID).css('height', 'auto');
+  $("#" + canvasID).css('min-height', '90px');
   
   x = c.width
   y = c.height
@@ -478,12 +486,19 @@ $(function() {
       //return true
     }
   
-  }).data("ui-autocomplete")._renderItem = function (ul, item) {
-    return $("<li></li>")
+  }).data("ui-autocomplete")._renderItem = (ul, item) => 
+    $("<li></li>")
       .data("item.autocomplete", item)
-      .append("<div class=\"divider\"><div class=\"left\"><b>" + item.Code + "</b> - " + item.Name + "</div><div class=\"right\"><i>" + item.Level + " [" + item.Num_Credits + "] " + "</i></div></div>")
+      .append(`
+        <div class="divider">
+          <div class="left">
+            <b>${item.Code}</b> - ${item.Name}
+          </div>
+          <div class="right">
+            <i>${item.Level}[${item.Num_Credits}]</i>
+          </div>
+        </div>`)
       .appendTo(ul);
-  };
 });  
 
 var classList = []
@@ -506,7 +521,7 @@ function deleteClass(courseCode)
       for (let x in classList)
       {
         if (classList[x].Code == courseCode) {
-          $("div[index='" + classList[x].Code + "']").html("");
+          $(`div[index='${classList[x].Code}']`).remove();
           classList.splice(x, 1);
         }
       }
@@ -533,21 +548,29 @@ function addToList(object)
   
   for (let x in classList)
   {
+    let colorHash = intToRGB(hashCode(classList[x].Code));
+    let lighterColor = lightenColor(colorHash, 60);
+    
     const element = `
-      <div class="row classList divider" index="${classList[x].Code}">
-        <div class="col-9">${classList[x].Code}<br>
+      <div class="row classlist-el divider"
+        style="border: solid 2px #${colorHash};
+        background-color: #${lighterColor};"
+        index="${classList[x].Code}">
+        <div class="col-9">
+          <b>${classList[x].Code}</b><br>
           ${classList[x].Name}<br>
           ${classList[x].Num_Credits}
         </div>
-        <div place=${classList[x].Code} class="col-1 get-info hoverButton btn btn-outline-primary">
+        <div place=${classList[x].Code}
+        class="col-1 get-info hoverButton btn btn-outline-primary">
           <i class="moveDown fa fa-info"></i>
         </div>
-        <div place=${classList[x].Code} class="col-1 delete-class hoverButton btn btn-outline-danger">
+        <div place=${classList[x].Code} 
+        class="col-1 delete-class hoverButton btn btn-outline-danger">
           <i class="moveDown fa fa-trash"></i>
         </div>
         <div class="col-1"></div>
       </div>
-      <hr class="style-seven" index="${classList[x].Code}"></hr>
     `;
     $("#classList").append(element);
   }
@@ -625,7 +648,7 @@ function schedulesAllLeft()
   getSchedules(scheduleStart, scheduleStart+9);
 }
 
-function schedulesAltRight()
+function schedulesAllRight()
 {
   if (scheduleSize-9 >= 0)
   {
@@ -639,7 +662,14 @@ var blocks = [];
 function reloadCriteria()
 {
   let criteria = {}
-  const titles = ['.classStart', '.classEnd', '.timeBetween', '.averageTime', '.shortOrLong', '.teacherRating'];
+  const titles = [
+    '.classStart',
+    '.classEnd',
+    '.timeBetween',
+    '.averageTime',
+    '.shortOrLong',
+    '.teacherRating'
+  ];
   
   let weight = []
   let direction = []

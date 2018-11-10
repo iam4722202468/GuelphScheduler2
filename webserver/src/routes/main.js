@@ -11,14 +11,11 @@ var mongodb = require('mongodb'),
 
 var exec = require('child_process').execFile;
 
-function generateHash()
-{
-  var hash = "";
-  for(var x = 0; x <= 9; x++)
-  {
+function generateHash() {
+  let hash = "";
+  for (let x = 0; x <= 9; x++) {
     currentChar = Math.floor(Math.random() * 36);
-    if(currentChar > 9)
-    {
+    if (currentChar > 9) {
       hash += String.fromCharCode(currentChar + 55);
     } else {
       hash += currentChar;
