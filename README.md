@@ -1,5 +1,5 @@
 # GuelphScheduler2
-Create schedules for the university of Guelph.
+Create schedules for the university of Guelph. Live version can be found [here](https://guelph.scheduler.online "Guelph Course Scheduler")
 
 ### Prerequisites
 The following dependencies must be installed:
