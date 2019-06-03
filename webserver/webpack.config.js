@@ -2,7 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-  devtool: 'eval-source-map',
   context: path.resolve(__dirname, 'public'),
   entry: {
     css: ['./stylesheets/footer.css', './stylesheets/index.css'],

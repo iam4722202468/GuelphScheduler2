@@ -499,13 +499,19 @@ router.get('/searchClass/:query', function(req, res) {
           .replace('$', '\\\$')
           .replace('(', '\\(')
           .replace(')', '\\)')
+          .replace(']', '\\]')
+          .replace('[', '\\[')
 
+        const safeQueryCode = safeQuery.replace(' ', '\\\*')
+
+        const searchRegexCode = new RegExp(`(${safeQueryCode})`, 'gi');
         const searchRegex = new RegExp(`(${safeQuery})`, 'gi');
+
         collection.find(
           {
             School: school,
             $or: [
-              { Code: { $regex: searchRegex } },
+              { Code: { $regex: searchRegexCode } },
               { Name: { $regex: searchRegex } }
             ]
           }

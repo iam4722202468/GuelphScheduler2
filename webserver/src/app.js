@@ -55,7 +55,7 @@ app.use(function(err, req, res, next) {
     res.send('error: ' + err.message);
 });
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 8080);
 
 http.createServer(app).listen(app.get('port'));
 console.log("Listening");

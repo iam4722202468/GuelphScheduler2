@@ -114,7 +114,6 @@ function makeBlock(toMake)
 {
   addBlock();
   const modifyBlock = $("#blockedTimes").children().last();
-  console.log(toMake);
   
   $(modifyBlock).find('.endtime').val(toMake.Time_End);
   $(modifyBlock).find('.starttime').val(toMake.Time_Start);
@@ -333,7 +332,7 @@ function refreshTable(schedule) {
 
         const event = {
           id: course.Course,
-          title: `${course.Course} - ${course.Meeting_Section}`,
+          title: `${offering.Section_Type} - ${course.Course} - ${course.Meeting_Section}`,
           start: `2018-01-${dayList[day]} ${offering.Time_Start.substr(0, 2)}:${offering.Time_Start.substr(2, 4)}:00`,
           end: `2018-01-${dayList[day]} ${offering.Time_End.substr(0, 2)}:${offering.Time_End.substr(2, 4)}:00`,
           borderColor: `#${colorHash}`,
@@ -341,6 +340,21 @@ function refreshTable(schedule) {
         }
         $('#calendar').fullCalendar( 'renderEvent', event, true);
       });
+    });
+  });
+
+  jsonBlocks().forEach((block) => {
+    block.Day.split(', ').forEach((day) => {
+	const colorHash = "FF0000"
+        const event = {
+          id: 42069,
+          title: `Blocked`,
+          start: `2018-01-${dayList[day]} ${block.Time_Start.substr(0, 2)}:${block.Time_Start.substr(2, 4)}:00`,
+          end: `2018-01-${dayList[day]} ${block.Time_End.substr(0, 2)}:${block.Time_End.substr(2, 4)}:00`,
+          borderColor: `#${colorHash}`,
+          backgroundColor: `#${lightenColor(colorHash, 60)}`
+        }
+        $('#calendar').fullCalendar( 'renderEvent', event, true);
     });
   });
 }
@@ -550,7 +564,7 @@ function addToList(object)
   {
     let colorHash = intToRGB(hashCode(classList[x].Code));
     let lighterColor = lightenColor(colorHash, 60);
-    
+
     const element = `
       <div class="row classlist-el divider"
         style="border: solid 2px #${colorHash};
@@ -696,7 +710,6 @@ function reloadCriteria()
 }
 
 function removeBlock(idNumber) {
-  console.log(blocks);
   blocks[idNumber].remove();
   delete blocks[idNumber];
 }

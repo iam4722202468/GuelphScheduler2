@@ -14,7 +14,7 @@ db = client['scheduler']
 collection = db['cachedData']
 
 #define semester
-SEMESTER = 'W19'
+SEMESTER = 'F19'
 
 def convertTime(x):
     if(x[-2:] == "AM"):
@@ -135,9 +135,9 @@ def getInstructorRating(instructors):
             
             response = requests.get(requestURL)
             html = response.text
-            teacherObject = json.loads(html[9:-3])
-            
             try:
+		teacherObject = json.loads(html[9:-3])
+            
                 found = False
                 
                 for school_check in teacherObject['response']['docs']:
