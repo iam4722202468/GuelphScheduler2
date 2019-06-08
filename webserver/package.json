@@ -33,6 +33,7 @@
     "jquery": "^3.3.1",
     "jquery-ui": "^1.12.1",
     "mini-css-extract-plugin": "^0.4.4",
+    "moment": "^2.24.0",
     "mongodb": "^3.1.8",
     "morgan": "^1.9.1",
     "node-sass": "^4.9.4",

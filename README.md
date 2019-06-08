@@ -4,7 +4,7 @@ Create schedules for the university of Guelph. Live version can be found [here](
 ### Prerequisites
 The following dependencies must be installed:
 
-- yarn
+- npm
 - nodejs
 - mongodb
 - mongodb c++ drivers [https://github.com/mongodb/mongo-cxx-driver](https://github.com/mongodb/mongo-cxx-driver)
@@ -21,12 +21,12 @@ cd searchAlgorithm && make
 Install nodejs dependencies
 
 ```
-cd webserver && yarn install
+cd webserver && npm install
 ```
 
 ## Deployment
 
-Run `yarn run start` to start the project. This will by default start the server on port 3000. This can be configued in `app.js`
+Run `npm run start` to start the project. This will by default start the server on port 3000. This can be configued in `app.js`
 
 ## Built With
 
