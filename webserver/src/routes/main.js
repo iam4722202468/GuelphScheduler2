@@ -499,6 +499,7 @@ router.get('/searchClass/:query', function(req, res) {
           .replace('$', '\\\$')
           .replace('(', '\\(')
           .replace(')', '\\)')
+          .replace('+', '\\+')
           .replace(']', '\\]')
           .replace('[', '\\[')
 
