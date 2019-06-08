@@ -47,9 +47,7 @@ def findIndex(courseObject, toFind):
 professorCache = {}
 
 def fixOverlaps(courses):
-    
     for courseNumber in xrange(len(courses)):
-        
         newSections = []
         
         for index in xrange(len(courses[courseNumber]['Course']['Sections'])):
@@ -122,7 +120,6 @@ def getInstructorRating(instructors):
         return ["TBA", 0]
     
     for x in instructors.split(", "):
-        
         if x in professorCache:
             urlArray.append(professorCache[x][0])
             ratingArray.append(professorCache[x][1])
@@ -131,25 +128,16 @@ def getInstructorRating(instructors):
             oldX = x
             x = "+".join(x.replace(".", "").split(" "))
             
-            requestURL = "http://search.mtvnservices.com/typeahead/suggest/?solrformat=true&rows=50&callback=callback&q=" + x + ".&defType=edismax&qf=teacherfullname_t^1000+autosuggest&bf=pow(total_number_of_ratings_i%2C2.1)&sort=&siteName=rmp&rows=30&start=0&fl=pk_id+teacherfirstname_t+teacherlastname_t+total_number_of_ratings_i+averageratingscore_rf+schoolname_s"
-            
+            requestURL = "https://solr-aws-elb-production.ratemyprofessors.com//solr/rmp/select/?solrformat=true&rows=20&wt=json&json.wrf=noCB&callback=noCB&q=" + x + "+AND+schoolid_s:1426&defType=edismax&qf=teacherfirstname_t^2000+teacherlastname_t^2000+teacherfullname_t^2000+autosuggest&bf=pow(total_number_of_ratings_i,2.1)&sort=total_number_of_ratings_i+desc&siteName=rmp&rows=20&start=0&fl=pk_id+teacherfirstname_t+teacherlastname_t+total_number_of_ratings_i+averageratingscore_rf+schoolid_s&fq="
+
             response = requests.get(requestURL)
             html = response.text
             try:
-		teacherObject = json.loads(html[9:-3])
-            
+		teacherObject = json.loads(html[5:-1])
                 found = False
                 
-                for school_check in teacherObject['response']['docs']:
-                    if school_check['schoolname_s'].find('Guelph') > 0:
-                        teacherUrl = "https://www.ratemyprofessors.com/ShowRatings.jsp?tid=" + str(school_check['pk_id'])
-                        teacherRating = float(school_check['averageratingscore_rf'])
-                        found = True
-                        break
-                
-                if not found:
-                    teacherUrl = "NULL"
-                    teacherRating = 0
+                teacherRating = float(teacherObject['response']['docs'][0]['averageratingscore_rf'])
+                teacherUrl = "https://www.ratemyprofessors.com/ShowRatings.jsp?tid=" + str(teacherObject['response']['docs'][0]['pk_id'])
             except:
                 teacherUrl = "NULL"
                 teacherRating = 0
