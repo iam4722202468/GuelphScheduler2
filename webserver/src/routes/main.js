@@ -125,8 +125,7 @@ function addCriteria(criteriaString, sessionID, callback_)
   });
 }
 
-function getCriteria(sessionID, callback_)
-{
+function getCriteria(sessionID, callback_) {
   MongoClient.connect(url, function (err, client) {
     if (err)
       console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -148,8 +147,7 @@ function getCriteria(sessionID, callback_)
   });
 }
 
-function checkSession(cookie, callback_)
-{
+function checkSession(cookie, callback_) {
   MongoClient.connect(url, function (err, client) {
     if (err)
       console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -271,8 +269,7 @@ router.post('/getSchedules', function(req,res) {
 });
 
 /* make a list of schedules to show on right if none are generates */
-function noSchedules(isFound, callback_)
-{
+function noSchedules(isFound, callback_) {
   objectArray = [];
   
   if (isFound && isFound['Courses'] && isFound['Courses'].length == 0)
@@ -313,8 +310,7 @@ router.post('/init', function(req,res) {
   });
 });
 
-function deleteClass(courseCode, sessionID, callback_)
-{
+function deleteClass(courseCode, sessionID, callback_) {
   MongoClient.connect(url, function (err, client) {
     if (err)
       console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -428,20 +424,10 @@ router.post('/add', function(req,res) {
   console.log("Adding " + courseCode);
   
   checkDatabase(courseCode, function(isFound) {
-    
     console.log("Found: " + isFound)
     
-    if (req.subdomains.length != 1) {
-      res.end('{"error" : "School not found"}') 
-    } else if (isFound!== null) {
-      var school = req.subdomains[0];
-      
-      if (school.toLowerCase() == "guelph")
-        school = "Guelph"
-      else if (school.toLowerCase() == "humber")
-        school = "Humber"
-      else if (school.toLowerCase() == "waterloo")
-        school = "Waterloo"
+    if (isFound!== null) {
+      var school = "Guelph";
       
       const options = {
         pythonPath: '/usr/bin/python2.7',
@@ -473,56 +459,45 @@ router.post('/add', function(req,res) {
 router.get('/searchClass/:query', function(req, res) {
   res.setHeader('Content-type', 'application/json');
   
-  if (req.subdomains.length != 1)
-    res.end()
-  else {
-    var school = req.subdomains[0];
-    
-    if (school.toLowerCase() == "guelph")
-      school = "Guelph"
-    else if (school.toLowerCase() == "humber")
-      school = "Humber"
-    else if (school.toLowerCase() == "waterloo")
-      school = "Waterloo"
-    
-    MongoClient.connect(url, function (err, client) {
-      if (err)
-        console.log('Unable to connect to the mongoDB server. Error:', err);
-      else {
-        const db = client.db('scheduler');
-        var collection = db.collection('cachedData');
-        
-        const safeQuery = req.params.query
-          .replace('*', '\\\*')
-          .replace('"', '\\\"')
-          .replace('\'', '\\\'')
-          .replace('$', '\\\$')
-          .replace('(', '\\(')
-          .replace(')', '\\)')
-          .replace('+', '\\+')
-          .replace(']', '\\]')
-          .replace('[', '\\[')
+  const school = "Guelph"
+  
+  MongoClient.connect(url, function (err, client) {
+    if (err)
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    else {
+      const db = client.db('scheduler');
+      var collection = db.collection('cachedData');
+      
+      const safeQuery = req.params.query
+        .replace('*', '\\\*')
+        .replace('"', '\\\"')
+        .replace('\'', '\\\'')
+        .replace('$', '\\\$')
+        .replace('(', '\\(')
+        .replace(')', '\\)')
+        .replace('+', '\\+')
+        .replace(']', '\\]')
+        .replace('[', '\\[')
 
-        const safeQueryCode = safeQuery.replace(' ', '\\\*')
+      const safeQueryCode = safeQuery.replace(' ', '\\\*')
 
-        const searchRegexCode = new RegExp(`(${safeQueryCode})`, 'gi');
-        const searchRegex = new RegExp(`(${safeQuery})`, 'gi');
+      const searchRegexCode = new RegExp(`(${safeQueryCode})`, 'gi');
+      const searchRegex = new RegExp(`(${safeQuery})`, 'gi');
 
-        collection.find(
-          {
-            School: school,
-            $or: [
-              { Code: { $regex: searchRegexCode } },
-              { Name: { $regex: searchRegex } }
-            ]
-          }
-        ).limit(10).toArray((err, docs) => {
-          client.close();
-          res.end(JSON.stringify(docs));
-        });
-      }
-    });
-  }
+      collection.find(
+        {
+          School: school,
+          $or: [
+            { Code: { $regex: searchRegexCode } },
+            { Name: { $regex: searchRegex } }
+          ]
+        }
+      ).limit(10).toArray((err, docs) => {
+        client.close();
+        res.end(JSON.stringify(docs));
+      });
+    }
+  });
 });
 
 module.exports = router;

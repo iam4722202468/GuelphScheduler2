@@ -266,7 +266,7 @@ function jsonBlocks()
     });
 
     objects.push({
-      Day: days.join(', '),
+      Day: dayList.join(', '),
       Time_Start: starttime,
       Time_End: endtime
     });
@@ -345,16 +345,16 @@ function refreshTable(schedule) {
 
   jsonBlocks().forEach((block) => {
     block.Day.split(', ').forEach((day) => {
-	const colorHash = "FF0000"
-        const event = {
-          id: 42069,
-          title: `Blocked`,
-          start: `2018-01-${dayList[day]} ${block.Time_Start.substr(0, 2)}:${block.Time_Start.substr(2, 4)}:00`,
-          end: `2018-01-${dayList[day]} ${block.Time_End.substr(0, 2)}:${block.Time_End.substr(2, 4)}:00`,
-          borderColor: `#${colorHash}`,
-          backgroundColor: `#${lightenColor(colorHash, 60)}`
-        }
-        $('#calendar').fullCalendar( 'renderEvent', event, true);
+      const colorHash = "FF0000"
+      const event = {
+        id: 42069,
+        title: `Blocked`,
+        start: `2018-01-${dayList[day]} ${block.Time_Start.substr(0, 2)}:${block.Time_Start.substr(2, 4)}:00`,
+        end: `2018-01-${dayList[day]} ${block.Time_End.substr(0, 2)}:${block.Time_End.substr(2, 4)}:00`,
+        borderColor: `#${colorHash}`,
+        backgroundColor: `#${lightenColor(colorHash, 60)}`
+      }
+      $('#calendar').fullCalendar( 'renderEvent', event, true);
     });
   });
 }

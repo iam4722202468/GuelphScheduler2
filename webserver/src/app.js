@@ -24,11 +24,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 app.set('views', path.join(__dirname, 'html'));
 
 app.use(subdomain('guelph', home));
-app.use(subdomain('humber', home));
-app.use(subdomain('waterloo', home));
-app.use(subdomain('*', selectHome));
-
-//app.use('/', home);
+app.use('/', home);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
