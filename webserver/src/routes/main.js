@@ -103,7 +103,7 @@ function getBlock(sessionID, callback_)
   });
 }
 
-function addCriteria(criteriaString, sessionID, callback_)
+function addCriteria(criteriaList, sessionID, callback_)
 {
   MongoClient.connect(url, function (err, client) {
     if (err)
@@ -111,8 +111,9 @@ function addCriteria(criteriaString, sessionID, callback_)
     else {
       const db = client.db('scheduler');
       var collection = db.collection('criteria');
-      
-      criteriaString = JSON.parse(criteriaString);
+      var criteriaString = {};
+
+      criteriaString['data'] = criteriaList;
       criteriaString['sessionID'] = sessionID;
       
       collection.remove({'sessionID': sessionID}, function(err, result) {
@@ -388,26 +389,9 @@ router.post('/updateBlock', function(req,res) {
 router.post('/updateCriteria', function(req,res) {
   res.setHeader('Content-type', 'application/json');
   sessionID = req.cookies.sessionID;
-  
-  working = true;
-  
-  if (req.body["Criteria"]["Weight"].length == 6 &&
-    req.body["Criteria"]["Direction"].length == 6) {
-      
-    for (x in [0,1,2,3,4,5]) {
-      if (!(parseInt(req.body["Criteria"]["Weight"][x]) in [0,1,2,3,4,5,6,7,8,9] &&
-        parseInt(req.body["Criteria"]["Direction"][x]) in [0,1])) {
-        
-        working = false;
-        break;
-      }
-    }
-  } else {
-    working = false;
-  }
-  
-  if (working) {
-    addCriteria(JSON.stringify(req.body["Criteria"]), sessionID, function() {
+
+  if (req.body["Criteria"].filter(x => !isNaN(parseInt(x))).length === 4) {
+    addCriteria(req.body["Criteria"], sessionID, function() {
       res.end('{"Success":"true"}');
     });
   } else

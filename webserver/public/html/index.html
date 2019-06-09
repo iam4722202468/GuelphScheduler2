@@ -55,42 +55,61 @@
           </ul>
           <div class="tab-content" style="margin-top: 20px;">
             <div id="classes" class="tab-pane fade show active">
-              <h3>CLASSES&nbsp;</h3>
+              <h3>Classes&nbsp;</h3>
               
-              <hr class="style-seven">
+              <hr>
               <div id="classList"></div>
             </div>
             
             <div id="criteria" class="tab-pane fade">
-              <h3>CRITERIA&nbsp;
+              <h3>Criteria&nbsp;
                 <i id="reload-criteria" style="float:right; cursor: pointer;" style="font-size: 0.75em;" class="moveDown fa fa-play"></i></h3>
-              <hr class="style-seven">
-              
+              <hr>
+
               <div id="rateForm">
-                <div class="input-group"><span class="input-group-addon">Class Time Start</span>			<input type="number" class="classStart" name="startTime" min="0" max="9" value="0"></div>
-                <label class="radio-inline"><input type="radio" checked="true" class="classStart1" name="startTimeRadio" id="0">Early Start</label><label class="radio-inline"><input class="classStart2" type="radio" name="startTimeRadio" id="1">Late Start</label><br><br>
-                <div class="input-group"><span class="input-group-addon">Class Time End</span>				<input type="number" class="classEnd" name="endTime" min="0" max="9" value="0"></div>
-                <label class="radio-inline"><input type="radio" checked="true" class="classEnd1" name="endTimeRadio" id="0">Early End</label><label class="radio-inline"><input type="radio" class="classEnd2" name="endTimeRadio" id="1">Late End</label><br><br>
-                <div class="input-group"><span class="input-group-addon">Short or long Class Times</span>	<input type="number" class="shortOrLong" name="classLength" min="0" max="9" value="0"></div>
-                <label class="radio-inline"><input class="shortOrLong1" checked="true" type="radio" name="classLengthRadio" id="0">Short Classes</label><label class="radio-inline"><input class="shortOrLong2" type="radio" name="classLengthRadio" id="1">Long Classes</label><br><br>
-                <div class="input-group"><span class="input-group-addon">Time between classes</span>					<input type="number" class="timeBetween" name="timeBetween" min="0" max="9" value="0"></div>
-                <label class="radio-inline"><input type="radio" checked="true" class="timeBetween1" name="timeBetweenRadio" id="0">Minimal time</label><label class="radio-inline"><input type="radio" class="timeBetween2" name="timeBetweenRadio" id="1">Lots of time</label><br><br>
-                <div class="input-group"><span class="input-group-addon">Average class time</span>					<input type="number" class="averageTime" name="averageTime" min="0" max="9" value="0"></div>
-                <label class="radio-inline"><input type="radio" checked="true" class="averageTime1" name="averageTimeRadio" id="0">Early</label><label class="radio-inline"><input type="radio" class="averageTime2" name="averageTimeRadio" id="1">Late</label><br><br>
-                
-                <div class="input-group"><span class="input-group-addon">Teacher Rating</span>					<input type="number" class="teacherRating" name="teacherRating" min="0" max="9" value="0"></div>
-                <label class="radio-inline"><input type="radio" checked="true" class="teacherRating1" name="teacherRatingRadio" id="0">Low</label><label class="radio-inline"><input type="radio" class="teacherRating2" name="teacherRatingRadio" id="1">High</label><br><br>
+                <div class="criteriaBlock">
+                  <b>Time Between Classes</b>
+                  <input type="range" min="-10" max="10" value="0" class="slider" id="timeBetween">
+                  <div>
+                    <p style="float: left">Maximum</p>
+                    <p style="float: right">Minimum</p>
+                  </div>
+                </div>
+                <div class="criteriaBlock">
+                  <b>Average Class Time</b>
+                  <input type="range" min="-10" max="10" value="0" class="slider" id="averageTime">
+                  <div>
+                    <p style="float: left">Early</p>
+                    <p style="float: right">Late</p>
+                  </div>
+                </div>
+                <div class="criteriaBlock">
+                  <b>Class Length</b>
+                  <input type="range" min="-10" max="10" value="0" class="slider" id="classLength">
+                  <div>
+                    <p style="float: left">Short Classes</p>
+                    <p style="float: right">Long Classes</p>
+                  </div>
+                </div>
+                <div class="criteriaBlock">
+                  <b>Average Professor Rating</b>
+                  <input type="range" min="-10" max="10" value="0" class="slider" id="professorRating">
+                  <div>
+                    <p style="float: left">Low</p>
+                    <p style="float: right">High</p>
+                  </div>
+                </div>
               </div>
             </div>
             
             <div id="blocked" class="tab-pane fade">
-              <h3>BLOCKED TIMES&nbsp;
+              <h3>Blocked Times&nbsp;
               
               <i id="add-block" style="float:right; cursor: pointer;" style="font-size: 0.75em;" class="moveDown fa fa-plus-circle"></i>
 
               <i id="update-block" style="float:right; cursor: pointer; margin-right:10px;" style="font-size: 0.75em;" class="moveDown fa fa-play"></i>
               </h3>
-              <hr class="style-seven">
+              <hr>
               <div id="blockedTimes"></div>
             </div>
             
@@ -158,7 +177,7 @@
   </body>
   <footer>
     <div class="container">
-      Alexander Parent - aparen01@mail.uoguelph.ca - Guelph Scheduler Version 4.20.69 ©2019 - 2020 - <a href="https://github.com/iam4722202468/GuelphScheduler2/">Code</a>
+      Alexander Parent - aparen01@mail.uoguelph.ca - Guelph Scheduler Version 4.20.69 © 2019 - 2020 - <a href="https://github.com/iam4722202468/GuelphScheduler2/">Code</a>
     </div>
   </footer>
 </html>

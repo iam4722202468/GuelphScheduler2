@@ -675,26 +675,17 @@ var blocks = [];
 
 function reloadCriteria()
 {
-  let criteria = {}
+  let criteria = [];
   const titles = [
-    '.classStart',
-    '.classEnd',
-    '.timeBetween',
-    '.averageTime',
-    '.shortOrLong',
-    '.teacherRating'
+    '#timeBetween',
+    '#averageTime',
+    '#classLength',
+    '#professorRating'
   ];
   
-  let weight = []
-  let direction = []
-  
   for (let x in titles) {
-    weight.push($(titles[x])[0].valueAsNumber)
-    direction.push($(titles[x]+'2')[0].checked | 0)
+    criteria.push($(titles[x])[0].valueAsNumber);
   }
-  
-  criteria['Weight'] = weight;
-  criteria['Direction'] = direction;
   
   $.ajax({
     type: "POST",
