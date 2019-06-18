@@ -453,17 +453,16 @@ router.get('/searchClass/:query', function(req, res) {
       var collection = db.collection('cachedData');
       
       const safeQuery = req.params.query
-        .replace('*', '\\\*')
-        .replace('"', '\\\"')
-        .replace('\'', '\\\'')
-        .replace('$', '\\\$')
-        .replace('(', '\\(')
-        .replace(')', '\\)')
-        .replace('+', '\\+')
-        .replace(']', '\\]')
-        .replace('[', '\\[')
+        .replace(/\*/g, '\\\*')
+        .replace(/\'/g, '\\\'')
+        .replace(/\$/g, '\\\$')
+        .replace(/\(/g, '\\\(')
+        .replace(/\)/g, '\\\)')
+        .replace(/\+/g, '\\\+')
+        .replace(/\]/g, '\\\]')
+        .replace(/\[/g, '\\\[')
 
-      const safeQueryCode = safeQuery.replace(' ', '\\\*')
+      const safeQueryCode = safeQuery.replace(/\ /, '\\\*')
 
       const searchRegexCode = new RegExp(`(${safeQueryCode})`, 'gi');
       const searchRegex = new RegExp(`(${safeQuery})`, 'gi');
