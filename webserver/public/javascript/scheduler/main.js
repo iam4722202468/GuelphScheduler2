@@ -712,7 +712,10 @@ function removeBlock(idNumber) {
 }
 
 function removeBlockPre(e) {
-  removeBlock($(e.target).attr('place'));
+  if ($(e.target).hasClass('moveDown'))
+    removeBlock($(e.target).parent().attr('place'));
+  else
+    removeBlock($(e.target).attr('place'));
 }
 
 function addBlock() {
@@ -775,7 +778,8 @@ function addBlock() {
     <div class="hoverButton btn btn-danger remove-block"
       place="${place}"
       style="margin-left: 90%; margin-top: 0px; margin-bottom: 5%;">
-    <i class="moveDown fa fa-trash"></i></div>
+      <i class="moveDown fa fa-trash"></i>
+    </div>
     <hr class="style-seven"></div>`
   
   element = $(element);

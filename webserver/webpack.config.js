@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
+  mode: 'development',
   context: path.resolve(__dirname, 'public'),
   entry: {
     css: ['./stylesheets/footer.css', './stylesheets/index.css'],
