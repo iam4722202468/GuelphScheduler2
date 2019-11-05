@@ -387,9 +387,6 @@ std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<Se
     unsorted.at(x) = sortArray.at(x).pointer;
   }
 
-  //do scores
-  //todo: code
-
   return unsorted;
 }
 

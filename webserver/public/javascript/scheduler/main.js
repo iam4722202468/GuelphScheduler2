@@ -629,7 +629,13 @@ function addClass(object)
       success : function(request, status, error) {
         removeCover();
         
-        if (!('error' in request)) {
+        console.log(request)
+
+        if (request.error) {
+          $("#modal-course-name_").html('Error')
+          $("#modal-course-error").html(request['error'])
+          $("#noSections").modal()
+        } else {
           addToList(request.course);
           getSchedules(0,9);
         }

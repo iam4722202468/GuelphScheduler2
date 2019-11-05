@@ -16,9 +16,6 @@ foundDB = collection.find_one({"sessionID" : sys.argv[1]})
 sys.path.insert(0, "./schools/" + sys.argv[3])
 import getData
 
-if __name__ == '__main__':
-    print queryArray
-
 if foundDB != None:
     isFound = False
     

@@ -14,7 +14,7 @@ db = client['scheduler']
 collection = db['cachedData']
 
 #define semester
-SEMESTER = 'F19'
+SEMESTER = 'W20'
 
 def convertTime(x):
     if(x[-2:] == "AM"):
@@ -198,7 +198,7 @@ def getData(dataToSend):
         
         spots = cols[7].find('p').contents[0] #spots
         Meeting_Section = title.split("*")[2].split(" ")[0]
-        
+
         #don't include closed courses
         #############################################################
         if spots == '\n' or cols[2].getText() == 'Closed':
@@ -332,4 +332,4 @@ def getData(dataToSend):
 
 
 if __name__ == '__main__':
-    print(getData([["CIS","1500"]]))
+    print(getData([["ENGG","3100"]]))
