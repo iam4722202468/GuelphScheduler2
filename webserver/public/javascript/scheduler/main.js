@@ -54,13 +54,11 @@ function getCourseInfo(courseCode, callback_)
 }
 
 
-function getSchedules(start, end)
-{
+function getSchedules() {
   addCover();
   $.ajax({
     type: "POST",
     url: "getSchedules",
-    data: {"start":start, "end":end},
     
     error : function(request, status, error) {
       console.log(error);
@@ -71,13 +69,13 @@ function getSchedules(start, end)
       
       if (!('error' in request))
       {
-        schedules = request['schedules'].slice(0, request['schedules'].length - 1);
-        scheduleSize = request['schedules'][request['schedules'].length - 1];
+        schedules = request['schedules']
+        schedules.reverse()
         
-        scheduleStart = start
         refreshTable(schedules[0]);
-        $(".numberOfInputs").html(scheduleSize);
-        $(".showingNumber").html(scheduleStart+1);
+
+        $("#numberOfInputs").html(schedules.length);
+        $("#showingNumber").html(1);
         
       } else {
         schedules = [];
@@ -98,9 +96,8 @@ function getSchedules(start, end)
           });
         }
         
-        scheduleStart = 0;
-        $(".numberOfInputs").html(0);
-        $(".showingNumber").html(0);
+        $("#numberOfInputs").html(0);
+        $("#showingNumber").html(0);
         refreshTable([]);
       }
       
@@ -160,13 +157,13 @@ function init()
       
       if (!('error' in request))
       {
-        schedules = request['schedules'].slice(0, request['schedules'].length - 1);
-        
+        schedules = request['schedules']
+        schedules.reverse()
+
         createThumbnails(schedules)
         
-        scheduleSize = request['schedules'][request['schedules'].length - 1];
         refreshTable(schedules[0]);
-        $(".numberOfInputs").html(scheduleSize);
+        $("#numberOfInputs").html(schedules.length);
         
         for (let x in request['schedules'][0])
         {
@@ -174,7 +171,7 @@ function init()
             addToList(data);
           });
         }
-        $(".showingNumber").html(1);
+        $("#showingNumber").html(1);
       } else {
         for (let x in request['schedules'])
         {
@@ -183,8 +180,8 @@ function init()
           });
         }
         
-        $(".numberOfInputs").html(0);
-        $(".showingNumber").html(0);
+        $("#numberOfInputs").html(0);
+        $("#showingNumber").html(0);
       }
     }
   });
@@ -289,7 +286,7 @@ function updateBlock()
       console.log(error);
     },
     success : function(request, status, error) {
-      getSchedules(0, 9);
+      getSchedules();
     }
   });
 }
@@ -315,7 +312,7 @@ function refreshTable(schedule) {
   $('#calendar').fullCalendar('removeEvents');
   
   elements = []
-  console.log(schedule);
+  //console.log(schedule);
 
   const dayList = {
     'Mon': '01',
@@ -530,7 +527,7 @@ function deleteClass(courseCode)
     },
     
     success : function(request, status, error) {
-      getSchedules(0,9);
+      getSchedules();
       
       for (let x in classList)
       {
@@ -637,43 +634,10 @@ function addClass(object)
           $("#noSections").modal()
         } else {
           addToList(request.course);
-          getSchedules(0,9);
+          getSchedules();
         }
       }
     });
-  }
-}
-
-function schedulesLeft()
-{
-  if (scheduleStart > 8)
-  {
-    scheduleStart -= 9;
-    getSchedules(scheduleStart, scheduleStart+9);
-  }
-}
-
-function schedulesRight()
-{
-  if (scheduleStart < scheduleSize - 9)
-  {
-    scheduleStart += 9;
-    getSchedules(scheduleStart, scheduleStart+9);
-  }
-}
-
-function schedulesAllLeft()
-{
-  scheduleStart = 0;
-  getSchedules(scheduleStart, scheduleStart+9);
-}
-
-function schedulesAllRight()
-{
-  if (scheduleSize-9 >= 0)
-  {
-    scheduleStart = scheduleSize-9
-    getSchedules(scheduleStart, scheduleStart+9);
   }
 }
 
@@ -685,8 +649,6 @@ function reloadCriteria()
   const titles = [
     '#timeBetween',
     '#averageTime',
-    '#classLength',
-    '#professorRating'
   ];
   
   for (let x in titles) {
@@ -701,7 +663,7 @@ function reloadCriteria()
       console.log(error);
     },
     success : function(request, status, error) {
-      getSchedules(0, 9);
+      getSchedules();
     }
   });
 }
@@ -789,22 +751,6 @@ function addBlock() {
 }
 
 $(document).ready(function() {
-  $('#schedules-left').on('click', () => {
-    schedulesLeft();
-  });
-
-  $('#schedules-right').on('click', () => {
-    schedulesRight();
-  });
-
-  $('#schedules-all-left').on('click', () => {
-    schedulesAllLeft();
-  });
-
-  $('#schedules-all-right').on('click', () => {
-    schedulesAllRight();
-  });
-
   $('#add-class').on('click', () => {
     addClass();
   });

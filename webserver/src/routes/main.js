@@ -178,13 +178,13 @@ router.get('/', function(req, res) {
   res.sendFile(path.resolve('public/html/index.html'))
 });
 
-function runAlgorithm(sessionID, start, end, callback_)
+function runAlgorithm(sessionID, callback_)
 {
   // get schedules 0 to 9
   // add another argument here for weight of schedules when rating
   //a = '{"Sections" : [ { "Meeting_Section" : "NA", "Enrollment" : "NA", "Instructors" : "NA", "Offerings" : [ { "Time_Start" : "1430", "Section_Type" : "BLOCK", "Time_End" : "1530", "Course" : "BLOCK", "Location" : "BLOCK", "Day" : "Tues, Thur" }]}]}'
   
-  exec('../searchAlgorithm/generate',[sessionID, start.toString(), end.toString()], {maxBuffer:1028*1000}, function(err, data) {  
+  exec('../searchAlgorithm/generate',[sessionID], {maxBuffer:1028*1000}, function(err, data) {  
     console.log(err);
     callback_(data.toString());             
   });
@@ -250,8 +250,8 @@ router.post('/getSchedules', function(req,res) {
   sessionID = req.cookies.sessionID;
   
   checkSession(sessionID, function(isFound) {
-    if (isFound['Value'] == 1 && !isNaN(req.body.start) && !isNaN(req.body.end)) {
-      runAlgorithm(sessionID, req.body.start, req.body.end, function(toReturn) {
+    if (isFound['Value'] == 1) {
+      runAlgorithm(sessionID, function(toReturn) {
         if (toReturn.indexOf("null") != 0)
         {
           res.end('{"course":' + JSON.stringify(isFound) + ', "schedules":' + toReturn + '}');
@@ -291,7 +291,7 @@ router.post('/init', function(req,res) {
         if (blockData === null)
           blockData = JSON.parse('{"Offerings" : []}');
         
-        runAlgorithm(sessionID, 0, 9, function(toReturn) {
+        runAlgorithm(sessionID, function(toReturn) {
           if (toReturn.indexOf("null") != 0) {
             res.end('{"course":"null", "schedules":' + toReturn + ', "blocks":' + JSON.stringify(blockData) + '}');
           } else {
@@ -390,7 +390,7 @@ router.post('/updateCriteria', function(req,res) {
   res.setHeader('Content-type', 'application/json');
   sessionID = req.cookies.sessionID;
 
-  if (req.body["Criteria"].filter(x => !isNaN(parseInt(x))).length === 4) {
+  if (req.body["Criteria"].filter(x => !isNaN(parseInt(x))).length === 2) {
     addCriteria(req.body["Criteria"], sessionID, function() {
       res.end('{"Success":"true"}');
     });

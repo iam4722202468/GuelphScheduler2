@@ -15,20 +15,10 @@
     <div class="container-fluid full-width">
       <div class="row">
         <div class="col-12 col-md-1 order-2 order-sm-1" id="left-panel">
-          <b>Schedule&nbsp;</b><br><div style="float: left" class="showingNumber">1</div><p style="float: left">/</p><div style="float: left" class="numberOfInputs"></div>
+          <b>Schedule&nbsp;</b><br><div style="float: left" id="showingNumber">1</div><p style="float: left">/</p><div style="float: left" id="numberOfInputs"></div>
           
-          <div class="btn-group buttonContainer">
-            <button id="schedules-left" class="btn btn-default buttonChild"><i class="fa fa-chevron-left"></i></button>
-            <button id="schedules-right" class="btn btn-default buttonChild"><i class="fa fa-chevron-right"></i></button>
-          </div>
-          
+          <br><br>
           <div id="canvases" class="row"></div>
-          
-          <div class="btn-group buttonContainer">
-            <button id="schedules-all-left" class="btn btn-default buttonChild"><i class="fa fa-chevron-left"></i><i class="fa fa-chevron-left"></i></button>
-            <button id="schedules-all-right" class="btn btn-default buttonChild"><i class="fa fa-chevron-right"></i><i class="fa fa-chevron-right"></i></button>
-          </div>
-          
           <br><br><br>
         </div>
         
@@ -81,22 +71,6 @@
                   <div>
                     <p style="float: left">Early</p>
                     <p style="float: right">Late</p>
-                  </div>
-                </div>
-                <div class="criteriaBlock">
-                  <b>Class Length</b>
-                  <input type="range" min="-10" max="10" value="0" class="slider" id="classLength">
-                  <div>
-                    <p style="float: left">Short Classes</p>
-                    <p style="float: right">Long Classes</p>
-                  </div>
-                </div>
-                <div class="criteriaBlock">
-                  <b>Average Professor Rating</b>
-                  <input type="range" min="-10" max="10" value="0" class="slider" id="professorRating">
-                  <div>
-                    <p style="float: left">Low</p>
-                    <p style="float: right">High</p>
                   </div>
                 </div>
               </div>

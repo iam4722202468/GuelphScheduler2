@@ -1,5 +1,10 @@
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+#include <math.h>
+
 #include <iostream>
-#include <algorithm>
+#include <string>
+#include <vector>
 
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
@@ -9,6 +14,7 @@
 #include <mongocxx/instance.hpp>
 #include <mongocxx/uri.hpp>
 
+#include "../mcr/mcr.h"
 #include "json.h"
 
 std::string dayArray[] = {"Mon", "Tues", "Wed", "Thur", "Fri"};
@@ -68,7 +74,7 @@ class CourseObject {
 
   public:
 
-  std::vector<SectionObject> sections;
+  std::vector<void*> sections;
 
   CourseObject(Json::Value thisObject)
   {
@@ -76,7 +82,7 @@ class CourseObject {
 
     for (unsigned int place = 0; place < thisObject["Sections"].size(); ++place)
     {
-      sections.push_back(thisObject["Sections"][place]);
+      sections.push_back(new SectionObject(thisObject["Sections"][place]));
     }
   }
 };
@@ -93,7 +99,12 @@ int getBlock(int time) {
   return block;
 }
 
-bool checkConflict(std::vector<SectionObject*> checkArray, std::vector<SectionObject> *blockedTimes) {
+std::vector<SectionObject> blockedTimes;
+
+bool checkConflict(void *session1, void *session2, int place1, int place2) {
+  SectionObject* typedSection1 = (SectionObject*)session1;
+  SectionObject* typedSection2 = (SectionObject*)session2;
+
   //dimensions of day and weeks
   char schedule[5][29];
 
@@ -101,171 +112,82 @@ bool checkConflict(std::vector<SectionObject*> checkArray, std::vector<SectionOb
     for (int i = 0; i < 29; ++i)
       schedule[j][i] = 0;
 
-  //for courses
-  for (unsigned int coursePlace = 0; coursePlace < checkArray.size(); coursePlace++)
-    for (int place = 0; place < 5; place++) //for the days
-      for (unsigned int offeringPlace = 0; offeringPlace < checkArray.at(coursePlace)->offerings.size(); offeringPlace++)
-        if (checkArray.at(coursePlace)->offerings.at(offeringPlace).day[place] == 1) //could maybe switch order for speed
+  // Add blocks for 1
+  for (OfferingObject offering : typedSection1->offerings) {
+    for (int place = 0; place < 5; place++) { //for the days
+      if (offering.day[place] == 1) {
+        int startBlock = getBlock(offering.time_start);
+        int endBlock = getBlock(offering.time_end);
+
+        for (int blockTime = startBlock; blockTime <= endBlock; blockTime++)
         {
-          int startBlock = getBlock(checkArray.at(coursePlace)->offerings.at(offeringPlace).time_start);
-          int endBlock = getBlock(checkArray.at(coursePlace)->offerings.at(offeringPlace).time_end);
+          if (schedule[place][blockTime] == 1)
+            return false;
 
-          for (int blockTime = startBlock; blockTime <= endBlock; blockTime++)
-          {
-            if (schedule[place][blockTime] == 1)
-              return 1;
+          schedule[place][blockTime] = 1;
 
-            schedule[place][blockTime] = 1;
-
-          }
         }
+      }
+    }
+  }
+  
+  // Add blocks for 2
+  for (OfferingObject offering : typedSection2->offerings) {
+    for (int place = 0; place < 5; place++) { //for the days
+      if (offering.day[place] == 1) {
+        int startBlock = getBlock(offering.time_start);
+        int endBlock = getBlock(offering.time_end);
+
+        for (int blockTime = startBlock; blockTime <= endBlock; blockTime++)
+        {
+          if (schedule[place][blockTime] == 1)
+            return false;
+
+          schedule[place][blockTime] = 1;
+
+        }
+      }
+    }
+  }
 
   //for time blocks
-  for (unsigned int coursePlace = 0; coursePlace < blockedTimes->size(); coursePlace++)
+  for (unsigned int coursePlace = 0; coursePlace < blockedTimes.size(); coursePlace++)
     for (int place = 0; place < 5; place++) //for the days
-      for (unsigned int offeringPlace = 0; offeringPlace < blockedTimes->at(coursePlace).offerings.size(); offeringPlace++) {
-        if (blockedTimes->at(coursePlace).offerings.at(offeringPlace).day[place] == 1) //could maybe switch order for speed
+      for (unsigned int offeringPlace = 0; offeringPlace < blockedTimes.at(coursePlace).offerings.size(); offeringPlace++) {
+        if (blockedTimes.at(coursePlace).offerings.at(offeringPlace).day[place] == 1) //could maybe switch order for speed
         {
-          int startBlock = getBlock(blockedTimes->at(coursePlace).offerings.at(offeringPlace).time_start);
-          int endBlock = getBlock(blockedTimes->at(coursePlace).offerings.at(offeringPlace).time_end);
+          int startBlock = getBlock(blockedTimes.at(coursePlace).offerings.at(offeringPlace).time_start);
+          int endBlock = getBlock(blockedTimes.at(coursePlace).offerings.at(offeringPlace).time_end);
 
           for (int blockTime = startBlock; blockTime <= endBlock; blockTime++)
           {
             if (schedule[place][blockTime] == 1)
-              return 1;
+              return false;
 
             schedule[place][blockTime] = 1;
           }
         }
       }
 
-
-
-  return 0;
+  return true;
 }
 
-void generateSchedules(std::vector<CourseObject> *root, unsigned int depth, std::vector<SectionObject*> currentPath, std::vector<SectionObject*> *workingSections, std::vector<SectionObject> *blockedTimes)
-{
-  unsigned int maxDepth = root->at(depth).sections.size();
-
-  std::vector<SectionObject*> tempPath;
-
-  for (unsigned int place = 0; place < maxDepth; ++place)
-  {
-    tempPath = currentPath;
-    tempPath.push_back(&(root->at(depth).sections.at(place)));
-
-    //make sure there's more than one to compare
-    if (!checkConflict(tempPath, blockedTimes))
-    {
-      if (tempPath.size() < root->size())
-        generateSchedules(root, depth+1, tempPath, workingSections, blockedTimes);
-      else if (depth == root->size()-1) {
-        //outputJSON(root.at(depth).sections.at(place).thisSection);
-
-        for (unsigned int w = 0; w < tempPath.size(); w++)
-          workingSections->push_back(tempPath.at(w));
-
-        workingSections->push_back(NULL);
-      }
-    }
-  }
-
-  return;
+int comp(int in1, int in2) {
+  return in1-in2;
 }
 
-struct Totals
-{
-  //for schedule
-  double timeBefore = -1;
-  double timeAfter = -1;
-  double timeTogether = -1;
-  double averageClassTime = -1;
-  double classLength = -1;
-  double teacherRating = -1;
-};
+int criteria[2];
 
-struct ToSort
-{
-  std::vector<SectionObject*> pointer;
-  double score;
-};
-
-int getClassLength(std::vector<SectionObject*> unsorted)
-{
-  int counter = 0;
-  //more classes means shorter classes
-  //this counts amount of classes
-
-  for (int x = 0; x < unsorted.size(); ++x)
-    for (int offering = 0; offering < unsorted.at(x)->offerings.size(); ++offering)
-      counter++;
-
-  return counter;
-}
-
-int getAverageClassTime(std::vector<SectionObject*> unsorted)
-{
-  int counter = 0;
-
-  for (int x = 0; x < unsorted.size(); ++x)
-    for (int offering = 0; offering < unsorted.at(x)->offerings.size(); ++offering)
-    {
-      counter += unsorted.at(x)->offerings.at(offering).time_start;
-    }
-
-  return counter;
-}
-
-int getTeacherRatings(std::vector<SectionObject*> unsorted)
-{
-  double counter = 0;
-
-  for (int x = 0; x < unsorted.size(); ++x)
-  {
-    counter += unsorted.at(x)->instructorRating;
-
-    //std::cout << unsorted.at(x)->instructorRating << std::endl;
-  }
-
-  return counter*100;
-}
-
-int getTimeTogether(std::vector<SectionObject*> unsorted)
-{
-  int counter = 0;
-  double tempCounter = 0;
-
-  for (int day = 0; day < 5; ++day)
-  {
-    int schedule[28];
-
-    for (int i = 0; i < 28; ++i)
-      schedule[i] = 0;
-
-    for (int x = 0; x < unsorted.size(); ++x)
-      for (int offering = 0; offering < unsorted.at(x)->offerings.size(); ++offering)
-      {
-        if (unsorted.at(x)->offerings.at(offering).day[day] == 1)
-        {
-          int startBlock = getBlock(unsorted.at(x)->offerings.at(offering).time_start);
-          int endBlock = getBlock(unsorted.at(x)->offerings.at(offering).time_end);
-
-          for (int blockTime = startBlock; blockTime <= endBlock; blockTime++)
-            schedule[blockTime] = 1;
-        }
-      }
-
+int scoreTimeBetween(bool schedule[5][29]) {
+  float score = 0;
+  for (int y = 0; y < 5; ++y) {
     int first = 0;
     int last = 0;
     bool inside = false;
 
-    for (int x = 0; x < 28; ++x)
-    {
-      if (schedule[x] == 1)
-      {
-        if (inside == false)
-        {
+    for (int x = 0; x < 29; ++x) {
+      if (schedule[y][x] == 1) {
+        if (inside == false) {
           inside = true;
           first = x;
         }
@@ -276,10 +198,8 @@ int getTimeTogether(std::vector<SectionObject*> unsorted)
     int totalClass = 0;
     int totalBlank = 0;
 
-    for (int x = first; x < last; ++x)
-    {
-      if (schedule[x] == 1)
-      {
+    for (int x = first; x < last; ++x) {
+      if (schedule[y][x] == 1) {
         totalClass += 1;
       } else {
         totalBlank += 1;
@@ -290,125 +210,64 @@ int getTimeTogether(std::vector<SectionObject*> unsorted)
       continue;
 
     //find out what percentage of time is in class
-    tempCounter = (float)totalClass/((float)totalBlank + (float)totalClass);
-    tempCounter *= 100;
-    //std::cout << tempCounter << std::endl;
-    counter += (int)tempCounter;
+    float tempCounter = (float)totalClass/((float)totalBlank + (float)totalClass);
+    score += tempCounter;
   }
 
-  return counter;
+  return score*100/5 - 50;
 }
 
-//crashes with only one schedule
-std::vector<std::vector<SectionObject*>> sortSchedule(std::vector<std::vector<SectionObject*>> unsorted, int criteria[4])
-{
-  int weight[4] = {criteria[0], criteria[1], criteria[2], criteria[3]};
+int scoreAverageClassTime(bool schedule[5][29]) {
+  float score = 0;
 
-  Totals max;
-  Totals min;
+  for (int x = 0; x < 5; ++x) {
+    float dayAverage = 0;
+    int dayCount = 0;
 
-  //do totals
-  for(unsigned int x = 0; x < unsorted.size(); ++x)
-  {
-    int timeTogether = getTimeTogether(unsorted.at(x));
-    int averageClassTime = getAverageClassTime(unsorted.at(x));
-    int classLength = getClassLength(unsorted.at(x));
-    int teacherRating = getTeacherRatings(unsorted.at(x));
-
-    if (timeTogether < -100)
-      std::cout << timeTogether << std::endl;
-
-    if (max.timeTogether < timeTogether || max.timeTogether == -1)
-      max.timeTogether = timeTogether;
-    if (min.timeTogether > timeTogether || min.timeTogether == -1)
-      min.timeTogether = timeTogether;
-
-    if (max.averageClassTime < averageClassTime || max.averageClassTime == -1)
-      max.averageClassTime = averageClassTime;
-    if (min.averageClassTime > averageClassTime || min.averageClassTime == -1)
-      min.averageClassTime = averageClassTime;
-
-    if (max.classLength < classLength || max.classLength == -1)
-      max.classLength = classLength;
-    if (min.classLength > classLength || min.classLength == -1)
-      min.classLength = classLength;
-
-    if (max.teacherRating < teacherRating || max.teacherRating == -1)
-      max.teacherRating = teacherRating;
-    if (min.teacherRating > teacherRating || min.teacherRating == -1)
-      min.teacherRating = teacherRating;
-  }
-
-  std::vector<ToSort> sortArray;
-
-  for(unsigned int x = 0; x < unsorted.size(); ++x)
-  {
-    double tempScore = 0;
-    double tempValue;
-    double tempAverage;
-
-    tempValue = 0;
-    tempAverage = (max.timeTogether + min.timeTogether)/2;
-    tempValue = (getTimeTogether(unsorted.at(x)) - tempAverage)/tempAverage*10;
-    tempScore += tempValue*weight[0];
-
-    tempValue = 0;
-    tempAverage = (max.averageClassTime + min.averageClassTime)/2;
-    tempValue = (getAverageClassTime(unsorted.at(x)) - tempAverage)/tempAverage*10;
-    tempScore += tempValue*weight[1];
-
-    tempValue = 0;
-    tempAverage = (max.classLength + min.classLength)/2;
-    tempValue = (getClassLength(unsorted.at(x)) - tempAverage)/tempAverage*10;
-    tempScore += tempValue*weight[2];
-
-    tempValue = 0;
-    tempAverage = (max.teacherRating + min.teacherRating)/2;
-
-    if (tempAverage != 0)
-      tempValue = (getTeacherRatings(unsorted.at(x)) - tempAverage)/tempAverage*10;
-
-    tempScore += tempValue*weight[3];
-
-    sortArray.push_back(ToSort());
-    sortArray.at(sortArray.size()-1).pointer = unsorted.at(x);
-    sortArray.at(sortArray.size()-1).score = tempScore;
-  }
-
-  std::sort(sortArray.begin(), sortArray.end(), 
-      [] (const ToSort struct1, const ToSort struct2)
-      {
-      return (struct1.score > struct2.score);
+    for (int y = 0; y < 29; ++y) {
+      if (schedule[x][y] == 1) {
+        dayAverage += y;
+        dayCount++;
       }
-      );
+    }
 
-  for(unsigned int x = 0; x < unsorted.size(); ++x)
-  {
-    unsorted.at(x) = sortArray.at(x).pointer;
+    dayAverage /= dayCount;
+
+    score += dayAverage;
   }
 
-  return unsorted;
+  return score/2;
 }
 
-std::vector<std::vector<SectionObject*>> mapSchedules(std::vector<SectionObject*> *workingSections, int criteria[4])
-{
-  std::vector<std::vector<SectionObject*>> sorted;
-  std::vector<SectionObject*> current;
+int fit(std::vector<std::vector<void*>> *arrs, std::vector<int> currPath, int pathNum) {
+  bool schedule[5][29];
 
-  for (unsigned int x = 0; x < workingSections->size() - 1; ++x)
-  {
-    if (workingSections->at(x) != NULL)
-    {
-      current.push_back(workingSections->at(x));
-    } else {
-      sorted.push_back(current);
-      current.clear();
+  for (int j = 0; j < 5; ++j)
+    for (int i = 0; i < 29; ++i)
+      schedule[j][i] = 0;
+
+  for (int place = 0; place < currPath.size(); place++) {
+    SectionObject* typedSection = (SectionObject*)arrs->at(place).at(currPath.at(place));
+
+    for (OfferingObject offering : typedSection->offerings) {
+      for (int place = 0; place < 5; place++) { //for the days
+        if (offering.day[place] == 1) {
+          int startBlock = getBlock(offering.time_start);
+          int endBlock = getBlock(offering.time_end);
+
+          for (int blockTime = startBlock; blockTime <= endBlock; blockTime++)
+            schedule[place][blockTime] = 1;
+        }
+      }
     }
   }
 
-  sorted.push_back(current);
+  int score = 0;
+  score += scoreTimeBetween(schedule) * criteria[0];
+  score += scoreAverageClassTime(schedule) * criteria[1];
+  //std::cout << scoreTimeBetween(schedule) << " " << scoreAverageClassTime(schedule) << std::endl;
 
-  return sortSchedule(sorted, criteria);
+  return score;
 }
 
 using bsoncxx::builder::stream::document;
@@ -418,8 +277,29 @@ using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::finalize;
 
-int main (int argc, char *argv[])
-{
+void outputJSON(std::vector<gen_trim_struct*> *captured, std::vector<CourseObject> *courseObjects) {
+  std::string temp = "[[";
+
+  for (gen_trim_struct *curr : *captured) {
+    for (int pos = 0; pos < curr->top.size(); ++pos) {
+      SectionObject *currSection = (SectionObject*)courseObjects->at(pos).sections.at(curr->top[pos]);
+      Json::FastWriter fastWriter;
+      temp += fastWriter.write(currSection->thisSection);
+      temp += ',';
+    }
+    temp[temp.size()-1] = ' ';
+    temp += "],[";
+  }
+
+  temp = temp.substr(0, temp.size()-2);
+  temp += "]";
+
+  std::cout << temp << std::endl;
+}
+
+int main(int argc, char *argv[]) {
+  srand (time(NULL));
+
   mongocxx::instance inst{};
   mongocxx::client conn{mongocxx::uri{}};
 
@@ -450,24 +330,21 @@ int main (int argc, char *argv[])
     reader.parse(tempBSON, root3, false);
   }
 
-  int criteria[4];
-
   if(root3["data"].size() == 0)
   {
-    for (int x = 0; x < 4; ++x) {
-      criteria[x] = 0;
-    }
+    criteria[0] = 10;
+    criteria[1] = 0;
   } else {
-    for (int x = 0; x < 4; ++x) {
+    for (int x = 0; x < 2; ++x) {
       criteria[x] = std::stoi((root3["data"][x]).asString());
     }
   }
 
+  if (criteria[0] == 0 && criteria[1] == 0)
+    criteria[0] = 10;
+
   std::vector<Json::Value> objectVector;
-  std::vector<SectionObject> blockedTimes;
   std::vector<CourseObject> courseObjects;
-  std::vector<SectionObject*> empty;
-  std::vector<SectionObject*> workingSections;
 
   for (auto&& obj : root["Data"])
   {
@@ -476,6 +353,7 @@ int main (int argc, char *argv[])
 
     for (auto&& doc : cursor) {
       std::string tempBSON = bsoncxx::to_json(doc);
+  
       reader.parse(tempBSON, root4, false);
       objectVector.push_back(root4["Data"]);
     }
@@ -490,57 +368,26 @@ int main (int argc, char *argv[])
     return 0;
   }
 
-  /* sort for minor speed increase */
-  std::sort(objectVector.begin(), objectVector.end(), 
-      [] (const Json::Value struct1, const Json::Value struct2)
-      {
-      return (struct1["Sections"].size() < struct2["Sections"].size());
-      }
-      );
-
   for(unsigned int x = 0; x < objectVector.size(); x++)
     courseObjects.push_back(objectVector[x]);
 
-  generateSchedules(&courseObjects, 0, empty, &workingSections, &blockedTimes);
+  std::vector<std::vector<void*>> sectionsGroup;
 
-  /* NULL in workingSections represents split between schedules */
-  if (workingSections.size() == 0)
+  for (auto x : courseObjects) {
+    sectionsGroup.push_back(x.sections);
+  }
+
+  // Run
+  std::vector<gen_trim_struct*> captured;
+  gen(sectionsGroup, comp, fit, checkConflict, &captured);
+
+  if (captured.size() == 0)
   {
     std::cout << "null" << std::endl;
     return 0;
   }
 
-  int start = std::stoi(argv[2]);
-  int amount = std::stoi(argv[3]);
-  int counter = 0;
-  int totalSchedules = 0;
-
-  std::string temp = "";
-  std::vector<std::vector<SectionObject*>> sortedSchedules = mapSchedules(&workingSections, criteria);
-
-  temp += "[[";
-
-  //maximum 40 schedules output
-  for (unsigned int x = start; x < amount && x < sortedSchedules.size() && x < start + 40; ++x)
-  {
-    for (unsigned int y = 0; y < sortedSchedules.at(x).size(); ++y)
-    {
-      Json::FastWriter fastWriter;
-      temp += fastWriter.write(sortedSchedules.at(x).at(y)->thisSection);
-      temp += ',';
-    }
-
-    temp[temp.size()-1] = ' ';
-    temp += "],[";
-  }
-
-  temp = temp.substr(0, temp.size()-2);
-
-  temp += ",";
-  temp += std::to_string(sortedSchedules.size());
-  temp += "]";
-
-  std::cout << temp << std::endl;
+  outputJSON(&captured, &courseObjects);
 
   return 0;
-}
+ }
