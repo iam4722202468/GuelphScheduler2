@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -std=c++11 -g -I"./includes" -I"./mrc" -I"./jsoncpp/json" -Wextra `pkg-config --cflags --libs libmongocxx`
+CFLAGS = -std=c++11 -g -I"./includes" -I"./mrc" -I"./jsoncpp/json" -Wextra `pkg-config --cflags --libs libmongocxx` -fopenmp
 
 LDFLAGS = -Wextra -DMONGOCXX_STATIC `pkg-config --cflags --libs libmongocxx` -Wl,-rpath,/usr/local/lib
 

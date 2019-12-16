@@ -1,3 +1,5 @@
+#include <omp.h>
+
 #include "mcr.h"
 
 std::vector<std::vector<int>> gen_mutate(std::vector<std::vector<void*>> arrs, std::vector<std::vector<int>> currPaths, std::vector<std::vector<std::vector<std::vector<bool>>>> *possibleCombinations) {
@@ -195,7 +197,7 @@ std::vector<int> initialBranch(std::vector<std::vector<std::vector<std::vector<b
 
 void gen(std::vector<std::vector<void*>> arrs, int compare(int, int), int fitness(std::vector<std::vector<void*>>*, std::vector<int>, int), bool filter(void*, void*, int, int), std::vector<gen_trim_struct*> *captured) {
   int groups = 5;
-  int cycles = 100;
+  int cycles = 200;
   int groupSize = 10;
 
   std::vector<std::vector<std::vector<std::vector<bool>>>> possibleCombinations;
@@ -243,7 +245,10 @@ void gen(std::vector<std::vector<void*>> arrs, int compare(int, int), int fitnes
   }
 
   for (int cycle = 0; cycle < cycles; ++cycle) {
-    // mutate
+    //mutate
+
+    #pragma omp parallel
+    #pragma omp for
     for (int x = 0; x < groups; ++x) {
       currPathsGroup.at(x) = gen_mutate(arrs, currPathsGroup.at(x), &possibleCombinations);
     }
