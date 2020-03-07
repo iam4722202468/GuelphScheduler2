@@ -26,6 +26,8 @@ cd webserver && npm install
 
 ## Deployment
 
+Run `python3 webserver/schools/Guelph/getClasses.py` to populate the course database. This will take a few minutes to complete.
+
 Run `npm run start` to start the project. This will by default start the server on port 3000. This can be configued in `app.js`
 
 ## Built With

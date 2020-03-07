@@ -414,7 +414,7 @@ router.post('/add', function(req,res) {
       var school = "Guelph";
       
       const options = {
-        pythonPath: '/usr/bin/python2.7',
+        pythonPath: '/usr/bin/python3',
         args: [ sessionID, courseCode, school ]
       }
 

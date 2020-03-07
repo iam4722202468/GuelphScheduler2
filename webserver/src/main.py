@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
 
 from pymongo import MongoClient
@@ -24,49 +24,45 @@ if foundDB != None:
             isFound = True
     
     if isFound:
-        print "Error: Found"
-        print "1"
+        print("Error: Found")
+        print("1")
         sys.exit()
 
 output = getData.getData(queryArray)
 
-if isinstance(output, basestring):
-    print output
-    print "2"
-else:
-    newOutput = {}
-    newOutput["Data"] = [sys.argv[2]];
-    newOutput["sessionID"] = sys.argv[1];
+newOutput = {}
+newOutput["Data"] = [sys.argv[2]];
+newOutput["sessionID"] = sys.argv[1];
 
-    if foundDB == None:
-        if len(output) == 0:
-            print "Error: No sections"
-            print "1"
-        else:
-            print "Created"
-            print "0"
-            collection.insert_one(newOutput)
-            cachedCourses.update(
-                { 'Course': sys.argv[2] },
-                { 'Course': sys.argv[2], 'Data': output[0]['Course'] },
-                True
-            )
+if foundDB == None:
+    if len(output) == 0:
+        print("Error: No sections")
+        print("1")
     else:
-        if len(output) == 0:
-            print "Error: No sections"
-            print "1"
-        else:
-            collection.update(
-                {"sessionID": sys.argv[1]},
-                {'$push': {'Data': sys.argv[2]}},
-                True
-            )
-            
-            cachedCourses.update(
-                {"Course": sys.argv[2]},
-                {"Course": sys.argv[2], "Data": output[0]['Course']},
-                True
-            )
-            
-            print "Updated"
-            print "0"
+        print("Created")
+        print("0")
+        collection.insert_one(newOutput)
+        cachedCourses.update(
+            { 'Course': sys.argv[2] },
+            { 'Course': sys.argv[2], 'Data': output[0]['Course'] },
+            True
+        )
+else:
+    if len(output) == 0:
+        print("Error: No sections")
+        print("1")
+    else:
+        collection.update(
+            {"sessionID": sys.argv[1]},
+            {'$push': {'Data': sys.argv[2]}},
+            True
+        )
+        
+        cachedCourses.update(
+            {"Course": sys.argv[2]},
+            {"Course": sys.argv[2], "Data": output[0]['Course']},
+            True
+        )
+        
+        print("Updated")
+        print("0")

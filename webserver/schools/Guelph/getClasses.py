@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-from BeautifulSoup import BeautifulSoup
-from HTMLParser import HTMLParser
+from bs4 import BeautifulSoup
+from html.parser import HTMLParser
 import json
 
 import requests
@@ -49,8 +49,7 @@ def getDescription(courseInfo):
         infoURL = 'https://www.uoguelph.ca/registrar/calendars/' + Level.lower() + '/current/courses/' + Code.replace('*', '').lower() + '.shtml'
         
         r = requests.get(infoURL)
-        
-        soup = BeautifulSoup(r.text)
+        soup = BeautifulSoup(r.text, features="lxml")
         
         try:
             a = soup.find("table")
@@ -116,6 +115,7 @@ def getData():
     r = requests.post(postURL, data=postfields, cookies=cookie)
     
     print("Data recieved")
+        
 
     f = r.text
 
