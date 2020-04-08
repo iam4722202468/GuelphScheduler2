@@ -196,8 +196,8 @@ std::vector<int> initialBranch(std::vector<std::vector<std::vector<std::vector<b
 }
 
 void gen(std::vector<std::vector<void*>> arrs, int compare(int, int), int fitness(std::vector<std::vector<void*>>*, std::vector<int>, int), bool filter(void*, void*, int, int), std::vector<gen_trim_struct*> *captured) {
-  int groups = 5;
-  int cycles = 200;
+  int groups = 10;
+  int cycles = 300;
   int groupSize = 10;
 
   std::vector<std::vector<std::vector<std::vector<bool>>>> possibleCombinations;
