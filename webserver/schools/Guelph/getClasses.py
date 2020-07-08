@@ -13,7 +13,7 @@ db = client['scheduler']
 collection = db['cachedData']
 
 #define semester
-SEMESTER = 'W20'
+SEMESTER = 'F20'
 
 def convertTime(x):
     if(x[-2:] == "AM"):
