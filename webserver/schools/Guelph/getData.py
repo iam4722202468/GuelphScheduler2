@@ -169,8 +169,8 @@ def getData(dataToSend):
     # 3 stores course code
 
     postURL = 'https://webadvisor.uoguelph.ca/WebAdvisor/WebAdvisor?TOKENIDX=' + cookie['LASTTOKEN'] + '&SS=1&APP=ST&CONSTITUENCY=WBST'
-    postfields = {"VAR1":SEMESTER, "VAR10":"Y", "VAR11":"Y","VAR12":"Y", "VAR13":"Y", "VAR14":"Y", "VAR15":"Y", "VAR16":"Y", "DATE.VAR1":"", "DATE.VAR2":"", "LIST.VAR1_CONTROLLER":"LIST.VAR1", "LIST.VAR1_MEMBERS":"LIST.VAR1*LIST.VAR2*LIST.VAR3*LIST.VAR4", "LIST.VAR1_MAX":"5", "LIST.VAR2_MAX":"5", "LIST.VAR3_MAX":"5", "LIST.VAR4_MAX":"5", "LIST.VAR1_1":dataToSend[0][0], "LIST.VAR2_1":"", "LIST.VAR3_1":dataToSend[0][1], "LIST.VAR4_1":"", "LIST.VAR1_2":"", "LIST.VAR2_2":"", "LIST.VAR3_2":"", "LIST.VAR4_2":"", "LIST.VAR1_3":"", "LIST.VAR2_3":"", "LIST.VAR3_3":"", "LIST.VAR4_3":"", "LIST.VAR1_4":"", "LIST.VAR2_4":"", "LIST.VAR3_4":"", "LIST.VAR4_4":"", "LIST.VAR1_5":"", "LIST.VAR2_5":"", "LIST.VAR3_5":"", "LIST.VAR4_5":"", "VAR7":"", "VAR8":"", "VAR3":"", "VAR6":"", "VAR21":"", "VAR9":"", "SUBMIT_OPTIONS":""}
-
+    postfields = {"VAR1":SEMESTER, "VAR10":"", "VAR11":"","VAR12":"", "VAR13":"", "VAR14":"", "VAR15":"", "VAR16":"", "DATE.VAR1":"", "DATE.VAR2":"", "LIST.VAR1_CONTROLLER":"LIST.VAR1", "LIST.VAR1_MEMBERS":"LIST.VAR1*LIST.VAR2*LIST.VAR3*LIST.VAR4", "LIST.VAR1_MAX":"5", "LIST.VAR2_MAX":"5", "LIST.VAR3_MAX":"5", "LIST.VAR4_MAX":"5", "LIST.VAR1_1":dataToSend[0][0], "LIST.VAR2_1":"", "LIST.VAR3_1":dataToSend[0][1], "LIST.VAR4_1":"", "LIST.VAR1_2":"", "LIST.VAR2_2":"", "LIST.VAR3_2":"", "LIST.VAR4_2":"", "LIST.VAR1_3":"", "LIST.VAR2_3":"", "LIST.VAR3_3":"", "LIST.VAR4_3":"", "LIST.VAR1_4":"", "LIST.VAR2_4":"", "LIST.VAR3_4":"", "LIST.VAR4_4":"", "LIST.VAR1_5":"", "LIST.VAR2_5":"", "LIST.VAR3_5":"", "LIST.VAR4_5":"", "VAR7":"", "VAR8":"", "VAR3":"", "VAR6":"", "VAR21":"", "VAR9":"", "SUBMIT_OPTIONS":""}
+    
     r = s.post(postURL, data=postfields)
 
     soup = BeautifulSoup(r.text, features="lxml")
@@ -298,22 +298,27 @@ def getData(dataToSend):
 
             if x.find('-', 11) == -1:
                 continue
-
-            indexOfHyphon = splitX.index('-')
-
-            Section_Type = splitX[1] #session type
-            Day = ' '.join(splitX[2:indexOfHyphon-1]) #days
-            Location = splitX[-3] + " room " + splitX[-1] # room number
-
-            startTime = splitX[indexOfHyphon-1] #start time
-            endTime = splitX[indexOfHyphon+1].replace(',', '') #end time
-
-            tempObject['Course'] = Code
-            tempObject['Section_Type'] = Section_Type
-            tempObject['Day'] = Day
-            tempObject['Time_Start'] = convertTime(startTime)
-            tempObject['Time_End'] = convertTime(endTime)
-            tempObject['Location'] = Location
+            
+            try:
+                indexOfHyphon = splitX.index('-')
+                
+                Section_Type = splitX[1] #session type
+                Day = ' '.join(splitX[2:indexOfHyphon-1]) #days
+                Location = splitX[-3] + " room " + splitX[-1] # room number
+                
+                startTime = splitX[indexOfHyphon-1] #start time
+                endTime = splitX[indexOfHyphon+1].replace(',', '') #end time
+                
+                tempObject['Course'] = Code
+                tempObject['Section_Type'] = Section_Type
+                tempObject['Day'] = Day
+                tempObject['Time_Start'] = convertTime(startTime)
+                tempObject['Time_End'] = convertTime(endTime)
+                tempObject['Location'] = Location
+            except:
+                tempObject['Course'] = Code
+                tempObject['Section_Type'] = "TBA"
+                tempObject['Day'] = "TBA"
 
             if tempObject['Section_Type'] in ["LEC","LAB","SEM"]:
                 Offering.append(tempObject)
@@ -332,4 +337,4 @@ def getData(dataToSend):
 
 
 if __name__ == '__main__':
-    print(getData([["ENGG","3100"]]))
+    print(getData([["MATH","4240"]]))
