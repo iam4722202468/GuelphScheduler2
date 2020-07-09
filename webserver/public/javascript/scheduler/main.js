@@ -6,12 +6,17 @@ require('bootstrap');
 require('bootstrap/scss/bootstrap.scss');
 require('font-awesome/css/font-awesome.css');
 
-require('fullcalendar');
-require('fullcalendar/dist/fullcalendar.css');
+import { Calendar } from '@fullcalendar/core';
+import interactionPlugin from '@fullcalendar/interaction';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
 
 import $ from 'jquery';
 window.jQuery = $;
 window.$ = $;
+
+console.log(window)
 
 var schedules;
 var scheduleSize;
@@ -303,13 +308,40 @@ function lightenColor(color, percent) {
   return (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
 };
 
+function createCalendar(events) {
+  var calendar = new Calendar(document.getElementById("calendar"), {
+    plugins: [ timeGridPlugin, interactionPlugin ],
+    initialView: 'timeGridWeek',
+    dayHeaders: false,
+    headerToolbar: false,
+    allDayText: '',
+    dayHeaderFormat: 'ddd',
+    slotMinTime: '08:00:00',
+    hiddenDays: [0, 6],
+    initialDate: '2018-01-01',
+    navLinks: false,
+    editable: false,
+    contentHeight: 880,
+    eventTextColor: '#000000',
+    eventClick: function(calEvent) {
+      getInfo(calEvent.event._def.publicId);
+    },
+    eventMouseLeave: function() {
+      $('#calendar').css('cursor', 'default');
+    },
+    eventMouseEnter: function() {
+      $('#calendar').css('cursor', 'pointer');
+    },
+    events: events
+  });
+
+  calendar.render();
+}
 
 function refreshTable(schedule) {
   for(var x in elements) {
     elements[x].remove()
   }
-  
-  $('#calendar').fullCalendar('removeEvents');
   
   elements = []
   //console.log(schedule);
@@ -321,6 +353,8 @@ function refreshTable(schedule) {
     'Thur': '04',
     'Fri': '05'
   };
+
+  var events = [];
 
   schedule.forEach((course) => {
     course.Offerings.forEach((offering) => {
@@ -335,7 +369,8 @@ function refreshTable(schedule) {
           borderColor: `#${colorHash}`,
           backgroundColor: `#${lightenColor(colorHash, 60)}`
         }
-        $('#calendar').fullCalendar( 'renderEvent', event, true);
+
+        events.push(event);
       });
     });
   });
@@ -349,11 +384,14 @@ function refreshTable(schedule) {
         start: `2018-01-${dayList[day]} ${block.Time_Start.substr(0, 2)}:${block.Time_Start.substr(2, 4)}:00`,
         end: `2018-01-${dayList[day]} ${block.Time_End.substr(0, 2)}:${block.Time_End.substr(2, 4)}:00`,
         borderColor: `#${colorHash}`,
-        backgroundColor: `#${lightenColor(colorHash, 60)}`
+        backgroundColor: `#${lightenColor(colorHash, 60)}`,
       }
-      $('#calendar').fullCalendar( 'renderEvent', event, true);
+
+      events.push(event);
     });
   });
+
+  createCalendar(events);
 }
 
 var showingSchedule = 0
@@ -774,24 +812,5 @@ $(document).ready(function() {
     }
   });
 
-  $('#calendar').fullCalendar({
-    header: false,
-    defaultView: 'agendaWeek',
-    allDayText: '',
-    columnHeaderFormat: 'ddd',
-    minTime: '08:00:00',
-    hiddenDays: [0, 6],
-    defaultDate: '2018-01-01',
-    navLinks: false,
-    editable: false,
-    contentHeight: 880,
-    eventLimit: false,
-    eventClick: function(calEvent, jsEvent, view) {
-      getInfo(calEvent.id);
-    },
-    eventRender: function(event, element) {
-      element.css("cursor", "pointer");
-    }
-
-  });
+  createCalendar([])
 });

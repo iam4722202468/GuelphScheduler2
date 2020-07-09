@@ -186,6 +186,7 @@ def getData(dataToSend):
 
     courseObjects = []
 
+
     for row in rows:
         Course = {}
         Section = {}
