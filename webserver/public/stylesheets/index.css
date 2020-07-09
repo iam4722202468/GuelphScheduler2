@@ -18,6 +18,27 @@ body {
     flex: 1 0 auto;
 }
 
+.sectionsList {
+  padding-left: 15px;
+
+  .section {
+    margin-left: 0px;
+    margin-right: 15px;
+    outline: solid 1px black;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    cursor: pointer;
+  }
+
+  .section:hover {
+    background-color: rgba(0,0,0,0.1);
+  }
+}
+
+.selectedSection {
+  border: 2px solid green;
+}
+
 .slider {
   -webkit-appearance: none;
   width: 100%;
@@ -52,6 +73,12 @@ body {
   margin-bottom: 4em;
 }
 
+.sections-hidden {
+  .sectionsList {
+    display: none;
+  }
+}
+
 .divider
 {
     overflow: hidden;
@@ -73,6 +100,7 @@ body {
 .classlist-el {
   margin-right: -4px;
   margin-bottom: 10px;
+  padding-bottom: 5px;
   border-radius: 10px;
 }
 

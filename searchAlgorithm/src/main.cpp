@@ -46,11 +46,16 @@ class SectionObject {
   public:
     std::vector<OfferingObject> offerings;
     Json::Value thisSection;
+    std::string sectionId;
+    std::string courseId;
 
     double instructorRating = 0;
 
     SectionObject(Json::Value thisObject)
     {
+      sectionId = thisObject["Meeting_Section"].asString();
+      courseId = thisObject["Course"].asString();
+
       for (unsigned int place = 0; place < thisObject["Offerings"].size(); ++place)
         if (thisObject["Offerings"][place]["Section_Type"] != "EXAM")
           offerings.push_back(thisObject["Offerings"][place]);
@@ -87,6 +92,13 @@ class CourseObject {
   }
 };
 
+struct LockedSection {
+  std::string courseId;
+  std::vector<std::string> sections;
+};
+
+std::vector<LockedSection> lockedSections;
+
 int getBlock(int time) {
   int block = (time-800)/100*2;
   int temp = (time-800) - (time-800)/100*100;
@@ -101,9 +113,30 @@ int getBlock(int time) {
 
 std::vector<SectionObject> blockedTimes;
 
+bool checkSectionLock(SectionObject *section) {
+  bool found = true;
+
+  for (LockedSection course : lockedSections) {
+    if (section->courseId == course.courseId) {
+      found = false;
+
+      for (std::string sectionId : course.sections) {
+        if (section->sectionId == sectionId)
+          return true;
+      }
+    }
+  }
+
+  return found;
+}
+
 bool checkConflict(void *session1, void *session2, int place1, int place2) {
   SectionObject* typedSection1 = (SectionObject*)session1;
   SectionObject* typedSection2 = (SectionObject*)session2;
+
+  // Remove if sessionId doesn't match
+  if (!checkSectionLock(typedSection1) || !checkSectionLock(typedSection2))
+    return false;
 
   //dimensions of day and weeks
   char schedule[5][29];
@@ -309,6 +342,7 @@ int main(int argc, char *argv[]) {
   Json::Value root2;
   Json::Value root3;
   Json::Value root4;
+  Json::Value root5;
 
   Json::Reader reader;
 
@@ -328,6 +362,27 @@ int main(int argc, char *argv[]) {
   for (auto&& doc : cursor) {
     std::string tempBSON = bsoncxx::to_json(doc);
     reader.parse(tempBSON, root3, false);
+  }
+
+  cursor = db["sections"].find(document{} << "sessionID" << argv[1] << finalize);
+  for (auto&& doc : cursor) {
+    std::string tempBSON = bsoncxx::to_json(doc);
+    reader.parse(tempBSON, root5, false);
+  }
+
+  if (root5["sections"].size() != 0) {
+    for (Json::Value::iterator itr = root5["sections"].begin() ; itr != root5["sections"].end(); itr++ ) {
+      std::string courseId = itr.key().asString();
+
+      LockedSection locked;
+      locked.courseId = courseId;
+
+      for (auto section : *itr) {
+        locked.sections.push_back(section.asString());
+      }
+
+      lockedSections.push_back(locked);
+    }
   }
 
   if(root3["data"].size() == 0)

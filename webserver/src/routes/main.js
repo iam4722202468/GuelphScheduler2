@@ -57,6 +57,36 @@ function checkDatabase(checkFor, callback_)
   }
 }
 
+function getSections(checkFor, callback_)
+{
+  if (checkFor !== undefined && typeof checkFor == "string") {
+    MongoClient.connect(url, function (err, client) {
+      if (err)
+        console.log('Unable to connect to the mongoDB server. Error:', err);
+      else {
+        const db = client.db('scheduler');
+        var collection = db.collection('cachedCourses');
+        
+        // 80% sure this is safe
+        collection.find({"Course": checkFor.toUpperCase()})
+          .limit(2)
+          .toArray(function(err, docs){
+          if (docs.length == 2 || docs.length == 0)
+          {
+            client.close();
+            callback_(null);
+          } else {
+            client.close();
+            callback_(docs[0].Data.Sections);
+          }
+        });
+      }
+    });
+  } else {
+    callback_(null);
+  }
+}
+
 function addBlock(blockString, sessionID, callback_)
 {
   //add block and delete it after every use instead of modifying it
@@ -75,6 +105,29 @@ function addBlock(blockString, sessionID, callback_)
           callback_();
           client.close();
         });
+      });
+    }
+  });
+}
+
+function getSelectedSections(sessionID, callback_)
+{
+  MongoClient.connect(url, function (err, client) {
+    if (err)
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    else {
+      const db = client.db('scheduler');
+      var collection = db.collection('sections');
+      
+      collection.find({"sessionID": sessionID}).toArray(function(err, docs){
+        if (docs.length > 0)
+        {
+          client.close();
+          callback_(docs[0]);
+        } else {
+          client.close();
+          callback_(null);
+        }
       });
     }
   });
@@ -195,7 +248,10 @@ router.post('/getInfo', function(req,res) {
   
   checkDatabase(req.body.Code, function(isFound) {
     if (isFound!== null) {
-      res.end(JSON.stringify(isFound));
+      getSections(req.body.Code, (sections) => {
+        isFound.Sections = sections
+        res.end(JSON.stringify(isFound));
+      })
     } else {
       res.end('{"error" : "Course not found"}');
     }
@@ -287,22 +343,27 @@ router.post('/init', function(req,res) {
     if (isFound['Value'] == 1) {
       
       getBlock(sessionID, function(blockData) {
-        
-        if (blockData === null)
-          blockData = JSON.parse('{"Offerings" : []}');
-        
-        runAlgorithm(sessionID, function(toReturn) {
-          if (toReturn.indexOf("null") != 0) {
-            res.end('{"course":"null", "schedules":' + toReturn + ', "blocks":' + JSON.stringify(blockData) + '}');
-          } else {
-            noSchedules(isFound, function(data) {
-              data = JSON.parse(data);
-              data['blocks'] = blockData;
-              data = JSON.stringify(data);
-              
-              res.end(data);
-            });
-          }
+        getSelectedSections(sessionID, (sections) => {
+          if (blockData === null)
+            blockData = JSON.parse('{"Offerings" : []}');
+          if (sections === null)
+            sections = {}
+          else
+            sections = sections.sections
+          
+          runAlgorithm(sessionID, function(toReturn) {
+            if (toReturn.indexOf("null") != 0) {
+              res.end('{"course":"null", "schedules":' + toReturn + ', "blocks":' + JSON.stringify(blockData) + ', "sections":' + JSON.stringify(sections) + '}');
+            } else {
+              noSchedules(isFound, function(data) {
+                data = JSON.parse(data);
+                data['blocks'] = blockData;
+                data = JSON.stringify(data);
+                
+                res.end(data);
+              });
+            }
+          });
         });
       });
     } else {
@@ -386,6 +447,68 @@ router.post('/updateBlock', function(req,res) {
   
 });
 
+function validateSections(sectionData) {
+  if (typeof sectionData != "object")
+    return false;
+
+  if (Object.keys(sectionData).length > 20)
+    return false;
+
+  for (course in sectionData) {
+    if (typeof course != "string")
+      return false;
+    if (course.length > 10)
+      return false;
+
+    if (typeof sectionData[course] != "object")
+      return false;
+
+    for (section in sectionData[course]) {
+      if (typeof sectionData[course][section] != "string")
+        return false;
+
+      if (sectionData[course][section].length > 10)
+        return false;
+    }
+  }
+
+  return true;
+}
+
+function updateSections(sessionID, newSections, callback_) {
+  MongoClient.connect(url, function (err, client) {
+    if (err)
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    else {
+      const db = client.db('scheduler');
+      var collection = db.collection('sections');
+      
+      collection.update(
+        { "sessionID": sessionID },
+        {
+          "sessionID": sessionID,
+          "sections": newSections
+        },
+        { upsert: true }
+      ).then(() => {
+        client.close()
+      })
+    }
+  });
+}
+
+router.post('/updateSections', function(req,res) {
+  res.setHeader('Content-type', 'application/json');
+  sessionID = req.cookies.sessionID;
+
+  if (validateSections(req.body)) {
+    updateSections(sessionID, req.body)
+    res.end('{"done":"success"}')
+  } else {
+    res.end('{"error":"invalid sections object"}')
+  }
+});
+
 router.post('/updateCriteria', function(req,res) {
   res.setHeader('Content-type', 'application/json');
   sessionID = req.cookies.sessionID;
@@ -427,12 +550,16 @@ router.post('/add', function(req,res) {
           
           if (outputArray[1] == "1")
             res.end('{"error" : "' + outputArray[0] + '"}');
-          else
-            res.end('{"success" : "done", "course":' + JSON.stringify(isFound) + '}');
-        }
-        else
+          else {
+            getSections(courseCode, (sections) => {
+              isFound.Sections = sections;
+              res.end('{"success" : "done", "course":' + JSON.stringify(isFound) + '}');
+            })
+          }
+        } else {
           console.log(err);
           res.end('{"error" : "Problem with python parser"}');
+        }
       });
     } else {
       res.end('{"error" : "Course not found"}') 

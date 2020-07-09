@@ -21,6 +21,7 @@ console.log(window)
 var schedules;
 var scheduleSize;
 var scheduleStart = 0;
+var selectedSections = {}
 
 // https://stackoverflow.com/questions/3426404/create-a-hexadecimal-colour-based-on-a-string-with-javascript
 function hashCode(str) {
@@ -97,7 +98,7 @@ function getSchedules() {
         for (let x in request['schedules'])
         {
           getCourseInfo(request['schedules'][x], function(data) {
-            addToList(data);
+            addToList(data, {});
           });
         }
         
@@ -169,11 +170,13 @@ function init()
         
         refreshTable(schedules[0]);
         $("#numberOfInputs").html(schedules.length);
+
+        selectedSections = request['sections'];
         
         for (let x in request['schedules'][0])
         {
           getCourseInfo(request['schedules'][0][x]['Course'], function(data) {
-            addToList(data);
+            addToList(data, request['sections']);
           });
         }
         $("#showingNumber").html(1);
@@ -181,7 +184,7 @@ function init()
         for (let x in request['schedules'])
         {
           getCourseInfo(request['schedules'][x], function(data) {
-            addToList(data);
+            addToList(data, request['sections']);
           });
         }
         
@@ -342,7 +345,7 @@ function refreshTable(schedule) {
   for(var x in elements) {
     elements[x].remove()
   }
-  
+
   elements = []
   //console.log(schedule);
 
@@ -454,6 +457,22 @@ function drawSchedule(schedule, canvasID)
         ctx.fillRect(dayNumber*x/5,start,x/5,end-start); 
       }
     }
+
+  jsonBlocks().forEach((courseInfo) => {
+    var dayArray = courseInfo['Day'].split(", ")
+    
+    var start = parseInt(courseInfo['Time_Start']) - 800
+    var end = parseInt(courseInfo['Time_End']) - 800
+    start = start/1330*y
+    end = end/1330*y
+    
+    for (let day in dayArray)
+    {
+      var dayNumber = days.indexOf(dayArray[day])
+      ctx.fillStyle="#f03800";
+      ctx.fillRect((dayNumber+1)*x/5 - 10,start,10,end-start); 
+    }
+  });
 }
 
 function scheduleThumbnail(schedule, canvasID)
@@ -570,8 +589,12 @@ function deleteClass(courseCode)
       for (let x in classList)
       {
         if (classList[x].Code == courseCode) {
-          $(`div[index='${classList[x].Code}']`).remove();
+          $(`div[index='${classList[x].Code}']`).parent().remove();
           classList.splice(x, 1);
+
+          if (selectedSections[courseCode]) {
+            delete selectedSections[courseCode]
+          }
         }
       }
       
@@ -590,42 +613,150 @@ function deleteClassPre(e) {
   deleteClass($(e.target).closest('.delete-class').attr('place'));
 }
 
-function addToList(object)
+function clickSection(e) {
+  let section = $(e.target).closest('.section');
+  let sectionId = section.attr('sectionId');
+
+  let course = $(e.target).closest('.course');
+  let courseId = course.attr('courseId');
+
+  if (!selectedSections[courseId])
+    selectedSections[courseId] = []
+
+  let foundSection = selectedSections[courseId].indexOf(sectionId)
+
+  if (foundSection > -1) {
+    selectedSections[courseId].splice(foundSection, 1)
+    section.removeClass('selectedSection')
+  }
+  else {
+    selectedSections[courseId].push(sectionId)
+    section.addClass('selectedSection')
+  }
+
+  if (selectedSections[courseId].length == 0)
+    delete selectedSections[courseId]
+
+  addCover();
+
+  $.ajax({
+    type: "POST",
+    url: "updateSections",
+    data: selectedSections,
+    
+    error : function(request, status, error) {
+      console.log(error);
+    },
+    
+    success : function(request, status, error) {
+      if (request.error) {
+        $("#modal-course-name_").html('Error')
+        $("#modal-course-error").html(request['error'])
+        $("#noSections").modal()
+      } else {
+        getSchedules();
+      }
+    }
+  });
+}
+
+function createSections(sections, storedSections) {
+  let sectionHTML = '<hr>';
+
+  for (let section in sections) {
+    let hasSelected = false;
+
+    let foundSections = storedSections[sections[section].Course];
+    if (foundSections && foundSections.indexOf(sections[section].Meeting_Section) > -1)
+      hasSelected = true;
+
+    if (hasSelected)
+      hasSelected = "selectedSection";
+    else
+      hasSelected = "";
+
+    sectionHTML += `
+      <div class="section row ${hasSelected}" sectionId="${sections[section].Meeting_Section}">
+        <div class="col-6">
+          <b>${sections[section].Meeting_Section}</b><br>
+          ${sections[section].Enrollment} / ${sections[section].Size} Available<br>
+          ${sections[section].Instructors} - ${sections[section].Instructors_Rating}<br>
+        </div>
+
+        <div class="col-6">
+          <canvas style="width: 100%; padding-right: 10px" id="${JSON.stringify(sections[section]).split('"').join('')}"></canvas>
+        </div>
+      </div>
+      <br>
+    `
+  }
+
+  return sectionHTML;
+}
+
+function toggleSections(e) {
+  $(e.target).closest('.course').toggleClass('sections-hidden');
+}
+
+function drawSections(sections) {
+  for (let section in sections) {
+    drawGrid(JSON.stringify(sections[section]).split('"').join(''))
+    drawSchedule([sections[section]], JSON.stringify(sections[section]).split('"').join(''))
+  }
+}
+
+function addToList(object, sections)
 {
   $("#classList").html("")
   classList.push(object)
-  
+
   for (let x in classList)
   {
     let colorHash = intToRGB(hashCode(classList[x].Code));
     let lighterColor = lightenColor(colorHash, 60);
 
     const element = `
-      <div class="row classlist-el divider"
-        style="border: solid 2px #${colorHash};
-        background-color: #${lighterColor};"
-        index="${classList[x].Code}">
-        <div class="col-9">
-          <b>${classList[x].Code}</b><br>
-          ${classList[x].Name}<br>
-          ${classList[x].Num_Credits}
+      <div
+          class="classlist-el divider course sections-hidden"
+          style="border: solid 2px #${colorHash};
+          background-color: #${lighterColor};"
+          courseId="${classList[x].Code}"
+      >
+        <div class="row"
+          style="padding-left:15px; padding-top:10px"
+          index="${classList[x].Code}">
+          <div class="col-8">
+            <b>${classList[x].Code}</b><br>
+            ${classList[x].Name}<br>
+            ${classList[x].Num_Credits}
+          </div>
+          <div place=${classList[x].Code}
+          class="col-1 get-info hoverButton btn btn-outline-primary" title="Information">
+            <i class="moveDown fa fa-info"></i>
+          </div>
+          <div place=${classList[x].Code} 
+          class="col-1 delete-class hoverButton btn btn-outline-danger" title="Delete">
+            <i class="moveDown fa fa-trash"></i>
+          </div>
+          <div place=${classList[x].Code} 
+          class="col-1 toggle-sections hoverButton btn btn-outline-success" title="Toggle Sections">
+            <i class="moveDown fa fa-caret-down"></i>
+          </div>
+          <div class="col-1"></div>
         </div>
-        <div place=${classList[x].Code}
-        class="col-1 get-info hoverButton btn btn-outline-primary">
-          <i class="moveDown fa fa-info"></i>
+        <div class="sectionsList">
+          ${createSections(classList[x].Sections, sections)}
         </div>
-        <div place=${classList[x].Code} 
-        class="col-1 delete-class hoverButton btn btn-outline-danger">
-          <i class="moveDown fa fa-trash"></i>
-        </div>
-        <div class="col-1"></div>
       </div>
     `;
     $("#classList").append(element);
+    drawSections(classList[x].Sections)
   }
 
   $('.get-info').on('click', getInfoPre);
   $('.delete-class').on('click', deleteClassPre);
+  $('.section').on('click', clickSection);
+  $('.toggle-sections').on('click', toggleSections);
 }
 
 function addCover() {
@@ -671,7 +802,7 @@ function addClass(object)
           $("#modal-course-error").html(request['error'])
           $("#noSections").modal()
         } else {
-          addToList(request.course);
+          addToList(request.course, {});
           getSchedules();
         }
       }
