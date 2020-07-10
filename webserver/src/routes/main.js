@@ -346,6 +346,7 @@ router.post('/init', function(req,res) {
         getSelectedSections(sessionID, (sections) => {
           if (blockData === null)
             blockData = JSON.parse('{"Offerings" : []}');
+
           if (sections === null)
             sections = {}
           else
@@ -358,6 +359,7 @@ router.post('/init', function(req,res) {
               noSchedules(isFound, function(data) {
                 data = JSON.parse(data);
                 data['blocks'] = blockData;
+                data['sections'] = sections;
                 data = JSON.stringify(data);
                 
                 res.end(data);

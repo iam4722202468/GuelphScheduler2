@@ -98,7 +98,7 @@ function getSchedules() {
         for (let x in request['schedules'])
         {
           getCourseInfo(request['schedules'][x], function(data) {
-            addToList(data, {});
+            addToList(data);
           });
         }
         
@@ -161,6 +161,8 @@ function init()
         for (let x in request['blocks']['Offerings'])
           makeBlock(request['blocks']['Offerings'][x]);
       
+      selectedSections = request['sections'];
+        
       if (!('error' in request))
       {
         schedules = request['schedules']
@@ -171,12 +173,10 @@ function init()
         refreshTable(schedules[0]);
         $("#numberOfInputs").html(schedules.length);
 
-        selectedSections = request['sections'];
-        
         for (let x in request['schedules'][0])
         {
           getCourseInfo(request['schedules'][0][x]['Course'], function(data) {
-            addToList(data, request['sections']);
+            addToList(data);
           });
         }
         $("#showingNumber").html(1);
@@ -184,7 +184,7 @@ function init()
         for (let x in request['schedules'])
         {
           getCourseInfo(request['schedules'][x], function(data) {
-            addToList(data, request['sections']);
+            addToList(data);
           });
         }
         
@@ -660,13 +660,13 @@ function clickSection(e) {
   });
 }
 
-function createSections(sections, storedSections) {
+function createSections(sections) {
   let sectionHTML = '<hr>';
 
   for (let section in sections) {
     let hasSelected = false;
 
-    let foundSections = storedSections[sections[section].Course];
+    let foundSections = selectedSections[sections[section].Course];
     if (foundSections && foundSections.indexOf(sections[section].Meeting_Section) > -1)
       hasSelected = true;
 
@@ -705,7 +705,7 @@ function drawSections(sections) {
   }
 }
 
-function addToList(object, sections)
+function addToList(object)
 {
   $("#classList").html("")
   classList.push(object)
@@ -745,7 +745,7 @@ function addToList(object, sections)
           <div class="col-1"></div>
         </div>
         <div class="sectionsList">
-          ${createSections(classList[x].Sections, sections)}
+          ${createSections(classList[x].Sections)}
         </div>
       </div>
     `;
@@ -802,7 +802,7 @@ function addClass(object)
           $("#modal-course-error").html(request['error'])
           $("#noSections").modal()
         } else {
-          addToList(request.course, {});
+          addToList(request.course);
           getSchedules();
         }
       }

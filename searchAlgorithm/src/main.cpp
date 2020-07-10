@@ -74,44 +74,12 @@ class SectionObject {
     }
 };
 
-class CourseObject {
-  std::string courseCode;
-
-  public:
-
-  std::vector<void*> sections;
-
-  CourseObject(Json::Value thisObject)
-  {
-    courseCode = thisObject["Course"].asString();
-
-    for (unsigned int place = 0; place < thisObject["Sections"].size(); ++place)
-    {
-      sections.push_back(new SectionObject(thisObject["Sections"][place]));
-    }
-  }
-};
-
 struct LockedSection {
   std::string courseId;
   std::vector<std::string> sections;
 };
 
 std::vector<LockedSection> lockedSections;
-
-int getBlock(int time) {
-  int block = (time-800)/100*2;
-  int temp = (time-800) - (time-800)/100*100;
-
-  if (temp == 30)
-    block++; /* start on this block, so add one */
-  else if(temp == 50)
-    block++; /* only add one because it ends on this block */
-
-  return block;
-}
-
-std::vector<SectionObject> blockedTimes;
 
 bool checkSectionLock(SectionObject *section) {
   bool found = true;
@@ -130,13 +98,45 @@ bool checkSectionLock(SectionObject *section) {
   return found;
 }
 
+class CourseObject {
+  std::string courseCode;
+
+  public:
+
+  std::vector<void*> sections;
+
+  CourseObject(Json::Value thisObject)
+  {
+    courseCode = thisObject["Course"].asString();
+
+    for (unsigned int place = 0; place < thisObject["Sections"].size(); ++place)
+    {
+      SectionObject *newSection = new SectionObject(thisObject["Sections"][place]);
+      if (checkSectionLock(newSection))
+        sections.push_back(newSection);
+      else
+        delete newSection;
+    }
+  }
+};
+
+int getBlock(int time) {
+  int block = (time-800)/100*2;
+  int temp = (time-800) - (time-800)/100*100;
+
+  if (temp == 30)
+    block++; /* start on this block, so add one */
+  else if(temp == 50)
+    block++; /* only add one because it ends on this block */
+
+  return block;
+}
+
+std::vector<SectionObject> blockedTimes;
+
 bool checkConflict(void *session1, void *session2, int place1, int place2) {
   SectionObject* typedSection1 = (SectionObject*)session1;
   SectionObject* typedSection2 = (SectionObject*)session2;
-
-  // Remove if sessionId doesn't match
-  if (!checkSectionLock(typedSection1) || !checkSectionLock(typedSection2))
-    return false;
 
   //dimensions of day and weeks
   char schedule[5][29];
