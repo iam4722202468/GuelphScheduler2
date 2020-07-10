@@ -21,7 +21,7 @@ console.log(window)
 var schedules;
 var scheduleSize;
 var scheduleStart = 0;
-var selectedSections = {}
+var selectedSections = {};
 
 // https://stackoverflow.com/questions/3426404/create-a-hexadecimal-colour-based-on-a-string-with-javascript
 function hashCode(str) {
@@ -163,7 +163,7 @@ function init()
         for (let x in request['blocks']['Offerings'])
           makeBlock(request['blocks']['Offerings'][x]);
       
-      selectedSections = request['sections'];
+      selectedSections = request['sections'] || {};
         
       if (!('error' in request))
       {
