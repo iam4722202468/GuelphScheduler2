@@ -237,7 +237,7 @@ function runAlgorithm(sessionID, callback_)
   // add another argument here for weight of schedules when rating
   //a = '{"Sections" : [ { "Meeting_Section" : "NA", "Enrollment" : "NA", "Instructors" : "NA", "Offerings" : [ { "Time_Start" : "1430", "Section_Type" : "BLOCK", "Time_End" : "1530", "Course" : "BLOCK", "Location" : "BLOCK", "Day" : "Tues, Thur" }]}]}'
   
-  exec('../searchAlgorithm/generate',[sessionID], {maxBuffer:1028*1000}, function(err, data) {  
+  exec('../searchAlgorithm/generate',[sessionID], { maxBuffer: 1028*1000, timeout: 10000}, function(err, data) {  
     console.log(err);
     callback_(data.toString());             
   });
