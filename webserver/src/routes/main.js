@@ -237,9 +237,13 @@ function runAlgorithm(sessionID, callback_)
   // add another argument here for weight of schedules when rating
   //a = '{"Sections" : [ { "Meeting_Section" : "NA", "Enrollment" : "NA", "Instructors" : "NA", "Offerings" : [ { "Time_Start" : "1430", "Section_Type" : "BLOCK", "Time_End" : "1530", "Course" : "BLOCK", "Location" : "BLOCK", "Day" : "Tues, Thur" }]}]}'
   
-  exec('../searchAlgorithm/generate',[sessionID], { maxBuffer: 1028*1000, timeout: 10000}, function(err, data) {  
-    console.log(err);
-    callback_(data.toString());             
+  exec('../searchAlgorithm/generate',[sessionID], { maxBuffer: 1028*1000, timeout: 10000}, function(err, data, stderr) {  
+    try {
+      JSON.parse(data);
+      callback_(data.toString(), null);             
+    } catch {
+      callback_(null, "error parsing output");
+    }
   });
 }
 
@@ -307,8 +311,11 @@ router.post('/getSchedules', function(req,res) {
   
   checkSession(sessionID, function(isFound) {
     if (isFound['Value'] == 1) {
-      runAlgorithm(sessionID, function(toReturn) {
-        if (toReturn.indexOf("null") != 0)
+      runAlgorithm(sessionID, function(toReturn, err) {
+        if (err != null) {
+          res.send("{\"error\": \"problem with course generation\"}");
+        }
+        else if (toReturn.indexOf("null") != 0)
         {
           let parsedRes = JSON.parse(toReturn);
           let data = {};
@@ -358,8 +365,21 @@ router.post('/init', function(req,res) {
           else
             sections = sections.sections
           
-          runAlgorithm(sessionID, function(toReturn) {
-            if (toReturn.indexOf("null") != 0) {
+          runAlgorithm(sessionID, function(toReturn, err) {
+            if (err != null) {
+              data = {};
+              data['course'] = null;
+              data['schedules'] = [];
+              data['blocks'] = blockData;
+              data['sections'] = sections;
+              data['searchSpace'] = 0;
+              data['error'] = err;
+
+              data = JSON.stringify(data);
+
+              res.end(data)
+            }
+            else if (toReturn.indexOf("null") != 0) {
               let parsedRes = JSON.parse(toReturn);
               data = {};
               data['course'] = null;
