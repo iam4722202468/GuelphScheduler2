@@ -310,7 +310,13 @@ router.post('/getSchedules', function(req,res) {
       runAlgorithm(sessionID, function(toReturn) {
         if (toReturn.indexOf("null") != 0)
         {
-          res.end('{"course":' + JSON.stringify(isFound) + ', "schedules":' + toReturn + '}');
+          let parsedRes = JSON.parse(toReturn);
+          let data = {};
+          data['course'] = isFound;
+          data['schedules'] = parsedRes.results;
+          data['searchSpace'] = parsedRes.searchSpace;
+
+          res.end(JSON.stringify(data))
         }
         else
         {
@@ -354,12 +360,23 @@ router.post('/init', function(req,res) {
           
           runAlgorithm(sessionID, function(toReturn) {
             if (toReturn.indexOf("null") != 0) {
-              res.end('{"course":"null", "schedules":' + toReturn + ', "blocks":' + JSON.stringify(blockData) + ', "sections":' + JSON.stringify(sections) + '}');
+              let parsedRes = JSON.parse(toReturn);
+              data = {};
+              data['course'] = null;
+              data['schedules'] = parsedRes.results;
+              data['blocks'] = blockData;
+              data['sections'] = sections;
+              data['searchSpace'] = parsedRes.searchSpace;
+
+              data = JSON.stringify(data);
+
+              res.end(data)
             } else {
               noSchedules(isFound, function(data) {
                 data = JSON.parse(data);
                 data['blocks'] = blockData;
                 data['sections'] = sections;
+                data['searchSpace'] = 0;
                 data = JSON.stringify(data);
                 
                 res.end(data);

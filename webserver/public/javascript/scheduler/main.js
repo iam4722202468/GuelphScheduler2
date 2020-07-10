@@ -82,6 +82,7 @@ function getSchedules() {
 
         $("#numberOfInputs").html(schedules.length);
         $("#showingNumber").html(1);
+        $("#searchSpace").html(request['searchSpace']);
         
       } else {
         schedules = [];
@@ -104,6 +105,7 @@ function getSchedules() {
         
         $("#numberOfInputs").html(0);
         $("#showingNumber").html(0);
+        $("#searchSpace").html(0);
         refreshTable([]);
       }
       
@@ -172,6 +174,7 @@ function init()
         
         refreshTable(schedules[0]);
         $("#numberOfInputs").html(schedules.length);
+        $("#searchSpace").html(request['searchSpace']);
 
         for (let x in request['schedules'][0])
         {
@@ -190,6 +193,7 @@ function init()
         
         $("#numberOfInputs").html(0);
         $("#showingNumber").html(0);
+        $("#searchSpace").html(0);
       }
     }
   });

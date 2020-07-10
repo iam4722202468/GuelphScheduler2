@@ -310,8 +310,8 @@ using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::close_array;
 using bsoncxx::builder::stream::finalize;
 
-void outputJSON(std::vector<gen_trim_struct*> *captured, std::vector<CourseObject> *courseObjects) {
-  std::string temp = "[[";
+void outputJSON(std::vector<gen_trim_struct*> *captured, std::vector<CourseObject> *courseObjects, double searchSpace) {
+  std::string temp = "{\"searchSpace\": " + std::to_string(searchSpace) + ",\"results\":[[";
 
   for (gen_trim_struct *curr : *captured) {
     for (int pos = 0; pos < curr->top.size(); ++pos) {
@@ -325,7 +325,7 @@ void outputJSON(std::vector<gen_trim_struct*> *captured, std::vector<CourseObjec
   }
 
   temp = temp.substr(0, temp.size()-2);
-  temp += "]";
+  temp += "]}";
 
   std::cout << temp << std::endl;
 }
@@ -432,6 +432,11 @@ int main(int argc, char *argv[]) {
     sectionsGroup.push_back(x.sections);
   }
 
+  double searchSpace = 1;
+  for (auto courseObject : courseObjects) {
+    searchSpace *= courseObject.sections.size();
+  }
+
   // Run
   std::vector<gen_trim_struct*> captured;
   gen(sectionsGroup, comp, fit, checkConflict, &captured);
@@ -442,7 +447,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  outputJSON(&captured, &courseObjects);
+  outputJSON(&captured, &courseObjects, searchSpace);
 
   return 0;
  }
