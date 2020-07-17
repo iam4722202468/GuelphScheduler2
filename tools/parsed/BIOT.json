@@ -1,0 +1,1 @@
+{"prerequisites": {"BIOT*6500": [], "BIOT*6600": [], "BIOT*6800": []}, "restrictions": {"BIOT*6500": [], "BIOT*6600": [], "BIOT*6800": [{"type": "AND", "groups": ["Restricted to Master of Biotechnology students."]}]}}

@@ -1,0 +1,296 @@
+digraph {
+	"ENGG*1070"
+	"ENGG*1100"
+	"MATH*1160"
+	"ENGG*1500" -> "MATH*1160" [arrowhead=none color="#ff0000"]
+	"MATH*2150" -> "MATH*1160" [arrowhead=none color="#ff0000"]
+	"MATH*2160" -> "MATH*1160" [arrowhead=none color="#ff0000"]
+	"ENGG*1500"
+	"MATH*2150" -> "ENGG*1500" [arrowhead=none color="#ff0000"]
+	"MATH*2160" -> "ENGG*1500" [arrowhead=none color="#ff0000"]
+	"MATH*2150"
+	"MATH*2160"
+	"ENGG*2100"
+	"ENGG*1100" -> "ENGG*2100" [color="#000000"]
+	"CHEM*1040"
+	"CHEM*1060" -> "CHEM*1040" [color="#b17cba"]
+	"CHEM*1060"
+	"PHYS*1130"
+	"IPS*1500" -> "PHYS*1130" [arrowhead=none color="#ff0000"]
+	"PHYS*1080" -> "PHYS*1130" [arrowhead=none color="#ff0000"]
+	"IPS*1500"
+	"PHYS*1020" -> "IPS*1500" [color="#6786b6"]
+	"PHYS*1300" -> "IPS*1500" [color="#6786b6"]
+	"MATH*1080" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"MATH*1200" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1000" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1080" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1020"
+	"PHYS*1300"
+	"PHYS*1020" -> "PHYS*1300" [arrowhead=none color="#ff0000"]
+	"PHYS*1070" -> "PHYS*1300" [arrowhead=none color="#ff0000"]
+	"PHYS*1070"
+	"MATH*1080"
+	"MATH*1200" -> "MATH*1080" [arrowhead=none color="#ff0000"]
+	"MATH*1200"
+	"PHYS*1000"
+	"PHYS*1080"
+	"PHYS*1020" -> "PHYS*1080" [color="#b0b368"]
+	"PHYS*1300" -> "PHYS*1080" [color="#b0b368"]
+	"PHYS*1000" -> "PHYS*1080" [arrowhead=none color="#ff0000"]
+	"ENGG*2120"
+	"CHEM*1040" -> "ENGG*2120" [color="#000000"]
+	"PHYS*1130" -> "ENGG*2120" [color="#000000"]
+	"ENGG*2130"
+	"ENGG*1210"
+	"ENGG*2160"
+	"ENGG*1500" -> "ENGG*2160" [color="#79c181:#000000"]
+	"ENGG*1210" -> "ENGG*2160" [color="#79c181:#000000"]
+	"MATH*1210"
+	"ENGG*2230"
+	"ENGG*1210" -> "ENGG*2230" [color="#000000"]
+	"MATH*1210" -> "ENGG*2230" [color="#000000"]
+	"PHYS*1010"
+	"ENGG*2400"
+	"ENGG*1500" -> "ENGG*2400" [color="#000000"]
+	"MATH*1200" -> "ENGG*2400" [color="#000000"]
+	"ENGG*1210" -> "ENGG*2400" [color="#000000"]
+	"MATH*1210" -> "ENGG*2400" [color="#000000"]
+	"PHYS*1010" -> "ENGG*2400" [color="#000000"]
+	"CIS*1300"
+	"CIS*1500" -> "CIS*1300" [arrowhead=none color="#ff0000"]
+	"CIS*1500"
+	"ENGG*2410"
+	"PHYS*1130" -> "ENGG*2410" [color="#000000"]
+	"CIS*1300" -> "ENGG*2410" [color="#9abaa2"]
+	"CIS*1500" -> "ENGG*2410" [color="#9abaa2"]
+	"ENGG*3380"
+	"ENGG*3050"
+	"ENGG*2410" -> "ENGG*3050" [color="#000000"]
+	"ENGG*3380" -> "ENGG*3050" [color="#000000"]
+	"ENGG*3070"
+	"ENGG*2120" -> "ENGG*3070" [color="#000000"]
+	"ENGG*2030"
+	"ENGG*3080"
+	"ENGG*2030" -> "ENGG*3080" [arrowhead=none color="#ff0000"]
+	"ENGG*2340"
+	"MATH*2270"
+	"MATH*1160" -> "MATH*2270" [color="#9c82af"]
+	"ENGG*1500" -> "MATH*2270" [color="#9c82af"]
+	"MATH*2150" -> "MATH*2270" [color="#9c82af"]
+	"MATH*2160" -> "MATH*2270" [color="#9c82af"]
+	"MATH*1210" -> "MATH*2270" [color="#bc79b8"]
+	"IPS*1510" -> "MATH*2270" [color="#bc79b8"]
+	"MATH*1090" -> "MATH*2270" [color="#bc79b8"]
+	"MATH*2080" -> "MATH*2270" [color="#bc79b8"]
+	"IPS*1510"
+	"MATH*1090"
+	"MATH*2080"
+	"ENGG*3140"
+	"ENGG*2340" -> "ENGG*3140" [color="#000000"]
+	"MATH*2270" -> "ENGG*3140" [color="#000000"]
+	"ENGG*3150"
+	"ENGG*1210" -> "ENGG*3150" [color="#8fafb1:#000000"]
+	"ENGG*2660"
+	"ENGG*3160"
+	"ENGG*2230" -> "ENGG*3160" [color="#000000"]
+	"ENGG*2660" -> "ENGG*3160" [color="#000000"]
+	"ENGG*2560"
+	"ENGG*3180"
+	"ENGG*2230" -> "ENGG*3180" [color="#000000"]
+	"ENGG*2660" -> "ENGG*3180" [color="#b4c3a5"]
+	"ENGG*2560" -> "ENGG*3180" [color="#b4c3a5"]
+	"ENGG*3240"
+	"MATH*1210" -> "ENGG*3240" [color="#000000"]
+	"ENGG*3260"
+	"CHEM*1040" -> "ENGG*3260" [color="#000000"]
+	"ENGG*2230" -> "ENGG*3260" [color="#000000"]
+	"ENGG*2400" -> "ENGG*3260" [color="#000000"]
+	"MATH*2270" -> "ENGG*3260" [color="#000000"]
+	"ENGG*2450"
+	"ENGG*3280"
+	"ENGG*2120" -> "ENGG*3280" [color="#000000"]
+	"ENGG*2160" -> "ENGG*3280" [color="#000000"]
+	"ENGG*2230" -> "ENGG*3280" [color="#000000"]
+	"ENGG*2340" -> "ENGG*3280" [color="#000000"]
+	"ENGG*2450" -> "ENGG*3280" [color="#000000"]
+	"ENGG*3390"
+	"ENGG*2400" -> "ENGG*3390" [color="#000000"]
+	"ENGG*3450"
+	"ENGG*2450" -> "ENGG*3450" [color="#000000"]
+	"ENGG*3510"
+	"PHYS*1010" -> "ENGG*3510" [color="#000000"]
+	"ENGG*2450" -> "ENGG*3510" [color="#000000"]
+	"STAT*2120"
+	"MATH*1210" -> "STAT*2120" [color="#6792c0"]
+	"IPS*1510" -> "STAT*2120" [color="#6792c0"]
+	"MATH*2080" -> "STAT*2120" [color="#6792c0"]
+	"STAT*2040" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"STAT*2060" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"STAT*2080" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"STAT*2100" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"STAT*2040"
+	"MATH*1080" -> "STAT*2040" [color="#776ac7"]
+	"STAT*2060" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2080" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2230" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2060"
+	"STAT*2080" -> "STAT*2060" [arrowhead=none color="#ff0000"]
+	"STAT*2080"
+	"STAT*2100"
+	"STAT*2230"
+	"BIOL*1040"
+	"BIOL*1090"
+	"MICR*1020"
+	"MICR*2420"
+	"CHEM*1040" -> "MICR*2420" [color="#9867a3"]
+	"BIOL*1090" -> "MICR*2420" [color="#9867a3"]
+	"BIOL*1070" -> "MICR*2420" [color="#9867a3"]
+	"BIOL*1080" -> "MICR*2420" [color="#9867a3"]
+	"BIOL*1070"
+	"BIOL*1080"
+	"ENGG*3590"
+	"ENGG*2230" -> "ENGG*3590" [color="#000000"]
+	"ENGG*2560" -> "ENGG*3590" [color="#000000"]
+	"STAT*2120" -> "ENGG*3590" [color="#000000"]
+	"BIOL*1040" -> "ENGG*3590" [color="#6bc277"]
+	"BIOL*1090" -> "ENGG*3590" [color="#6bc277"]
+	"MICR*1020" -> "ENGG*3590" [color="#6bc277"]
+	"MICR*2420" -> "ENGG*3590" [color="#6bc277"]
+	"ENGG*3640"
+	"ENGG*2410" -> "ENGG*3640" [color="#000000"]
+	"ENGG*2450" -> "ENGG*3640" [color="#000000"]
+	"MET*2030"
+	"ENGG*3650"
+	"MATH*1210" -> "ENGG*3650" [color="#aca66f"]
+	"ENGG*2230" -> "ENGG*3650" [color="#c6bd6e"]
+	"MATH*2080" -> "ENGG*3650" [color="#aca66f"]
+	"STAT*2120" -> "ENGG*3650" [color="#c49488"]
+	"STAT*2040" -> "ENGG*3650" [color="#c49488"]
+	"MET*2030" -> "ENGG*3650" [color="#c6bd6e"]
+	"ENGG*3670"
+	"ENGG*2120" -> "ENGG*3670" [color="#000000"]
+	"ENGG*2230" -> "ENGG*3670" [color="#000000"]
+	"MATH*2130"
+	"ENGG*3700"
+	"CIS*1300" -> "ENGG*3700" [color="#79b782"]
+	"CIS*1500" -> "ENGG*3700" [color="#79b782"]
+	"MATH*2270" -> "ENGG*3700" [color="#000000"]
+	"MATH*2130" -> "ENGG*3700" [color="#000000"]
+	"ENGG*3830"
+	"ENGG*2230" -> "ENGG*3830" [color="#000000"]
+	"ENGG*2660" -> "ENGG*3830" [color="#000000"]
+	"ENGG*3100"
+	"ENGG*4000"
+	"ENGG*3100" -> "ENGG*4000" [color="#000000"]
+	"PHYS*3130"
+	"MATH*1160" -> "PHYS*3130" [color="#bab7a1"]
+	"MATH*2150" -> "PHYS*3130" [color="#bab7a1"]
+	"MATH*2160" -> "PHYS*3130" [color="#bab7a1"]
+	"MATH*2270" -> "PHYS*3130" [color="#000000"]
+	"MATH*2200" -> "PHYS*3130" [color="#000000"]
+	"PHYS*2310" -> "PHYS*3130" [color="#000000"]
+	"PHYS*2340" -> "PHYS*3130" [color="#000000"]
+	"MATH*2200"
+	"MATH*1210" -> "MATH*2200" [color="#a2659e"]
+	"IPS*1510" -> "MATH*2200" [color="#a2659e"]
+	"MATH*1090" -> "MATH*2200" [color="#a2659e"]
+	"MATH*2080" -> "MATH*2200" [color="#a2659e"]
+	"PHYS*2310"
+	"PHYS*2340"
+	"PHYS*4070"
+	"ENGG*4040"
+	"ENGG*3390" -> "ENGG*4040" [color="#9fb998"]
+	"PHYS*3130" -> "ENGG*4040" [color="#9fb998"]
+	"PHYS*4070" -> "ENGG*4040" [arrowhead=none color="#ff0000"]
+	"ENGG*4080"
+	"ENGG*3450" -> "ENGG*4080" [color="#000000"]
+	"ENGG*4110"
+	"ENGG*4120"
+	"ENGG*4130"
+	"ENGG*4150"
+	"ENGG*4160"
+	"ENGG*4170"
+	"ENGG*4180"
+	"ENGG*4650"
+	"ENGG*4200"
+	"ENGG*3640" -> "ENGG*4200" [color="#000000"]
+	"ENGG*4650" -> "ENGG*4200" [arrowhead=none color="#ff0000"]
+	"ENGG*2050"
+	"ENGG*4230"
+	"ENGG*3080" -> "ENGG*4230" [color="#000000"]
+	"ENGG*3260" -> "ENGG*4230" [color="#000000"]
+	"ENGG*2050" -> "ENGG*4230" [arrowhead=none color="#ff0000"]
+	"ENGG*4240"
+	"ENGG*4340"
+	"ENGG*2660" -> "ENGG*4340" [color="#b27c92"]
+	"ENGG*2560" -> "ENGG*4340" [color="#b27c92"]
+	"ENGG*4360"
+	"ENGG*2230" -> "ENGG*4360" [color="#000000"]
+	"ENGG*3650" -> "ENGG*4360" [color="#000000"]
+	"ENGG*3670" -> "ENGG*4360" [color="#000000"]
+	"ENGG*4370"
+	"ENGG*2230" -> "ENGG*4370" [color="#000000"]
+	"ENGG*3650" -> "ENGG*4370" [color="#000000"]
+	"ENGG*4380"
+	"ENGG*3160" -> "ENGG*4380" [color="#000000"]
+	"ENGG*4390"
+	"ENGG*3450" -> "ENGG*4390" [color="#000000"]
+	"ENGG*4420"
+	"ENGG*2400" -> "ENGG*4420" [color="#000000"]
+	"ENGG*3640" -> "ENGG*4420" [color="#000000"]
+	"CIS*2420"
+	"CIS*2520"
+	"ENGG*1500" -> "CIS*2520" [color="#7667b0"]
+	"CIS*2500" -> "CIS*2520" [color="#000000"]
+	"CIS*1910" -> "CIS*2520" [color="#7667b0"]
+	"MATH*2000" -> "CIS*2520" [color="#7667b0"]
+	"CIS*2500"
+	"CIS*1910"
+	"MATH*2000"
+	"MATH*1160" -> "MATH*2000" [color="#bcb9c5"]
+	"IPS*1500" -> "MATH*2000" [color="#bcb9c5"]
+	"MATH*1080" -> "MATH*2000" [color="#bcb9c5"]
+	"MATH*1200" -> "MATH*2000" [color="#bcb9c5"]
+	"ENGG*4450"
+	"ENGG*2100" -> "ENGG*4450" [color="#000000"]
+	"CIS*2420" -> "ENGG*4450" [color="#7fb791"]
+	"CIS*2520" -> "ENGG*4450" [color="#7fb791"]
+	"ENGG*4460"
+	"ENGG*1500" -> "ENGG*4460" [color="#000000"]
+	"ENGG*2400" -> "ENGG*4460" [color="#000000"]
+	"ENGG*4470"
+	"ENGG*2160" -> "ENGG*4470" [color="#000000"]
+	"MATH*2270" -> "ENGG*4470" [color="#000000"]
+	"MATH*2130" -> "ENGG*4470" [color="#000000"]
+	"ENGG*4260"
+	"ENGG*4770"
+	"ENGG*3590" -> "ENGG*4770" [color="#000000"]
+	"ENGG*4260" -> "ENGG*4770" [arrowhead=none color="#ff0000"]
+	"ENGG*4330"
+	"ENGG*4810"
+	"ENGG*2230" -> "ENGG*4810" [color="#6fb99b:#000000"]
+	"ENGG*2450" -> "ENGG*4810" [color="#6fb99b:#000000"]
+	"MATH*2130" -> "ENGG*4810" [color="#6fb99b:#000000"]
+	"ENGG*4330" -> "ENGG*4810" [arrowhead=none color="#ff0000"]
+	"ENGG*6000"
+	"ENGG*6090"
+	"ENGG*6110"
+	"ENGG*6140"
+	"ENGG*6160"
+	"ENGG*6180"
+	"ENGG*6370"
+	"ENGG*6390"
+	"ENGG*6500"
+	"ENGG*6520"
+	"ENGG*6550"
+	"ENGG*6590"
+	"ENGG*6610"
+	"ENGG*6630"
+	"ENGG*6670"
+	"ENGG*6790"
+	"ENGG*6800"
+	"ENGG*6900"
+	"ENGG*6950"
+	"ENGG*6990"
+}

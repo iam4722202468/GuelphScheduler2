@@ -1,0 +1,93 @@
+digraph {
+	"AGR*1100"
+	"AGR*1250"
+	"AGR*1110"
+	"AGR*1100" -> "AGR*1110" [arrowhead=none color="#ff0000"]
+	"AGR*2470"
+	"BIOL*1050" -> "AGR*2470" [color="#a9a672"]
+	"BIOL*1070" -> "AGR*2470" [color="#a9a672"]
+	"AGR*2150" -> "AGR*2470" [arrowhead=none color="#ff0000"]
+	"BIOL*1050"
+	"BIOL*1070"
+	"AGR*2150"
+	"ENVS*2060"
+	"AGR*2320" -> "ENVS*2060" [arrowhead=none color="#ff0000"]
+	"AGR*2320"
+	"SOIL*2010" -> "AGR*2320" [arrowhead=none color="#ff0000"]
+	"SOIL*2010"
+	"BIOL*1030"
+	"BIOL*1080"
+	"BIOL*1090"
+	"AGR*2350"
+	"BIOL*1050" -> "AGR*2350" [color="#6f687f:#c6957b:#b27c77"]
+	"BIOL*1070" -> "AGR*2350" [color="#6f687f:#c6957b:#75ab8f"]
+	"BIOL*1030" -> "AGR*2350" [color="#6f687f:#a29abb"]
+	"BIOL*1080" -> "AGR*2350" [color="#6f687f:#c6957b:#849986"]
+	"BIOL*1090" -> "AGR*2350" [color="#6f687f:#c6957b:#849986"]
+	"AGR*3010"
+	"GEOG*2460"
+	"STAT*2040"
+	"MATH*1080" -> "STAT*2040" [color="#b16878"]
+	"STAT*2060" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2080" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2120" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2230" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"MATH*1080"
+	"IPS*1500" -> "MATH*1080" [arrowhead=none color="#ff0000"]
+	"MATH*1200" -> "MATH*1080" [arrowhead=none color="#ff0000"]
+	"IPS*1500"
+	"PHYS*1020" -> "IPS*1500" [color="#6ba7c3"]
+	"PHYS*1300" -> "IPS*1500" [color="#6ba7c3"]
+	"MATH*1200" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1000" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1080" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1020"
+	"PHYS*1300"
+	"PHYS*1020" -> "PHYS*1300" [arrowhead=none color="#ff0000"]
+	"PHYS*1070" -> "PHYS*1300" [arrowhead=none color="#ff0000"]
+	"PHYS*1070"
+	"MATH*1200"
+	"PHYS*1000"
+	"PHYS*1080"
+	"PHYS*1020" -> "PHYS*1080" [color="#9a9b68"]
+	"PHYS*1300" -> "PHYS*1080" [color="#9a9b68"]
+	"PHYS*1000" -> "PHYS*1080" [arrowhead=none color="#ff0000"]
+	"STAT*2060"
+	"STAT*2080" -> "STAT*2060" [arrowhead=none color="#ff0000"]
+	"STAT*2120" -> "STAT*2060" [arrowhead=none color="#ff0000"]
+	"STAT*2080"
+	"STAT*2100"
+	"STAT*2120"
+	"STAT*2080" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"STAT*2100" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"IPS*1510" -> "STAT*2120" [color="#9a74b5"]
+	"MATH*1210" -> "STAT*2120" [color="#9a74b5"]
+	"MATH*2080" -> "STAT*2120" [color="#9a74b5"]
+	"IPS*1510"
+	"MATH*1210"
+	"MATH*2080"
+	"STAT*2230"
+	"AGR*3450"
+	"GEOG*2460" -> "AGR*3450" [color="#b776b9"]
+	"STAT*2040" -> "AGR*3450" [color="#b776b9"]
+	"STAT*2060" -> "AGR*3450" [color="#b776b9"]
+	"STAT*2080" -> "AGR*3450" [color="#b776b9"]
+	"AGR*3500"
+	"AGR*4010"
+	"AGR*4020"
+	"AGR*2470" -> "AGR*4020" [color="#000000"]
+	"BIOL*1050" -> "AGR*4020" [color="#a38e94"]
+	"BIOL*1070" -> "AGR*4020" [color="#a38e94"]
+	"STAT*2040" -> "AGR*4020" [color="#000000"]
+	"AGR*4450"
+	"AGR*4460"
+	"AGR*4450" -> "AGR*4460" [color="#000000"]
+	"OAGR*2070"
+	"OAGR*3130"
+	"OAGR*4160"
+	"OAGR*4050"
+	"OAGR*2070" -> "OAGR*4050" [color="#000000"]
+	"OAGR*3130" -> "OAGR*4050" [arrowhead=none color="#ff0000"]
+	"OAGR*4160" -> "OAGR*4050" [arrowhead=none color="#ff0000"]
+	"AGR*2301"
+}

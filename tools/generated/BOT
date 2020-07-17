@@ -1,0 +1,17 @@
+digraph {
+	"BIOL*1050"
+	"BIOL*1070"
+	"BIOL*1080"
+	"BIOL*1090"
+	"BOT*2100"
+	"BIOL*1050" -> "BOT*2100" [color="#9eb3aa:#719a78"]
+	"BIOL*1070" -> "BOT*2100" [color="#9eb3aa:#bcc6bb"]
+	"BIOL*1080" -> "BOT*2100" [color="#9eb3aa:#88b770"]
+	"BIOL*1090" -> "BOT*2100" [color="#9eb3aa:#88b770"]
+	"BOT*3050"
+	"BIOL*1070" -> "BOT*3050" [color="#000000"]
+	"BOT*3410"
+	"BIOL*1070" -> "BOT*3410" [color="#8e917f:#6bb97a"]
+	"BIOL*1080" -> "BOT*3410" [color="#8e917f:#b78eb0"]
+	"BIOL*1090" -> "BOT*3410" [color="#8e917f:#b78eb0"]
+}

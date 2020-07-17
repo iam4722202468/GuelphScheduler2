@@ -10,3 +10,4 @@ searchAlgorithm/mongo/
 webserver/Schools/Humber/secret
 webserver/src/.mypy_cache
 webserver/schools/Guelph/.mypy_cache
+tools/__pycache__

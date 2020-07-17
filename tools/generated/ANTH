@@ -1,0 +1,71 @@
+digraph {
+	"ANTH*1120"
+	"ANTH*1150"
+	"ANTH*2230"
+	"ANTH*1150" -> "ANTH*2230" [color="#000000"]
+	"ANTH*2160"
+	"ANTH*2180"
+	"IDEV*2000"
+	"IDEV*1000" -> "IDEV*2000" [color="#a1b48b"]
+	"POLS*1150" -> "IDEV*2000" [color="#a1b48b"]
+	"IDEV*1000"
+	"POLS*1150"
+	"POLS*1000" -> "POLS*1150" [arrowhead=none color="#ff0000"]
+	"POLS*1300" -> "POLS*1150" [arrowhead=none color="#ff0000"]
+	"POLS*1000"
+	"POLS*1300"
+	"ANTH*2660"
+	"IDEV*2400"
+	"IDEV*2500"
+	"ANTH*2650"
+	"ANTH*3650"
+	"ANTH*2230" -> "ANTH*3650" [color="#b16faa"]
+	"ANTH*2160" -> "ANTH*3650" [color="#a8a5af"]
+	"ANTH*2180" -> "ANTH*3650" [color="#a8a5af"]
+	"IDEV*2000" -> "ANTH*3650" [color="#a8a5af"]
+	"ANTH*2660" -> "ANTH*3650" [color="#b16faa"]
+	"IDEV*2400" -> "ANTH*3650" [color="#b16faa"]
+	"IDEV*2500" -> "ANTH*3650" [color="#b16faa"]
+	"ANTH*2650" -> "ANTH*3650" [arrowhead=none color="#ff0000"]
+	"SOAN*2120"
+	"ANTH*1150" -> "SOAN*2120" [color="#c5af83"]
+	"SOC*1100" -> "SOAN*2120" [color="#c5af83"]
+	"SOC*1500" -> "SOAN*2120" [color="#c5af83"]
+	"SOC*1100"
+	"SOC*1500"
+	"ANTH*3690"
+	"ANTH*2230" -> "ANTH*3690" [color="#000000"]
+	"ANTH*2160" -> "ANTH*3690" [color="#809b9f"]
+	"ANTH*2180" -> "ANTH*3690" [color="#809b9f"]
+	"SOAN*2120" -> "ANTH*3690" [color="#000000"]
+	"ANTH*3950"
+	"SOAN*3070"
+	"ANTH*4300"
+	"ANTH*3690" -> "ANTH*4300" [color="#a6c36a:#ae7c9c"]
+	"SOAN*3070" -> "ANTH*4300" [color="#a6c36a:#c3a28d"]
+	"SOC*3310"
+	"SOAN*2120" -> "SOC*3310" [color="#000000"]
+	"SOAN*2112" -> "SOC*3310" [color="#000000"]
+	"SOAN*2112"
+	"ANTH*4640"
+	"ANTH*3690" -> "ANTH*4640" [color="#96c68b:#7ba48f:#6eb5af"]
+	"SOAN*3070" -> "ANTH*4640" [color="#96c68b:#a67499"]
+	"SOC*3310" -> "ANTH*4640" [color="#96c68b:#7ba48f:#6eb5af"]
+	"ANTH*4880"
+	"ANTH*4890"
+	"SOAN*3120"
+	"SOAN*2120" -> "SOAN*3120" [color="#000000"]
+	"ANTH*4900"
+	"ANTH*3690" -> "ANTH*4900" [color="#c77cbd:#a2826b"]
+	"SOAN*3070" -> "ANTH*4900" [color="#c77cbd:#c4aa7f"]
+	"SOAN*3120" -> "ANTH*4900" [color="#c77cbd:#c4aa7f"]
+	"ANTH*4910"
+	"ANTH*4900" -> "ANTH*4910" [color="#000000"]
+	"ANTH*6000"
+	"ANTH*6080"
+	"ANTH*6460"
+	"ANTH*6550"
+	"ANTH*6600"
+	"ANTH*6660"
+	"ANTH*6700"
+}

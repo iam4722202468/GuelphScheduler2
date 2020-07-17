@@ -34,11 +34,13 @@ def getKeys(header):
         
     return cookie
 
-def getDescription(courseInfo):
+def getDescription(courseInfo, silent=False):
     
     Code = courseInfo['Code']
     Level = courseInfo['Level']
-    print(Code)
+
+    if not silent:
+        print(Code)
     
     found = collection.find_one({'Code': Code, 'School':'Guelph'})
     
@@ -168,4 +170,5 @@ def getData():
     
     return
 
-getData()
+if __name__ == '__main__':
+    getData()

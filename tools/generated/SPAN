@@ -1,0 +1,44 @@
+digraph {
+	"SPAN*1100"
+	"SPAN*1110"
+	"SPAN*2000"
+	"HISP*1110"
+	"SPAN*2040"
+	"SPAN*1110" -> "SPAN*2040" [color="#806589"]
+	"HISP*1110" -> "SPAN*2040" [color="#806589"]
+	"HISP*3220"
+	"SPAN*3220"
+	"HISP*3230"
+	"SPAN*3230"
+	"HISP*2990" -> "SPAN*3230" [color="#9bc37e"]
+	"SPAN*2990" -> "SPAN*3230" [color="#9bc37e"]
+	"HISP*2990"
+	"SPAN*2990"
+	"SPAN*3210"
+	"HISP*3220" -> "SPAN*3210" [color="#c0b17d:#a388ad"]
+	"SPAN*3220" -> "SPAN*3210" [color="#c0b17d:#a388ad"]
+	"HISP*3230" -> "SPAN*3210" [color="#c0b17d:#a3b280"]
+	"SPAN*3230" -> "SPAN*3210" [color="#c0b17d:#a3b280"]
+	"HISP*2010"
+	"SPAN*2010"
+	"SPAN*3500"
+	"HISP*2010" -> "SPAN*3500" [color="#c7baaa"]
+	"SPAN*2010" -> "SPAN*3500" [color="#c7baaa"]
+	"SPAN*3700"
+	"SPAN*3080"
+	"SPAN*3800"
+	"HISP*3220" -> "SPAN*3800" [color="#867cbd"]
+	"SPAN*3220" -> "SPAN*3800" [color="#867cbd"]
+	"HISP*3230" -> "SPAN*3800" [color="#6c94c5"]
+	"SPAN*3230" -> "SPAN*3800" [color="#6c94c5"]
+	"SPAN*3080" -> "SPAN*3800" [color="#000000"]
+	"SPAN*3810"
+	"HISP*3220" -> "SPAN*3810" [color="#8fbf69"]
+	"SPAN*3220" -> "SPAN*3810" [color="#8fbf69"]
+	"HISP*3230" -> "SPAN*3810" [color="#8b9db6"]
+	"SPAN*3230" -> "SPAN*3810" [color="#8b9db6"]
+	"SPAN*3080" -> "SPAN*3810" [color="#000000"]
+	"SPAN*4840"
+	"HISP*3220" -> "SPAN*4840" [color="#c6b666"]
+	"SPAN*3220" -> "SPAN*4840" [color="#c6b666"]
+}

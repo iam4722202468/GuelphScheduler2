@@ -1,0 +1,140 @@
+digraph {
+	"ANSC*3080"
+	"BIOC*2580" -> "ANSC*3080" [color="#898666"]
+	"EQN*2040" -> "ANSC*3080" [color="#898666"]
+	"BIOC*2580"
+	"CHEM*1050" -> "BIOC*2580" [color="#000000"]
+	"CHEM*1050"
+	"CHEM*1040" -> "CHEM*1050" [color="#000000"]
+	"CHEM*1040"
+	"CHEM*1060" -> "CHEM*1040" [color="#757377"]
+	"CHEM*1060"
+	"EQN*2040"
+	"BIOM*3200"
+	"BIOC*2580" -> "BIOM*3200" [color="#000000"]
+	"ZOO*3200"
+	"ZOO*3210"
+	"ZOO*3600"
+	"BIOC*2580" -> "ZOO*3600" [color="#000000"]
+	"ZOO*2090" -> "ZOO*3600" [color="#000000"]
+	"STAT*2040" -> "ZOO*3600" [color="#8ab0c0"]
+	"ZOO*2090"
+	"BIOL*1070" -> "ZOO*2090" [color="#000000"]
+	"BIOL*1070"
+	"STAT*2040"
+	"MATH*1080" -> "STAT*2040" [color="#ad86b3"]
+	"STAT*2060" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2080" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2120" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"STAT*2230" -> "STAT*2040" [arrowhead=none color="#ff0000"]
+	"MATH*1080"
+	"IPS*1500" -> "MATH*1080" [arrowhead=none color="#ff0000"]
+	"MATH*1200" -> "MATH*1080" [arrowhead=none color="#ff0000"]
+	"IPS*1500"
+	"PHYS*1020" -> "IPS*1500" [color="#b584a7"]
+	"PHYS*1300" -> "IPS*1500" [color="#b584a7"]
+	"MATH*1200" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1000" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1080" -> "IPS*1500" [arrowhead=none color="#ff0000"]
+	"PHYS*1020"
+	"PHYS*1300"
+	"PHYS*1020" -> "PHYS*1300" [arrowhead=none color="#ff0000"]
+	"PHYS*1070" -> "PHYS*1300" [arrowhead=none color="#ff0000"]
+	"PHYS*1070"
+	"MATH*1200"
+	"PHYS*1000"
+	"PHYS*1080"
+	"PHYS*1020" -> "PHYS*1080" [color="#80806f"]
+	"PHYS*1300" -> "PHYS*1080" [color="#80806f"]
+	"PHYS*1000" -> "PHYS*1080" [arrowhead=none color="#ff0000"]
+	"STAT*2060"
+	"STAT*2080" -> "STAT*2060" [arrowhead=none color="#ff0000"]
+	"STAT*2120" -> "STAT*2060" [arrowhead=none color="#ff0000"]
+	"STAT*2080"
+	"STAT*2100"
+	"STAT*2120"
+	"STAT*2080" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"STAT*2100" -> "STAT*2120" [arrowhead=none color="#ff0000"]
+	"IPS*1510" -> "STAT*2120" [color="#66a5c5"]
+	"MATH*1210" -> "STAT*2120" [color="#66a5c5"]
+	"MATH*2080" -> "STAT*2120" [color="#66a5c5"]
+	"IPS*1510"
+	"MATH*1210"
+	"MATH*2080"
+	"STAT*2230"
+	"ZOO*3620"
+	"BIOM*2000"
+	"ANSC*3080" -> "BIOM*2000" [arrowhead=none color="#ff0000"]
+	"BIOM*3200" -> "BIOM*2000" [arrowhead=none color="#ff0000"]
+	"ZOO*3200" -> "BIOM*2000" [arrowhead=none color="#ff0000"]
+	"ZOO*3210" -> "BIOM*2000" [arrowhead=none color="#ff0000"]
+	"ZOO*3600" -> "BIOM*2000" [arrowhead=none color="#ff0000"]
+	"ZOO*3620" -> "BIOM*2000" [arrowhead=none color="#ff0000"]
+	"NEUR*2000"
+	"BIOL*1090" -> "NEUR*2000" [color="#000000"]
+	"PSYC*1000" -> "NEUR*2000" [color="#000000"]
+	"PSYC*2410" -> "NEUR*2000" [arrowhead=none color="#ff0000"]
+	"BIOL*1090"
+	"PSYC*1000"
+	"PSYC*2410"
+	"PSYC*1000" -> "PSYC*2410" [color="#97b47a"]
+	"PSYC*1100" -> "PSYC*2410" [color="#97b47a"]
+	"PSYC*1200" -> "PSYC*2410" [color="#97b47a"]
+	"PSYC*1100"
+	"PSYC*1200"
+	"PHYS*2030"
+	"BIOM*3000"
+	"BIOM*3200" -> "BIOM*3000" [color="#b7a483"]
+	"ZOO*3200" -> "BIOM*3000" [color="#b7a483"]
+	"ZOO*3600" -> "BIOM*3000" [color="#b7a483"]
+	"NEUR*2000" -> "BIOM*3000" [color="#b7a483"]
+	"PSYC*2410" -> "BIOM*3000" [color="#b7a483"]
+	"PHYS*2030" -> "BIOM*3000" [color="#b7a483"]
+	"BIOL*1080"
+	"BIOM*3010"
+	"BIOL*1070" -> "BIOM*3010" [color="#aeaa6d"]
+	"BIOL*1090" -> "BIOM*3010" [color="#aeaa6d"]
+	"BIOL*1080" -> "BIOM*3010" [color="#aeaa6d"]
+	"BIOM*3090"
+	"ANSC*3080" -> "BIOM*3090" [color="#aeac67"]
+	"BIOC*2580" -> "BIOM*3090" [color="#000000"]
+	"BIOM*3200" -> "BIOM*3090" [color="#aeac67"]
+	"ZOO*3200" -> "BIOM*3090" [color="#aeac67"]
+	"ZOO*3600" -> "BIOM*3090" [color="#aeac67"]
+	"BIOM*4210"
+	"BIOM*3210"
+	"BIOL*1070" -> "BIOM*3210" [color="#9b6874"]
+	"BIOL*1090" -> "BIOM*3210" [color="#9b6874"]
+	"BIOL*1080" -> "BIOM*3210" [color="#9b6874"]
+	"BIOM*4210" -> "BIOM*3210" [arrowhead=none color="#ff0000"]
+	"MCB*2050"
+	"BIOC*2580" -> "MCB*2050" [color="#000000"]
+	"MBG*2040" -> "MCB*2050" [color="#000000"]
+	"MBG*2040"
+	"BIOL*1090" -> "MBG*2040" [color="#000000"]
+	"MCB*2210"
+	"ZOO*3000"
+	"ZOO*2090" -> "ZOO*3000" [color="#000000"]
+	"BIOM*4070"
+	"BIOM*3200" -> "BIOM*4070" [color="#819496"]
+	"MCB*2050" -> "BIOM*4070" [color="#bcc0c4"]
+	"MCB*2210" -> "BIOM*4070" [color="#bcc0c4"]
+	"ZOO*3000" -> "BIOM*4070" [arrowhead=none color="#ff0000"]
+	"BIOM*4090"
+	"BIOM*3090" -> "BIOM*4090" [color="#000000"]
+	"BIOM*4300"
+	"STAT*2040" -> "BIOM*4300" [color="#77a2bf:#79ac86"]
+	"BIOL*1080" -> "BIOM*4300" [color="#77a2bf:#6d808d"]
+	"BIOM*4500"
+	"BIOM*4521"
+	"BIOM*4510"
+	"BIOM*4522"
+	"BIOM*4521" -> "BIOM*4522" [color="#000000"]
+	"BIOM*6100"
+	"BIOM*6130"
+	"BIOM*6310"
+	"BIOM*6400"
+	"BIOM*4210" -> "BIOM*6400" [arrowhead=none color="#ff0000"]
+	"BIOM*6602"
+	"BIOM*6900"
+}

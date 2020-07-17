@@ -1,0 +1,35 @@
+digraph {
+	"CLAS*2000"
+	"CLAS*2150"
+	"CLAS*1000"
+	"HIST*2850"
+	"CLAS*3000"
+	"CLAS*2000" -> "CLAS*3000" [color="#99bd77"]
+	"CLAS*1000" -> "CLAS*3000" [color="#99bd77"]
+	"HIST*2850" -> "CLAS*3000" [color="#99bd77"]
+	"GREK*2020"
+	"CLAS*3050"
+	"GREK*2020" -> "CLAS*3050" [color="#000000"]
+	"CLAS*3100"
+	"CLAS*2000" -> "CLAS*3100" [color="#72a37d"]
+	"CLAS*1000" -> "CLAS*3100" [color="#72a37d"]
+	"LAT*2000"
+	"LAT*1110" -> "LAT*2000" [color="#bfadb6"]
+	"LAT*1110"
+	"CLAS*3120"
+	"LAT*2000" -> "CLAS*3120" [color="#000000"]
+	"CLAS*2350"
+	"CLAS*3010"
+	"CLAS*4000"
+	"CLAS*3020"
+	"CLAS*3030"
+	"CLAS*3040"
+	"CLAS*3300"
+	"CLAS*3000" -> "CLAS*3300" [color="#6e82a2:#a2979b:#7e78af"]
+	"GREK*2020" -> "CLAS*3300" [color="#6e82a2:#a2979b"]
+	"CLAS*3020" -> "CLAS*3300" [color="#6e82a2:#a2979b:#7e78af"]
+	"CLAS*3030" -> "CLAS*3300" [color="#6e82a2:#a2979b:#7e78af"]
+	"CLAS*3040" -> "CLAS*3300" [color="#6e82a2:#a2979b:#7e78af"]
+	"CLAS*3700"
+	"CLAS*4150"
+}

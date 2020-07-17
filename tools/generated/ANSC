@@ -1,0 +1,77 @@
+digraph {
+	"BIOL*1050"
+	"BIOL*1070"
+	"BIOL*1080"
+	"BIOL*1090"
+	"ANSC*2340"
+	"BIOL*1050" -> "ANSC*2340" [color="#bb8892:#c7a99a"]
+	"BIOL*1070" -> "ANSC*2340" [color="#bb8892:#c48b7e"]
+	"BIOL*1080" -> "ANSC*2340" [color="#bb8892:#a2769b"]
+	"BIOL*1090" -> "ANSC*2340" [color="#bb8892:#a2769b"]
+	"AGR*2350"
+	"BIOL*1050" -> "AGR*2350" [color="#7b8164:#b18fb7:#bd6a96"]
+	"BIOL*1070" -> "AGR*2350" [color="#7b8164:#b18fb7:#b4c49f"]
+	"BIOL*1080" -> "AGR*2350" [color="#7b8164:#b18fb7:#7993a5"]
+	"BIOL*1090" -> "AGR*2350" [color="#7b8164:#b18fb7:#7993a5"]
+	"BIOL*1030" -> "AGR*2350" [color="#7b8164:#8180a6"]
+	"BIOL*1030"
+	"ZOO*2090"
+	"BIOL*1070" -> "ZOO*2090" [color="#000000"]
+	"ANSC*3050"
+	"ZOO*2090" -> "ANSC*3050" [color="#68a171:#8d8093"]
+	"BIOC*2580"
+	"CHEM*1050" -> "BIOC*2580" [color="#000000"]
+	"CHEM*1050"
+	"CHEM*1040" -> "CHEM*1050" [color="#000000"]
+	"CHEM*1040"
+	"CHEM*1060" -> "CHEM*1040" [color="#756abc"]
+	"CHEM*1060"
+	"EQN*2040"
+	"ANSC*3080"
+	"BIOC*2580" -> "ANSC*3080" [color="#b19e84"]
+	"EQN*2040" -> "ANSC*3080" [color="#b19e84"]
+	"ANSC*1210"
+	"ANSC*4090"
+	"ANSC*3090"
+	"ANSC*1210" -> "ANSC*3090" [color="#000000"]
+	"ANSC*4090" -> "ANSC*3090" [arrowhead=none color="#ff0000"]
+	"ANSC*3120"
+	"MBG*2040"
+	"BIOL*1090" -> "MBG*2040" [color="#000000"]
+	"MBG*2400"
+	"BIOL*1050" -> "MBG*2400" [color="#65c785"]
+	"BIOL*1070" -> "MBG*2400" [color="#65c785"]
+	"BIOL*1090" -> "MBG*2400" [color="#000000"]
+	"ANSC*4050"
+	"MBG*2040" -> "ANSC*4050" [color="#707a9c"]
+	"MBG*2400" -> "ANSC*4050" [color="#707a9c"]
+	"MBG*3060"
+	"ANSC*4230"
+	"ANSC*3080" -> "ANSC*4230" [color="#000000"]
+	"ANSC*3120" -> "ANSC*4230" [color="#000000"]
+	"MBG*3060" -> "ANSC*4230" [color="#000000"]
+	"ANSC*4270"
+	"ANSC*3120" -> "ANSC*4270" [color="#000000"]
+	"ANSC*4280"
+	"ANSC*3120" -> "ANSC*4280" [color="#000000"]
+	"ANSC*4290"
+	"ANSC*3120" -> "ANSC*4290" [color="#000000"]
+	"NUTR*3210"
+	"BIOC*2580" -> "NUTR*3210" [color="#000000"]
+	"ANSC*4560"
+	"NUTR*3210" -> "ANSC*4560" [color="#000000"]
+	"ANSC*4700"
+	"ANSC*4710"
+	"ANSC*4700" -> "ANSC*4710" [color="#000000"]
+	"ANSC*6010"
+	"ANSC*6030"
+	"ANSC*6100"
+	"ANSC*6330"
+	"ANSC*6370"
+	"ANSC*6440"
+	"ANSC*6460"
+	"ANSC*6470"
+	"ANSC*6700"
+	"ANSC*6740"
+	"ANSC*6900"
+}

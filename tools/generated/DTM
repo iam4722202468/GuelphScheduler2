@@ -1,0 +1,28 @@
+digraph {
+	"DTM*1000"
+	"DTM*1400"
+	"DTM*2500"
+	"DTM*1010"
+	"DTM*1400" -> "DTM*1010" [arrowhead=none color="#ff0000"]
+	"DTM*2500" -> "DTM*1010" [arrowhead=none color="#ff0000"]
+	"DTM*1100"
+	"DTM*1200"
+	"DTM*1300"
+	"DTM*1500"
+	"DTM*2200"
+	"DTM*1000" -> "DTM*2200" [color="#000000"]
+	"DTM*2000"
+	"DTM*2100"
+	"DTM*3000"
+	"DTM*2000" -> "DTM*3000" [color="#000000"]
+	"DTM*2100" -> "DTM*3000" [color="#000000"]
+	"DTM*3100"
+	"DTM*1000" -> "DTM*3100" [color="#a7848b:#a1a17d"]
+	"DTM*2000" -> "DTM*3100" [color="#a7848b:#a1a17d"]
+	"DTM*3200"
+	"DTM*1100" -> "DTM*3200" [color="#000000"]
+	"DTM*3300"
+	"DTM*1100" -> "DTM*3300" [color="#000000"]
+	"DTM*3400"
+	"DTM*3800"
+}

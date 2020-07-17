@@ -1,0 +1,1 @@
+{"prerequisites": {"CLIN*6330": [], "CLIN*6550": [], "CLIN*6910": []}, "restrictions": {"CLIN*6330": [], "CLIN*6550": [], "CLIN*6910": [{"type": "AND", "groups": ["Students in Clinical Studies"]}]}}

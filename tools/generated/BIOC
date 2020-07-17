@@ -1,0 +1,24 @@
+digraph {
+	"CHEM*1050"
+	"CHEM*1040" -> "CHEM*1050" [color="#000000"]
+	"CHEM*1040"
+	"CHEM*1060" -> "CHEM*1040" [color="#b8a494"]
+	"CHEM*1060"
+	"BIOC*2580"
+	"CHEM*1050" -> "BIOC*2580" [color="#000000"]
+	"BIOC*3560"
+	"BIOC*2580" -> "BIOC*3560" [color="#000000"]
+	"CHEM*2400"
+	"CHEM*2480"
+	"CHEM*1050" -> "CHEM*2480" [color="#000000"]
+	"CHEM*2400" -> "CHEM*2480" [arrowhead=none color="#ff0000"]
+	"BIOC*3570"
+	"BIOC*2580" -> "BIOC*3570" [color="#000000"]
+	"CHEM*2400" -> "BIOC*3570" [color="#b195bc"]
+	"CHEM*2480" -> "BIOC*3570" [color="#b195bc"]
+	"BIOC*4050"
+	"BIOC*3560" -> "BIOC*4050" [color="#000000"]
+	"BIOC*4520"
+	"BIOC*3560" -> "BIOC*4520" [color="#929b67"]
+	"BIOC*3570" -> "BIOC*4520" [color="#929b67"]
+}
