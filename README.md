@@ -1,4 +1,8 @@
 # GuelphScheduler2
+
+https://beta.aceparent.me/#/scheduler
+
+
 Create schedules for the university of Guelph. Live version can be found [here](https://guelph.scheduler.online "Guelph Course Scheduler")
 
 ### Prerequisites
