@@ -14,6 +14,7 @@ db = client['scheduler']
 collection = db['cachedData']
 
 lookedup = {}
+pattern = re.compile("((\w{2}|\w{3}|\w{4})[\*| ](\d{3}|\d{4}))|GROUP\d")
 
 preFixes = {
     'CHEM*1040': '1 of 4U Chemistry, equivalent, CHEM*1060',
@@ -43,10 +44,33 @@ preFixes = {
     'POLS*4250': 'POLS*2250, 1.0 credits',
     'POLS*4710': 'POLS*2080 or POLS*2100, 1.0 credits',
     'POLS*4720': 'POLS*2200, 1.00 credits',
-    'SART*3900': 'SART*3800, 3.50 credits in Studio Art'
+    'SART*3900': 'SART*3800, 3.50 credits in Studio Art',
+    'ECON*2720': 'ECON*1050, (ECON*1100 or 1.50 credits in history)',
+    'ENGG*3100': '6.00 credits in ENGG, ENGG*2100',
+    'ENGG*4400': '6.00 credits in ENGG, ENGG*3150, ENGG*3170',
+    'FRHD*4200': 'FRHD*1020, FRHD*2100, 1.00 credit',
+    'HIST*2600': '2.00 credits',
+    'HIST*4450': '10.00 credits including HIST*2450',
+    'MATH*4440': '3.0 credits in MATH',
+    'POLS*4030': 'POLS*2000, 1.00 credits',
+    'POLS*4160': 'POLS*2000, 1.00 credits',
+    'POLS*4200': '(1 of POLS*2080, POLS*2100, POLS*2200), 1.00 credits',
+    'POLS*4740': '(POLS*3130 or POLS*3210), 1.00 credits',
+    'POLS*4900': '14.00 credits',
+    'PSYC*4580': '14.00 credits, PSYC*2040 or PSYC*3290',
+    'NUTR*4210': 'NUTR*3210, (1 of BIOM*3200, HK*3810)',
+    'TRMH*6310': 'TRMH*6100, (1 of TRMH*6290, MCS*6050, SOC*6130, PSYC*6060)',
+    'TRMH*6400': 'TRMH*6100, TRMH*6200, TRMH*6310, (1 of TRMH*6290, MCS*6050, SOC*6130, PSYC*6060), (1 of ANTH*6140, MCS*6080, FRAN*6020, SOC*6140)',
+    'BIOC*4540': 'BIOC*3570',
+    'TOX*3300': 'CHEM*2480, BIOC*2580',
+    'BUS*6810': '',
+    'CHEM*7940': '',
+    'FRAN*6010': ''
 }
 
 excFixes = {
+    'MBG*1000': '',
+    'THST*4280': '',
     'STAT*2080': '',
     'CIS*1000': 'CIS*1200',
     'CIS*1500': 'CIS*1300',
@@ -92,7 +116,11 @@ excFixes = {
     'BIOL*1500': '',
     'FREN*6020': '',
     'PHYS*1600': '',
-    'UNIV*1200': ''
+    'UNIV*1200': '',
+    'CHEM*1100': '',
+    'UNIV*2410': '',
+    'ANSC*6730': 'ANSC*4080 or ANSC*4100',
+    'ENVS*6300': 'ENVS*6250'
 }
 
 def getDescriptions(codeArr):
@@ -111,53 +139,72 @@ def getDescriptions(codeArr):
                 getDescriptions([pre, exc])
 
 def parseOneOf(str, groups):
-    if not str.strip().find('1 of ') == 0:
+    reduceCount = -1
+    ofType = ''
+
+    if str.strip(' .,').find('1 of ') == 0:
+        reduceCount = 5
+        chooseCount = 1
+    elif str.strip(' .,').find('1of ') == 0:
+        reduceCount = 4
+        chooseCount = 1
+    elif str.strip(' .,').find('one of ') == 0:
+        reduceCount = 7
+        chooseCount = 1
+    elif str.strip(' .,').find('2 of ') == 0:
+        reduceCount = 5
+        chooseCount = 2
+    elif str.strip(' .,').find('two of ') == 0:
+        reduceCount = 7
+        chooseCount = 2
+    elif str.strip(' .,').find('3 of ') == 0:
+        reduceCount = 5
+        chooseCount = 3
+    elif str.strip(' .,').find('three of ') == 0:
+        reduceCount = 7
+        chooseCount = 3
+
+    elif reduceCount == -1:
         return None
 
-    str = str[5:]
+    str = str[reduceCount:]
     split = re.split(', | or |\. ', str)
 
     newGroups = []
 
     for x in split:
-        if x.strip() in groups:
-            newGroups += groups[x.strip()]['parsed']
+        if x.strip(' .,') in groups:
+            newGroups += groups[x.strip(' .,')]['parsed']
         else:
-            newGroups.append(x.strip())
+            matched = pattern.match(x.strip(' .,'))
+            if matched != None:
+                newGroups.append(x.strip(' .,'))
+
+    if len(newGroups) == 0:
+        return None
+    if len(newGroups) == 1:
+        return {
+            'type': 'AND',
+            'groups': newGroups
+        }
 
     return {
-        'type': 'OR',
+        'type': 'CHOOSE',
+        'count': chooseCount,
         'groups': newGroups
     }
 
+def finalInsertParse(str, obj, groups):
+    for splitSub in re.split(' ', str):
+        if splitSub.strip(' .,') in groups:
+            obj += groups[splitSub.strip(' .,')]['parsed']
+        else:
+            matched = pattern.match(splitSub.strip(' .,'))
+            if matched != None:
+                obj.append(splitSub.strip(' .,'))
 
+    return obj
 
-def parseTwoOf(str, groups):
-    if not str.strip().find('2 of ') == 0:
-        return None
-
-    str = str[5:]
-    split = re.split(', | or |\. ', str)
-
-    OR = []
-
-    for x in itertools.combinations(split, 2):
-        part = []
-        for y in x:
-            if y.strip() in groups:
-                part += groups[y.strip()]['parsed']
-            else:
-                part.append(y.strip())
-
-        OR.append({
-            'type':'AND',
-            'groups': part
-        })
-
-    return {
-        'type': 'OR',
-        'groups': OR 
-    }
 
 def parseCredits(str, groups):
     # Completion of 4.0 credits including ENGG*1100
@@ -172,28 +219,28 @@ def parseCredits(str, groups):
         str = str.replace('Completion of ', '')
         split = str.split(' credits including ')
 
-        if split[-1] not in groups:
-            return [{
-                'type': 'AND',
-                'groups': [{
-                    'type': 'CREDITS',
-                    'code': 'anything',
-                    'credits': float(split[0])
-                },
-                    split[-1]
-                ]
-            }]
-        else:
-            return [{
-                'type': 'AND',
-                'groups': [{
-                    'type': 'CREDITS',
-                    'code': 'anything',
-                    'credits': float(split[0])
-                }
-                ] + groups[split[-1]]['parsed']
-            }]
+        return [{
+            'type': 'AND',
+            'groups': [{
+                'type': 'CREDITS',
+                'code': 'anything',
+                'credits': float(split[0])
+            },
+            ] + finalInsertParse(split[-1], [], groups)
+        }]
 
+    elif str.find(' credits in') != -1 and str.find('including') != -1:
+        split = re.split(' credits in | credit in | including ', str)
+        return [{
+            'type': 'AND',
+            'groups': [{
+                'type': 'CREDITS',
+                'code': split[1],
+                'credits': float(split[0])
+            },
+                split[-1] if split[-1] not in groups else groups[split[-1]]['parsed']
+            ]
+        }]
     elif str.find(' credits in') != -1 or str.find(' credit in') != -1:
         split = re.split(' credits in | credit in ', str)
         return [{
@@ -216,6 +263,9 @@ def parseCredits(str, groups):
                 'code': split[1],
                 'credits': float(split[0])
             }]
+
+def fixParseString(str):
+    return str.replace(', including', ' including').replace(')', '')
 
 def parseAll(parseStr):
     groups = {}
@@ -250,7 +300,7 @@ def parseAll(parseStr):
     groups.update(groupsSecond)
 
     # Parse '1 of'
-    parsed = parseOneOf(parseStr, groups) or parseTwoOf(parseStr, groups)
+    parsed = parseOneOf(parseStr, groups)
     parsedGroups = []
 
     if parsed != None:
@@ -261,7 +311,7 @@ def parseAll(parseStr):
         OR = []
 
         for parseStrCur in parseArr:
-            parseSub = re.split(', |\. ', parseStrCur)
+            parseSub = re.split(', and|, |\. | and|; ', fixParseString(parseStrCur))
             AND = []
 
             for parseSubStr in parseSub:
@@ -273,10 +323,11 @@ def parseAll(parseStr):
                 if parsed != None:
                     OR += parsed
                 else:
-                    if parseSubStr.strip() in groups:
-                        AND += groups[parseSubStr.strip()]['parsed']
+                    if parseSubStr.strip(' .,') in groups:
+                        AND += groups[parseSubStr.strip(' .,')]['parsed']
                     else:
-                        AND.append(parseSubStr.strip())
+                        AND = finalInsertParse(parseSubStr.strip(' .,'), AND, groups)
+
 
             if len(AND) > 0:
                 if not isinstance(AND, str) and len(AND) == 1 and not isinstance(AND[0], str):
@@ -297,9 +348,15 @@ def parseAll(parseStr):
         elif len(OR) == 1:
             parsedGroups = [OR[0]]
         elif acc != None:
-            parsedGroups.append({'type': 'OR', 'groups': acc})
+            if len(acc) == 1:
+                parsedGroups.append(acc[0])
+            else:
+                parsedGroups.append({'type': 'CHOOSE', 'count': 1, 'groups': acc})
         else:
-            parsedGroups.append({'type': 'OR', 'groups': OR})
+            if len(OR) == 1:
+                parsedGroups.append(OR[0])
+            else:
+                parsedGroups.append({'type': 'CHOOSE', 'count': 1, 'groups': OR})
 
     return parsedGroups
 
@@ -342,23 +399,18 @@ def createJSON(groupName):
                             .split('. ')[0]
                             .replace('This is a Priority Access Course', '')
                             .split('Restricted to students')[0]
+                            .split('Credit may be obtained for only one of')[-1]
                             .split('Not available to')[0])
 
         courseMapPre[found['Code']] = preParsed
         courseMapExc[found['Code']] = excParsed
-        # print(preParsed)
-        # print('Exc', exc, '->', parseAll(exc))
-        # print(printArrStr(preParsed))
-        # print()
 
-    # Connection
-    '''
-        {
-            'type': '<EXCLUSION>'
-            'color': 0xRRGGBB
-            '
-        }
-    '''
+        print(preParsed)
+        print(excParsed)
+        print()
 
     with open('./parsed/all.json', 'w') as outfile:
         json.dump({'prerequisites': courseMapPre, 'restrictions': courseMapExc}, outfile)
+
+if __name__ == '__main__':
+    createJSON('')

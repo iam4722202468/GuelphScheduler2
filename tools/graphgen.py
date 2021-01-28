@@ -7,7 +7,7 @@ groupName = ""
 
 graphparse.createJSON(groupName)
 
-path = './parsed/' + groupName + '.json'
+path = './parsed/all.json'
 
 def traverse(obj, oldColors):
     colors = oldColors.copy()
@@ -95,7 +95,7 @@ for x in data['restrictions']:
         except:
             None
 
-dot = Digraph(engine='sfdp')
+dot = Digraph(engine='fdp')
 
 for i,x in enumerate(edges):
     for j,y in enumerate(x):

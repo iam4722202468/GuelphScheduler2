@@ -35,14 +35,13 @@ def getKeys(header):
     return cookie
 
 def getDescription(courseInfo, silent=False):
-    
     Code = courseInfo['Code']
     Level = courseInfo['Level']
 
     if not silent:
         print(Code)
     
-    found = collection.find_one({'Code': Code, 'School':'Guelph'})
+    found = collection.find({'Code': Code, 'School':'Guelph'})
     
     if found == None:
         if Level == "Undergraduate Guelph-Humber":
@@ -62,26 +61,40 @@ def getDescription(courseInfo, silent=False):
             
             courseInfo['Description'] = Description
             
-            newName = " ".join(a[0].getText().split(" ")[1:-3])
+            if int(int(Code.split('*')[1])/1000)*100 <= 400:
+              courseInfo['Offered'] = a[0].getText().split(" ")[-3].split(',')
+            else:
+              courseInfo['Offered'] = a[0].getText().split(" ")[-2].split(',')
             
-            if courseInfo['Name'].find(newName) != 0 and len(courseInfo['Name']) < len(newName):
-                courseInfo['Name'] = newName
+            courseInfo['Num_Credits'] = a[0].getText().split(" ")[-1][1:-2]
+            
+            newName = " ".join(a[0].getText().split(" ")[1:-3])
+            print(courseInfo['Num_Credits'])
+            
+            courseInfo['Name'] = newName
             
             for x in a[2:]:
+                if x.find('th').contents[0] == 'Corequisite(s):':
+                    courseInfo['Corequisites'] = ''.join(x.find('td').findAll(text=True)).replace('\n               ', '')
                 if x.find('th').contents[0] == 'Prerequisite(s):':
                     courseInfo['Prerequisites'] = ''.join(x.find('td').findAll(text=True)).replace('\n               ', '')
+                if x.find('th').contents[0] == 'Equate(s):':
+                    courseInfo['Equates'] = ''.join(x.find('td').findAll(text=True)).replace('\n               ', '')
                 if x.find('th').contents[0] == 'Restriction(s):':
                     courseInfo['Exclusions'] = ''.join(x.find('td').findAll(text=True)).replace('\n               ', '')
                 if x.find('th').contents[0] == 'Offering(s):':
                     courseInfo['Offerings'] = ''.join(x.find('td').findAll(text=True)).replace('\n               ', '')
-        except:
+        except Exception as e:
+            print(e)
             courseInfo['Description'] = "Description not available"
+            courseInfo['Offered'] = [SEMESTER[0]]
         
-        toInsert = {}
-        
+
         courseInfo['School'] = "Guelph"
+        # print(courseInfo)
+        # print(courseInfo['Code'], courseInfo['Offered'])
         
-        collection.insert_one(courseInfo).inserted_id
+        collection.update({'Code': courseInfo['Code']}, courseInfo, upsert=True)
         
         return courseInfo
     else:
@@ -105,9 +118,9 @@ def getData():
     # 3 stores course code
     
     postURL = 'https://webadvisor.uoguelph.ca/WebAdvisor/WebAdvisor?TOKENIDX=' + cookie['LASTTOKEN'] + '&SS=1&APP=ST&CONSTITUENCY=WBST'
-    postfields = {"VAR1":SEMESTER, "VAR10":"", "VAR11":"","VAR12":"", "VAR13":"", "VAR14":"", "VAR15":"", "VAR16":"", "DATE.VAR1":"", "DATE.VAR2":"", "LIST.VAR1_CONTROLLER":"LIST.VAR1", "LIST.VAR1_MEMBERS":"LIST.VAR1*LIST.VAR2*LIST.VAR3*LIST.VAR4", "LIST.VAR1_MAX":"5", "LIST.VAR2_MAX":"5", "LIST.VAR3_MAX":"5", "LIST.VAR4_MAX":"5", "LIST.VAR1_1":"", "LIST.VAR2_1":"", "LIST.VAR3_1":"", "LIST.VAR4_1":"", "LIST.VAR1_2":"", "LIST.VAR2_2":"", "LIST.VAR3_2":"", "LIST.VAR4_2":"", "LIST.VAR1_3":"", "LIST.VAR2_3":"", "LIST.VAR3_3":"", "LIST.VAR4_3":"", "LIST.VAR1_4":"", "LIST.VAR2_4":"", "LIST.VAR3_4":"", "LIST.VAR4_4":"", "LIST.VAR1_5":"", "LIST.VAR2_5":"", "LIST.VAR3_5":"", "LIST.VAR4_5":"", "VAR7":"", "VAR8":"", "VAR3":"", "VAR6":"G", "VAR21":"", "VAR9":"", "SUBMIT_OPTIONS":""}
+    postfields = {"VAR1":SEMESTER, "VAR10":"", "VAR11":"","VAR12":"", "VAR13":"", "VAR14":"", "VAR15":"", "VAR16":"", "DATE.VAR1":"", "DATE.VAR2":"", "LIST.VAR1_CONTROLLER":"LIST.VAR1", "LIST.VAR1_MEMBERS":"LIST.VAR1*LIST.VAR2*LIST.VAR3*LIST.VAR4", "LIST.VAR1_MAX":"5", "LIST.VAR2_MAX":"5", "LIST.VAR3_MAX":"5", "LIST.VAR4_MAX":"5", "LIST.VAR1_1":"", "LIST.VAR2_1":"", "LIST.VAR3_1":"", "LIST.VAR4_1":"", "LIST.VAR1_2":"", "LIST.VAR2_2":"", "LIST.VAR3_2":"", "LIST.VAR4_2":"", "LIST.VAR1_3":"", "LIST.VAR2_3":"", "LIST.VAR3_3":"", "LIST.VAR4_3":"", "LIST.VAR1_4":"", "LIST.VAR2_4":"", "LIST.VAR3_4":"", "LIST.VAR4_4":"", "LIST.VAR1_5":"", "LIST.VAR2_5":"", "LIST.VAR3_5":"", "LIST.VAR4_5":"", "VAR7":"", "VAR8":"", "VAR3":"", "VAR6":"", "VAR21":"UG", "VAR9":"", "SUBMIT_OPTIONS":""}
     
-    #dataToSend = [["ENGL",""], ["ECON","3740"], ["",""], ["",""], ["",""]]
+    #dataToSend = [["ENGL",""], ["CIS",""], ["",""], ["",""], ["",""]]
     
     #postfields = {"VAR1":SEMESTER, "VAR10":"Y", "VAR11":"Y","VAR12":"Y", "VAR13":"Y", "VAR14":"Y", "VAR15":"Y", "VAR16":"Y", "DATE.VAR1":"", "DATE.VAR2":"", "LIST.VAR1_CONTROLLER":"LIST.VAR1", "LIST.VAR1_MEMBERS":"LIST.VAR1*LIST.VAR2*LIST.VAR3*LIST.VAR4", "LIST.VAR1_MAX":"5", "LIST.VAR2_MAX":"5", "LIST.VAR3_MAX":"5", "LIST.VAR4_MAX":"5", "LIST.VAR1_1":dataToSend[0][0], "LIST.VAR2_1":"", "LIST.VAR3_1":dataToSend[0][1], "LIST.VAR4_1":"", "LIST.VAR1_2":dataToSend[1][0], "LIST.VAR2_2":"", "LIST.VAR3_2":dataToSend[1][1], "LIST.VAR4_2":"", "LIST.VAR1_3":dataToSend[2][0], "LIST.VAR2_3":"", "LIST.VAR3_3":dataToSend[2][1], "LIST.VAR4_3":"", "LIST.VAR1_4":dataToSend[3][0], "LIST.VAR2_4":"", "LIST.VAR3_4":dataToSend[3][1], "LIST.VAR4_4":"", "LIST.VAR1_5":dataToSend[4][0], "LIST.VAR2_5":"", "LIST.VAR3_5":dataToSend[4][1], "LIST.VAR4_5":"", "VAR7":"", "VAR8":"", "VAR3":"", "VAR6":"", "VAR21":"", "VAR9":"", "SUBMIT_OPTIONS":""}
 
@@ -117,7 +130,6 @@ def getData():
     r = requests.post(postURL, data=postfields, cookies=cookie)
     
     print("Data recieved")
-        
 
     f = r.text
 
@@ -150,7 +162,6 @@ def getData():
         courseIndex = findIndex(courseObjects, Code)
         
         if courseIndex == -1:
-            
             Name = " ".join(title.split(" ")[2:]) #backup if info is not found on course
             
             Level = cols[10].find('p').contents[0] #level (not really) (Undergraduate / Graduate) (Level not mentioned)
@@ -167,7 +178,6 @@ def getData():
             courseObjects.append({'Code':Code})
             
             extraInfo = getDescription(Course)
-    
     return
 
 if __name__ == '__main__':
