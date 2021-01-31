@@ -35,17 +35,39 @@ export default {
   },
   props: ['title', 'choices'],
   watch: {
-    codesSearch: _.debounce(function (addr) { this.getAddresses(addr) }, 500),
+    codesSearch: _.debounce(function (addr) { this.getQuery(addr) }, 500),
     selectCodes: function (code) {
       this.$refs.search_typeahead.inputValue = ''
       this.courses.push(code)
+      this.$parent.reload()
     }
   },
   methods: {
-    async getAddresses (query) {
+    async getQuery (query) {
       const res = await fetch(API_URL.replace(':query', query))
       const suggestions = await res.json()
       this.searchCodes = suggestions
+    },
+    async addCode (codeId) {
+      const res = await fetch(`/api/course/${codeId}`)
+      const info = await res.json()
+      this.courses.push(info)
+      this.$parent.reload()
+    },
+    remove: function (codeId) {
+      this.courses = this.courses.filter((el) => el.Code !== codeId)
+      this.$parent.reload()
+    },
+    getCodes: function () {
+      return this.courses.map(el => el.Code)
+    },
+    updateCodes: async function (newCodes) {
+      const newInfo = await Promise.all(newCodes.map(async (el) => {
+        const res = await fetch(`/api/course/${el}`)
+        return res.json()
+      }))
+
+      this.courses = newInfo
     }
   },
   components: {

@@ -12,8 +12,8 @@
 <script>
 
 export default {
-  name: 'CourseSmll',
-  props: ['code'],
+  name: 'CourseSmall',
+  props: ['code', 'isGreen'],
   methods: {
     lightenColor: function (color, percent) {
       const num = parseInt(color, 16)
@@ -42,10 +42,16 @@ export default {
   },
   computed: {
     dynamicStyle () {
+      let color = this.intToRGB(this.hashCode(this.code))
+
+      if (this.isGreen) {
+        color = '00ff00'
+      }
+
       return {
         // in the case of redComp, greenComp and blueComp are a vue prop or data
         'background-color': `#${this.lightenColor(this.intToRGB(this.hashCode(this.code)), 60)}`,
-        border: `solid 2px #${this.intToRGB(this.hashCode(this.code))}`
+        border: `solid 2px #${color}`
       }
     }
   }

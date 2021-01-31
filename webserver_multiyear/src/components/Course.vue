@@ -6,23 +6,31 @@
           <b>{{data.Code}}</b><br>
           {{data.Name}}<br>
           {{data.Num_Credits}}<br>
-          {{ choices }}
-          W21
         </b-col>
-        <b-col cols="2" class="hoverButton btn btn-outline-danger" title="Delete">
+        <b-col v-on:click="remove" cols="2" class="hoverButton btn btn-outline-danger" title="Delete">
           <b-icon icon="trash"></b-icon>
         </b-col>
       </b-row>
+      <hr>
+      <Choice v-if="choices" :data="choices" :parent="this"/>
     </div>
   </div>
 </template>
 
 <script>
+import Choice from '@/components/Choice.vue'
 
 export default {
   name: 'Course',
   props: ['data', 'choices'],
   methods: {
+    addCode: function (codeId) {
+      this.$parent.addCode(codeId)
+    },
+    remove: function () {
+      this.$parent.remove(this.data.Code)
+    },
+
     lightenColor: function (color, percent) {
       const num = parseInt(color, 16)
       const amt = Math.round(2.55 * percent)
@@ -39,7 +47,6 @@ export default {
       }
       return hash
     },
-
     intToRGB: function (i) {
       var c = (i & 0x00FFFFFF)
         .toString(16)
@@ -56,6 +63,9 @@ export default {
         border: `solid 2px #${this.intToRGB(this.hashCode(this.data.Code))}`
       }
     }
+  },
+  components: {
+    Choice
   }
 }
 </script>

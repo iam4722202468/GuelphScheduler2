@@ -17,8 +17,8 @@
         </b-table>
       </b-col>
       <b-col cols="3">
-        <CourseGroup title="Future Courses" :choices="choicesNeeded"/>
-        <CourseGroup style="padding-top:60px" title="Taken Courses"/>
+        <CourseGroup ref="future" title="Future Courses" :choices="choicesNeeded"/>
+        <CourseGroup ref="taken" style="padding-top:60px" title="Taken Courses" :choices="choicesNeeded"/>
       </b-col>
     </b-row>
   </div>
@@ -32,19 +32,41 @@ const tempData = { F21: ['CIS*1300', 'CIS*1910', 'ECON*1050', 'ECON*1100', 'STAT
 
 export default {
   mounted () {
-    this.parseData()
+    this.parseData(tempData)
+    this.getChoices()
   },
   methods: {
-    parseData: function (event) {
-      this.items = [tempData]
-      this.fields = Object.keys(tempData)
+    parseData: function (input) {
+      this.items = [input]
+      this.fields = Object.keys(input)
+    },
+    getChoices: async function () {
+      const res = await fetch('/api/generate')
+      const choices = await res.json()
+      this.choicesNeeded = choices
+    },
+    reload: async function () {
+      const coursesTaken = this.$refs.taken.getCodes()
+      const coursesFuture = this.$refs.future.getCodes()
+
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        body: JSON.stringify({ taken: coursesTaken, future: coursesFuture }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      const choices = await res.json()
+      this.choicesNeeded = choices[1]
+      this.$refs.future.updateCodes(choices[0])
+      this.parseData(choices[2])
+      console.log(choices[1])
     }
   },
   data () {
     return {
       fields: [],
       items: [],
-      choicesNeeded: { 'ECON*3740': { count: 1, courses: ['ECON*2740', 'STAT*2040', 'STAT*2060', 'STAT*2080'] }, 'ECON*2770': { count: 1, courses: ['MATH*1030', 'MATH*1080', 'MATH*1200'] } }
+      choicesNeeded: { }
     }
   },
   components: {
