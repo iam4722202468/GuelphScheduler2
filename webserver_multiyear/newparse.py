@@ -128,7 +128,9 @@ def createGroups(sets, extraData, scheduleOverrides, alreadyTaken):
                 if barrierYear == currentYear and barrierSemester < currentSemester:
                     barrier = True
 
-                if semesters[currentSemester] in possibleSemesters and not barrier:
+                allUnknownSemesters = len(set(['F','W','S']) - set(possibleSemesters)) == 3
+
+                if (semesters[currentSemester] in possibleSemesters or allUnknownSemesters) and not barrier:
                     assignments[semesterCode].append(x)
                     markRemoval.append(x)
 
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     alreadyTaken = set(json.loads(input()))
     scheduleOverrides = {}
 
-    # selectSet = set(['ECON*4640', 'STAT*2040'])
+    # selectSet = set(['CIS*4780'])
     # alreadyTaken = set([])
 
     combinedSet = selectSet.union(alreadyTaken)

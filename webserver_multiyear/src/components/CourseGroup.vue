@@ -13,7 +13,7 @@
       style="padding-bottom: 10px"
     ></vue-bootstrap-typeahead>
 
-    <Course v-for="item in courses" :key="item.Code" :data="item" :choices="choices[item.Code]" />
+    <Course v-for="item in sortedCourses" :key="item.Code" :data="item" :choices="choices[item.Code]" />
   </div>
 </template>
 
@@ -31,6 +31,20 @@ export default {
       searchCodes: [],
       codesSearch: '',
       selectCodes: null
+    }
+  },
+  computed: {
+    sortedCourses: function () {
+      function compare (a, b) {
+        if (a.Code < b.Code) {
+          return 1
+        } else if (a.Code > b.Code) {
+          return -1
+        }
+        return 0
+      }
+
+      return [...this.courses].sort(compare)
     }
   },
   props: ['title', 'choices'],
