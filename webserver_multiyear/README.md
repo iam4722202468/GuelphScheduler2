@@ -2,23 +2,23 @@
 
 ## Project setup
 ```
-yarn install
+npm i
 ```
 
 ### Compiles and hot-reloads for development
 ```
-yarn serve
+npm run dev
 ```
 
-### Compiles and minifies for production
+### Populating Database
+
+Start a mongodb database then run
+
 ```
-yarn build
+python3 ../webserver/schools/Guelph/getClasses.py
 ```
 
-### Lints and fixes files
+### Parsing Data
 ```
-yarn lint
+python3 parseCourses.py
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
