@@ -76,7 +76,7 @@ preFixes = {
     'ENGG*4140': '',
     'ENGG*4150': '',
     'ENGG*4160': '',
-    'ENGG*4170': '',
+    'ENGG*4170': 'ENGG*4000',
     'ENGG*4180': '',
     'GEOG*3610': '1 of GEOG*2000, GEOG*2110',
     'FARE*4310': '1 of FARE*2700, ECON*2310, ECON*2100',
