@@ -13,7 +13,7 @@ db = client['scheduler']
 collection = db['cachedData']
 
 #define semester
-SEMESTER = 'F20'
+SEMESTER = 'W21'
 
 def convertTime(x):
     if(x[-2:] == "AM"):
@@ -41,7 +41,7 @@ def getDescription(courseInfo, silent=False):
     if not silent:
         print(Code)
     
-    found = collection.find({'Code': Code, 'School':'Guelph'})
+    found = collection.find_one({'Code': Code, 'School':'Guelph'})
     
     if found == None:
         if Level == "Undergraduate Guelph-Humber":
@@ -91,7 +91,7 @@ def getDescription(courseInfo, silent=False):
         
 
         courseInfo['School'] = "Guelph"
-        # print(courseInfo)
+        print(courseInfo)
         # print(courseInfo['Code'], courseInfo['Offered'])
         
         collection.update({'Code': courseInfo['Code']}, courseInfo, upsert=True)
