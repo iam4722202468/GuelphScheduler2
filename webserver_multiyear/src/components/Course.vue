@@ -6,9 +6,23 @@
           <b>{{data.Code}}</b><br>
           {{data.Name}}<br>
           {{data.Num_Credits}}<br>
+          <br>
+          <div v-if="reverseReqMap().length > 0">Required By</div>
+          <b-row>
+            <b-col cols="4" :key="codeId" v-for="codeId in reverseReqMap()">
+              <CourseMini :code="codeId"/>
+            </b-col>
+          </b-row>
         </b-col>
-        <b-col v-on:click="remove" cols="2" class="hoverButton btn btn-outline-danger" title="Delete">
-          <b-icon icon="trash"></b-icon>
+        <b-col cols="2">
+          <b-row style="padding-left:15px;">
+            <b-col v-on:click="remove" class="hoverButton btn btn-outline-danger" title="Delete">
+              <b-icon icon="trash"></b-icon>
+            </b-col>
+            <b-col v-on:click="swap" class="hoverButton btn btn-outline-primary" title="Delete">
+              <b-icon icon="arrow-down-up"></b-icon>
+            </b-col>
+          </b-row>
         </b-col>
       </b-row>
       <hr>
@@ -19,6 +33,7 @@
 
 <script>
 import Choice from '@/components/Choice.vue'
+import CourseMini from '@/components/CourseMini.vue'
 
 export default {
   name: 'Course',
@@ -29,6 +44,12 @@ export default {
     },
     remove: function () {
       this.$parent.remove(this.data.Code)
+    },
+    swap: function () {
+      this.$parent.swap(this.data.Code)
+    },
+    reverseReqMap: function () {
+      return this.$parent.reverseReqMap(this.data.Code)
     },
 
     lightenColor: function (color, percent) {
@@ -65,7 +86,8 @@ export default {
     }
   },
   components: {
-    Choice
+    Choice,
+    CourseMini
   }
 }
 </script>

@@ -10,17 +10,18 @@ app.use(express.json())
 app.use(express.urlencoded())
 app.use(cookieParser())
 
-app.get('/api/test', (req, res) => {
-  res.send('Hello world')
-})
-
 app.get('/api/load', (req, res) => {
-
+  res.send('{message:\'ok\'}')
 })
 
 app.post('/api/generate', (req, res) => {
   const toSchedule = req.body.future // ["CIS*3760", "CIS*1910", "STAT*2040", "ACCT*3340", "ACCT*2220", "ECON*2770", "AGR*2350", "NUTR*4040"]
   const ignoreSchedule = req.body.taken // ["MATH*1080", "BIOL*1030", "MGMT*4000"]
+  let limit = parseInt(req.body.limit)
+
+  if (!Number.isInteger(limit) || limit <= 0) {
+    limit = 5
+  }
 
   const spawn = require('child_process').spawn
   const child = spawn('python3', ['./newparse.py'])
@@ -30,6 +31,7 @@ app.post('/api/generate', (req, res) => {
 
   child.stdin.write(JSON.stringify(toSchedule) + '\n')
   child.stdin.write(JSON.stringify(ignoreSchedule) + '\n')
+  child.stdin.write(limit + '\n')
   child.stdin.end()
 
   child.stdout.on('data', (data) => {

@@ -3,6 +3,7 @@ import json
 from pymongo import MongoClient
 import itertools
 import pprint
+import copy
 
 client = MongoClient()
 
@@ -84,12 +85,13 @@ def printRecursive(code, group, data, neededChoices, selectSet, res):
                 neededChoices[code] = []
 
             if isValid == 0:
-                neededChoices[code].append(group)
+                if group not in neededChoices[code]:
+                    neededChoices[code].append(group)
             else:
               # printRecursive(code, group['groups'], data, neededChoices, selectSet, res)
               res[code] = res[code].union(resCourses)
 
-def createGroups(sets, extraData, scheduleOverrides, alreadyTaken):
+def createGroups(sets, ordering, extraData, scheduleOverrides, alreadyTaken, semesterLimit):
     semesters = ['W', 'S', 'F']
     currentYear = 21
     currentSemester = 2
@@ -104,12 +106,12 @@ def createGroups(sets, extraData, scheduleOverrides, alreadyTaken):
             if x in sets[y]:
                 sets[y].remove(x)
 
-    while len(sets) > 0:
+    while len(ordering) > 0:
         semesterCode = semesters[currentSemester] + str(currentYear)
         assignments[semesterCode] = []
         markRemoval = []
 
-        for x in sets:
+        for x in ordering:
             if len(sets[x]) == 0:
                 possibleSemesters = extraData[x]
 
@@ -128,6 +130,9 @@ def createGroups(sets, extraData, scheduleOverrides, alreadyTaken):
                 if barrierYear == currentYear and barrierSemester < currentSemester:
                     barrier = True
 
+                if len(assignments[semesterCode]) >= semesterLimit:
+                    barrier = True
+
                 allUnknownSemesters = len(set(['F','W','S']) - set(possibleSemesters)) == 3
 
                 if (semesters[currentSemester] in possibleSemesters or allUnknownSemesters) and not barrier:
@@ -136,6 +141,7 @@ def createGroups(sets, extraData, scheduleOverrides, alreadyTaken):
 
         for x in markRemoval:
             del sets[x]
+            ordering.remove(x)
 
             for y in sets:
                 if x in sets[y]:
@@ -147,14 +153,46 @@ def createGroups(sets, extraData, scheduleOverrides, alreadyTaken):
             currentYear += 1
 
     return assignments
-    
+
+# returns the number of course a single course is required by
+def reverseReqLookup(sets, code):
+    res = []
+    for x in sets:
+        if code in sets[x]:
+          res.append(x)
+          res += reverseReqLookup(sets, x)
+
+    return res
+
+
+# sort based on how many course a course is required by
+def getSortedReqs(sets, taken):
+    res = []
+    for x in sets:
+        count = len(reverseReqLookup(sets, x))
+        res.append({'count':count, 'code':x})
+
+    res.sort(key=lambda x: x['count'], reverse=True)
+
+    resFix = []
+
+    for x in res:
+        if x['code'] not in taken:
+            resFix.append(x['code'])
+
+    return resFix
+
+
 if __name__ == '__main__':
     selectSet = set(json.loads(input()))
     alreadyTaken = set(json.loads(input()))
+    semesterLimit = int(input())
+
     scheduleOverrides = {}
 
-    # selectSet = set(['CIS*4780'])
-    # alreadyTaken = set([])
+    #selectSet = set(['MATH*1160', 'ENGG*1210', 'ENGG*1500', 'CIS*1500', 'CIS*4650'])
+    #alreadyTaken = set(['MATH*1200'])
+    #semesterLimit = 4
 
     combinedSet = selectSet.union(alreadyTaken)
 
@@ -165,12 +203,18 @@ if __name__ == '__main__':
     for x in list(combinedSet):
         printRecursive(x, data['prerequisites'][x], data['prerequisites'], neededChoices, combinedSet, res)
 
+    reqMap = {}
+
+    for x in res:
+        reqMap[x] = list(res[x])
+
     for code in combinedSet:
         found = collection.find_one({'School': 'Guelph', 'Code': code})
         extraData[code] = found['Offered']
 
     # print(res)
     # print(neededChoices)
-    scheduled = createGroups(res, extraData, scheduleOverrides, alreadyTaken)
 
-    print(json.dumps([list((combinedSet - alreadyTaken).union(selectSet)), neededChoices, scheduled]))
+    scheduled = createGroups(res, getSortedReqs(res, alreadyTaken), extraData, scheduleOverrides, alreadyTaken, semesterLimit)
+
+    print(json.dumps([list((combinedSet - alreadyTaken).union(selectSet)), neededChoices, scheduled, reqMap]))

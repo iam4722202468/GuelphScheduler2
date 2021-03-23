@@ -142,6 +142,10 @@ preFixes = {
     'ARTH*4310': '10.00 credits in Art History at the 3000 level',
     'ARTH*4330': '10.00 credits in Art History at the 3000 level',
     'POLS*4970': '',
+    'FCSS*2020': '3.00 credits including FCSS*1020',
+    'POPM*6290': '',
+    'ZOO*3050': 'MBG*2040 and BIOL*2400',
+    'PABI*6091': 'PABI*6080 and PABI*6090'
 }
 
 excFixes = {
@@ -267,6 +271,7 @@ def fixString(str_):
 
     fix8 = ' plus \d{1,3} hours of leadership experience'
     str_ = regex.sub(fix8, '', str_)
+    str_ = str_.replace(':', '')
 
     return str_
 
@@ -607,6 +612,10 @@ def createJSON(groupName):
         exc = found['Exclusions'] if 'Exclusions' in found else ""
         code = found['Code']
 
+        if ('Offered' not in found):
+            Level = 'Undergraduate' if int(int(code.split('*')[1])/1000)*100 <= 400 else 'Graduate'
+            found = getClasses.getDescription(({'Code': code, 'Level': Level}), False)
+
         getDescriptions([pre, exc])
         lookedup[code] = found
 
@@ -623,7 +632,7 @@ def createJSON(groupName):
             pre = preFixes[found['Code']]
 
         preParsed = parse(pre, found['Code'])
-        print(preParsed)
+        # print(preParsed)
 
         courseMapPre[found['Code']] = preParsed
 

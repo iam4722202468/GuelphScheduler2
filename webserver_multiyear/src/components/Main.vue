@@ -17,6 +17,15 @@
         </b-table>
       </b-col>
       <b-col cols="3">
+        <b-row>
+          <b-col>
+            Semester Course Limit:
+          </b-col>
+          <b-col>
+            <b-form-input id="course_limit" v-model="courseLimit" type="number" min="1" max="10"></b-form-input>
+          </b-col>
+        </b-row>
+        <br>
         <CourseGroup ref="future" title="Future Courses" :choices="choicesNeeded"/>
         <CourseGroup ref="taken" style="padding-top:60px" title="Taken Courses" :choices="choicesNeeded"/>
       </b-col>
@@ -28,17 +37,27 @@
 import CourseSmall from '@/components/CourseSmall.vue'
 import CourseGroup from '@/components/CourseGroup.vue'
 
-const tempData = { F21: ['CIS*1300', 'CIS*1910', 'ECON*1050', 'ECON*1100', 'STAT*2040', 'ACCT*2220'], W22: ['CIS*2500', 'ECON*2770', 'ACCT*3330'], S22: ['ACCT*3340'], F22: ['CIS*2430', 'CIS*2520', 'ECON*3740', 'ACCT*4220'], W23: ['CIS*2750'], S23: [], F23: ['CIS*3750', 'ECON*4640'], W24: [], S24: [], F24: ['CIS*4150'] }
+// const tempData = { F21: ['CIS*1300', 'CIS*1910', 'ECON*1050', 'ECON*1100', 'STAT*2040', 'ACCT*2220'], W22: ['CIS*2500', 'ECON*2770', 'ACCT*3330'], S22: ['ACCT*3340'], F22: ['CIS*2430', 'CIS*2520', 'ECON*3740', 'ACCT*4220'], W23: ['CIS*2750'], S23: [], F23: ['CIS*3750', 'ECON*4640'], W24: [], S24: [], F24: ['CIS*4150'] }
 
 export default {
   mounted () {
-    this.parseData(tempData)
+    this.parseData({})
     this.getChoices()
+    this.reload()
   },
   methods: {
     parseData: function (input) {
       this.items = [input]
       this.fields = Object.keys(input)
+    },
+    reverseReqMap: function (codeId) {
+      const res = []
+      for (const x in this.reqMap) {
+        if (this.reqMap[x].indexOf(codeId) > -1) {
+          res.push(x)
+        }
+      }
+      return res.sort()
     },
     getChoices: async function () {
       const res = await fetch('/api/generate')
@@ -51,22 +70,30 @@ export default {
 
       const res = await fetch('/api/generate', {
         method: 'POST',
-        body: JSON.stringify({ taken: coursesTaken, future: coursesFuture }),
+        body: JSON.stringify({ taken: coursesTaken, future: coursesFuture, limit: this.courseLimit }),
         headers: { 'Content-Type': 'application/json' }
       })
 
       const choices = await res.json()
       this.choicesNeeded = choices[1]
+      this.reqMap = choices[3]
       this.$refs.future.updateCodes(choices[0])
       this.parseData(choices[2])
-      console.log(choices[1])
+
+      console.log(this.reqMap)
     }
   },
   data () {
     return {
       fields: [],
       items: [],
-      choicesNeeded: { }
+      choicesNeeded: { },
+      courseLimit: 5
+    }
+  },
+  watch: {
+    courseLimit: function () {
+      this.reload()
     }
   },
   components: {

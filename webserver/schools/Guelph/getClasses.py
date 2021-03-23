@@ -43,7 +43,7 @@ def getDescription(courseInfo, silent=False):
     
     found = collection.find_one({'Code': Code, 'School':'Guelph'})
     
-    if found == None:
+    if found == None or 'Offered' not in found:
         if Level == "Undergraduate Guelph-Humber":
             Level = "guelphhumber"
         

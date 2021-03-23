@@ -72,6 +72,16 @@ export default {
       this.courses = this.courses.filter((el) => el.Code !== codeId)
       this.$parent.reload()
     },
+    reverseReqMap: function (codeId) {
+      return this.$parent.reverseReqMap(codeId)
+    },
+    swap: function (codeId) {
+      const found = this.courses.find((el) => el.Code === codeId)
+      this.$parent.$refs.taken.courses.push(found)
+      this.$parent.$refs.future.courses.push(found)
+      this.courses = this.courses.filter((el) => el.Code !== codeId)
+      this.$parent.reload()
+    },
     getCodes: function () {
       return this.courses.map(el => el.Code)
     },
