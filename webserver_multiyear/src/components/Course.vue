@@ -19,7 +19,7 @@
             <b-col v-on:click="remove" class="hoverButton btn btn-outline-danger" title="Delete">
               <b-icon icon="trash"></b-icon>
             </b-col>
-            <b-col v-on:click="swap" class="hoverButton btn btn-outline-primary" title="Delete">
+            <b-col v-on:click="swap" class="hoverButton btn btn-outline-primary" title="Swap Group">
               <b-icon icon="arrow-down-up"></b-icon>
             </b-col>
           </b-row>
@@ -98,6 +98,7 @@ export default {
   margin-bottom: 10px;
   padding-bottom: 5px;
   border-radius: 10px;
+  max-width: 300px;
 }
 
 .hoverButton

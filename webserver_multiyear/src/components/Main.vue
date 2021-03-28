@@ -1,7 +1,7 @@
 <template>
   <div class="body">
     <b-row>
-      <b-col cols="9">
+      <b-col cols="10">
         <b-table responsive fixed :items="items" :fields="fields">
           <template #table-colgroup="scope">
             <col
@@ -16,7 +16,7 @@
           </template>
         </b-table>
       </b-col>
-      <b-col cols="3">
+      <b-col>
         <b-row>
           <b-col>
             Semester Course Limit:
@@ -25,9 +25,14 @@
             <b-form-input id="course_limit" v-model="courseLimit" type="number" min="1" max="10"></b-form-input>
           </b-col>
         </b-row>
-        <br>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col>
         <CourseGroup ref="future" title="Future Courses" :choices="choicesNeeded"/>
-        <CourseGroup ref="taken" style="padding-top:60px" title="Taken Courses" :choices="choicesNeeded"/>
+      </b-col>
+      <b-col>
+        <CourseGroup ref="taken" title="Taken Courses" :choices="choicesNeeded"/>
       </b-col>
     </b-row>
   </div>
@@ -37,13 +42,13 @@
 import CourseSmall from '@/components/CourseSmall.vue'
 import CourseGroup from '@/components/CourseGroup.vue'
 
-// const tempData = { F21: ['CIS*1300', 'CIS*1910', 'ECON*1050', 'ECON*1100', 'STAT*2040', 'ACCT*2220'], W22: ['CIS*2500', 'ECON*2770', 'ACCT*3330'], S22: ['ACCT*3340'], F22: ['CIS*2430', 'CIS*2520', 'ECON*3740', 'ACCT*4220'], W23: ['CIS*2750'], S23: [], F23: ['CIS*3750', 'ECON*4640'], W24: [], S24: [], F24: ['CIS*4150'] }
+const tempData = { F21: ['CIS*1300', 'CIS*1910', 'ECON*1050', 'ECON*1100', 'STAT*2040', 'ACCT*2220'], W22: ['CIS*2500', 'ECON*2770', 'ACCT*3330'], S22: ['ACCT*3340'], F22: ['CIS*2430', 'CIS*2520', 'ECON*3740', 'ACCT*4220'], W23: ['CIS*2750'], S23: [], F23: ['CIS*3750', 'ECON*4640'], W24: [], S24: [], F24: ['CIS*4150'] }
 
 export default {
   mounted () {
-    this.parseData({})
+    this.parseData(tempData)
     this.getChoices()
-    this.reload()
+    // this.reload()
   },
   methods: {
     parseData: function (input) {
@@ -107,8 +112,8 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .body {
-  margin-left: 10%;
-  margin-right: 10%;
+  margin-left: 5%;
+  margin-right: 5%;
   margin-top: 2%;
   min-height: 100%;
 }

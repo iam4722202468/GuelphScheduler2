@@ -636,6 +636,8 @@ def createJSON(groupName):
 
         courseMapPre[found['Code']] = preParsed
 
+    print(len(courseMapPre), "items found")
+
     with open('./parsed/all.json', 'w') as outfile:
         json.dump({'prerequisites': courseMapPre, 'restrictions': courseMapExc}, outfile)
 

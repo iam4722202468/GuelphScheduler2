@@ -13,7 +13,11 @@
       style="padding-bottom: 10px"
     ></vue-bootstrap-typeahead>
 
-    <Course v-for="item in sortedCourses" :key="item.Code" :data="item" :choices="choices[item.Code]" />
+    <b-row>
+      <b-col cols="4" :key="item.Code" v-for="item in sortedCourses">
+        <Course :data="item" :choices="choices[item.Code]" />
+      </b-col>
+    </b-row>
   </div>
 </template>
 
