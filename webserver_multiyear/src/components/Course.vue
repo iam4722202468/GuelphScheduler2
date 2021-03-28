@@ -9,23 +9,23 @@
           <br>
           <div v-if="reverseReqMap().length > 0">Required By</div>
           <b-row>
-            <b-col cols="4" :key="codeId" v-for="codeId in reverseReqMap()">
+            <b-col cols="6" :key="codeId" v-for="codeId in reverseReqMap()">
               <CourseMini :code="codeId"/>
             </b-col>
           </b-row>
         </b-col>
         <b-col cols="2">
-          <b-row style="padding-left:15px;">
+          <b-row>
             <b-col v-on:click="remove" class="hoverButton btn btn-outline-danger" title="Delete">
               <b-icon icon="trash"></b-icon>
             </b-col>
             <b-col v-on:click="swap" class="hoverButton btn btn-outline-primary" title="Swap Group">
-              <b-icon icon="arrow-down-up"></b-icon>
+              <b-icon icon="arrow-left-right"></b-icon>
             </b-col>
           </b-row>
         </b-col>
       </b-row>
-      <hr>
+      <hr v-if="choices && choices.lenth > 0">
       <Choice v-if="choices" :data="choices" :parent="this"/>
     </div>
   </div>
@@ -105,8 +105,6 @@ export default {
 {
   margin-top: 1em;
   border-radius: 60px;
-  padding: 0.58em 0.6em;
-  padding-left: 0.6em;
-  height: 40px;
+  padding-left: 0.66em;
 }
 </style>
