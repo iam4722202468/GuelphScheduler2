@@ -53,16 +53,16 @@ def checkValid(group, selectSet):
 
 def printRecursive(code, group, data, neededChoices, selectSet, res):
     if code not in res:
-        res[code] = set()
+        res[code] = []
 
     if isinstance(group, str):
-        res[code].add(code)
+        res[code].append(code)
         printRecursive(code, data[code], data, neededChoices, selectSet, res)
 
     elif isinstance(group, list):
         for x in group:
             if isinstance(x, str):
-                res[code].add(x)
+                res[code].append(x)
                 selectSet.add(x)
                 # print('Adding', x, 'for', code)
                 printRecursive(x, data[x], data, neededChoices, selectSet, res)
@@ -89,7 +89,37 @@ def printRecursive(code, group, data, neededChoices, selectSet, res):
                     neededChoices[code].append(group)
             else:
               # printRecursive(code, group['groups'], data, neededChoices, selectSet, res)
-              res[code] = res[code].union(resCourses)
+
+              newObj = {'courses': resCourses, 'count': group['count']}
+              res[code].append(newObj)
+
+def canAssign(data, assigned):
+    validCount = 0
+    courses = set()
+
+    for val in data:
+        if isinstance(val, str):
+            if val in assigned:
+                validCount += 1
+                courses.add(val)
+        else:
+            newCourses, count = canAssign(val['courses'], assigned)
+            if count >= val['count']:
+                validCount += 1
+                courses = courses.union(newCourses)
+                
+    
+    return courses, validCount
+
+
+def convertMapping(mapping):
+    newMapping = {}
+
+    for x in mapping:
+        newMapping[x] = list(mapping[x])
+
+    return newMapping
+
 
 def createGroups(sets, ordering, extraData, scheduleOverrides, alreadyTaken, semesterLimit):
     semesters = ['W', 'S', 'F']
@@ -97,22 +127,19 @@ def createGroups(sets, ordering, extraData, scheduleOverrides, alreadyTaken, sem
     currentSemester = 2
 
     assignments = {}
+    assigned = set(alreadyTaken)
 
-    for x in alreadyTaken:
-        if x in sets:
-            del sets[x]
+    courseMapping = {}
 
-        for y in sets:
-            if x in sets[y]:
-                sets[y].remove(x)
-
-    while len(ordering) > 0:
+    while len(assigned) != len(ordering) + len(alreadyTaken):
         semesterCode = semesters[currentSemester] + str(currentYear)
         assignments[semesterCode] = []
-        markRemoval = []
+        toAdd = set()
 
         for x in ordering:
-            if len(sets[x]) == 0:
+            courses, count = canAssign(sets[x], assigned)
+
+            if x not in assigned and count == len(sets[x]):
                 possibleSemesters = extraData[x]
 
                 barrierSemester = currentSemester
@@ -137,39 +164,48 @@ def createGroups(sets, ordering, extraData, scheduleOverrides, alreadyTaken, sem
 
                 if (semesters[currentSemester] in possibleSemesters or allUnknownSemesters) and not barrier:
                     assignments[semesterCode].append(x)
-                    markRemoval.append(x)
+                    toAdd.add(x)
+                    courseMapping[x] = courses
 
-        for x in markRemoval:
-            del sets[x]
-            ordering.remove(x)
-
-            for y in sets:
-                if x in sets[y]:
-                    sets[y].remove(x)
+        assigned = assigned.union(toAdd)
 
         currentSemester += 1
         if currentSemester > 2:
             currentSemester = 0
             currentYear += 1
 
-    return assignments
+    return courseMapping, assignments
+
+def lookupContains(curr, code):
+    contains = False
+
+    for x in curr:
+        if isinstance(x, str):
+            if x == code:
+                contains = True
+        else:
+            contains = contains or lookupContains(x['courses'], code)
+
+    return contains
+    
 
 # returns the number of course a single course is required by
 def reverseReqLookup(sets, code):
-    res = []
-    for x in sets:
-        if code in sets[x]:
-          res.append(x)
-          res += reverseReqLookup(sets, x)
+    count = 0
 
-    return res
+    for x in sets:
+        if lookupContains(sets[x], code):
+            count += reverseReqLookup(sets, x)
+            count += 1
+
+    return count
 
 
 # sort based on how many course a course is required by
 def getSortedReqs(sets, taken):
     res = []
     for x in sets:
-        count = len(reverseReqLookup(sets, x))
+        count = reverseReqLookup(sets, x)
         res.append({'count':count, 'code':x})
 
     res.sort(key=lambda x: x['count'], reverse=True)
@@ -190,9 +226,9 @@ if __name__ == '__main__':
 
     scheduleOverrides = {}
 
-    #selectSet = set(['MATH*1160', 'ENGG*1210', 'ENGG*1500', 'CIS*1500', 'CIS*4650'])
-    #alreadyTaken = set(['MATH*1200'])
-    #semesterLimit = 4
+    #selectSet = set(["CIS*1910", "MATH*1200", "MATH*2000", "ECON*1050", "CIS*4780", "CIS*4520", "CIS*3150", "CIS*2750", "CIS*2030", "CIS*3110", "MATH*2210", "CIS*4650", "MATH*3160", "MATH*2200", "CIS*3090", "MATH*1160", "CIS*2520", "SPAN*1100", "CIS*2430", "PHIL*2110", "CIS*3760", "CIS*3120", "MATH*2130", "CIS*2910", "CIS*3210", "STAT*2040", "CIS*3490", "CIS*3750", "CIS*4010", "CIS*2500", "MATH*1080", "MATH*1210", "CIS*1300", "PHIL*1050"])
+    #alreadyTaken = set()
+    #semesterLimit = 5
 
     combinedSet = selectSet.union(alreadyTaken)
 
@@ -203,18 +239,13 @@ if __name__ == '__main__':
     for x in list(combinedSet):
         printRecursive(x, data['prerequisites'][x], data['prerequisites'], neededChoices, combinedSet, res)
 
-    reqMap = {}
-
-    for x in res:
-        reqMap[x] = list(res[x])
-
     for code in combinedSet:
         found = collection.find_one({'School': 'Guelph', 'Code': code})
         extraData[code] = found['Offered']
 
-    # print(res)
-    # print(neededChoices)
+    #print(res)
+    #print(neededChoices)
 
-    scheduled = createGroups(res, getSortedReqs(res, alreadyTaken), extraData, scheduleOverrides, alreadyTaken, semesterLimit)
+    courseMapping, scheduled = createGroups(res, getSortedReqs(res, alreadyTaken), extraData, scheduleOverrides, alreadyTaken, semesterLimit)
 
-    print(json.dumps([list((combinedSet - alreadyTaken).union(selectSet)), neededChoices, scheduled, reqMap]))
+    print(json.dumps([list((combinedSet - alreadyTaken).union(selectSet)), neededChoices, scheduled, convertMapping(courseMapping)]))
