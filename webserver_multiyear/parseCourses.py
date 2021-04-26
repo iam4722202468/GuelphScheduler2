@@ -1,8 +1,7 @@
 import re
-import regex
+import regex  # backwards compatible with re, and provides some additional features
 import string
 import random
-import itertools
 import json
 
 from pymongo import MongoClient
@@ -11,13 +10,10 @@ client = MongoClient()
 import sys
 sys.path.insert(0,'../webserver/schools/Guelph')
 
-import getClasses
-
 db = client['scheduler']
 collection = db['cachedData']
 
-lookedup = {}
-
+# known fixes for pre-requisite parser
 preFixes = {
     'ECON*4400': 'ECON*2310, 12.0 credits',
   #  'CHEM*2060': 'CHEM*1050, MATH*1210, (1 of PHYS*1010, PHYS*1070, PHYS*1300)',
@@ -146,6 +142,7 @@ preFixes = {
     'PABI*6091': 'PABI*6080 and PABI*6090'
 }
 
+# known fixes for excemption parser fixes
 excFixes = {
     'MBG*1000': '',
     'THST*4280': '',
@@ -202,126 +199,210 @@ excFixes = {
 }
 
 def genId(size=8, chars=string.ascii_uppercase + string.digits):
+    """
+    Generates 8 characters long random string.
+
+    Used as placeholder to break down pre-requisites string into smaller independent chunks.
+    Gets replaced by parsed json equivalent.
+
+    Attributes
+    ----------
+    size: int
+        length of output string
+    chars: str
+        string of characters that can be used to generate output string
+    """
+
     return ''.join(random.choice(chars) for _ in range(size))
 
-def fixParseString(str_):
-    return str_.replace(', including', ' including').replace(')', '')
+def remove_excluding_clause(line):
+    """
+    Removes substring of the pattern "(excluding <any characters except newline>)"
 
-def getDescriptions(codeArr):
-    for codeStr in codeArr:
-        regCodes = re.findall(r'[A-Z]{3,4}\*[0-9]{4}', codeStr)
-
-        for code in regCodes:
-            if code not in lookedup:
-                Level = 'Undergraduate' if int(int(code.split('*')[1])/1000)*100 <= 400 else 'Graduate'
-                found = getClasses.getDescription(({'Code': code, 'Level': Level}), False)
-                lookedup[code] = found
-
-                pre = found['Prerequisites'] if 'Prerequisites' in found else ""
-                exc = found['Exclusions'] if 'Exclusions' in found else ""
-
-                getDescriptions([pre, exc])
-
-def fixString(str_):
-    creditMatch = r'(\d{1,}\.?\d{0,3})'
-
-    fix1 = r'\(excluding .*\)'
-    str_ = regex.sub(fix1, '', str_)
-    str_ = str_.replace('A minimum of ', '')
+    Attributes
+    ----------
+    line: str
+        with pattern
     
+    Returns
+    ----------
+    line: str
+        with no excluding clause
+    """
+
+    # .* match everything except newline character
+    # TODO: why not newline?
+    fix1 = r'\(excluding .*\)'    
+    return regex.sub(fix1, '', line)
+
+def remove_credit_clause(line):
+    # TODO: need fix 3000-level? instead of 3000 level?
+    # 10.00 credits including 1.50 credits in History at the 3000-level vs 10.00 credits in History at the 3000-level
+    creditMatch = r'(\d{1,}\.?\d{0,3})'
     fix2 = creditMatch + r' credits including ' + creditMatch + ' credits'
     fix2Fix = 'including ' + creditMatch + ' credits '
-    found = regex.match(fix2, str_)
-
+    
+    found = regex.match(fix2, line)
     if found != None:
-        str_ = regex.sub(fix2Fix, '', str_)
+        line = regex.sub(fix2Fix, '', line)
+    return line
 
-    str_ = str_.replace('Completion of previous co-op work requirements in ', '')
-    str_ = str_.replace('4U Advanced Functions', '')
-    str_ = str_.replace('Completion of ', '')
-    str_ = str_.replace('Minimum of ','')
+def remove_minimum_grade_clause(line):
+    fix3 = 'A minimum grade of \d\d% in '  # music stuff
+    return regex.sub(fix3, '', line)
 
-    fix3 = 'A minimum grade of \d\d% in '
-    str_ = regex.sub(fix3, '', str_)
-
-    str_ = str_.replace('the music core.', '')
-    str_ = str_.replace('including at least', ',')
-
+def remove_all_phase_clause(line):
     fix4 = 'All Phase \d courses.'
-    str_ = regex.sub(fix4, '', str_)
+    return regex.sub(fix4, '', line)
 
-    fix5 = '[Mm]inimum cumulative average of \d\d%'
-    str_ = regex.sub(fix5, '', str_)
-    fix6 = '; cumulative average of \d\d%'
-    str_ = regex.sub(fix6, '', str_)
-    fix7 = 'minimum \d\d% cumulative average'
-    str_ = regex.sub(fix7, '', str_)
+def remove_minimum_cumulative_average(line):
+    if 'cumulative average' in line:
+        fix5 = '[Mm]inimum cumulative average of \d\d%'
+        fix6 = '; cumulative average of \d\d%'
+        fix7 = 'minimum \d\d% cumulative average'
 
+        line = regex.sub(fix5, '', line)
+        line = regex.sub(fix6, '', line)
+        line = regex.sub(fix7, '', line)
+        return line
+    else:
+        return line
 
-    str_ = str_.replace(' is recommended', '')
-    str_ = str_.replace(' is str_ongly recommended', '')
-    str_ = str_.replace('recommended', '')
-    str_ = str_.replace('on piano', '')
-    str_ = str_.replace('credit at', 'credits at')
-    str_ = str_.replace(' or equivalent', '')
-    str_ = str_.replace(' completed;', '')
-    str_ = str_.replace('as appropriate to the topic of the course: ', '')
+def remove_recommended(line):
+    # TODO: show recommended on UI
+    line = line.replace(' is recommended', '')
+    line = line.replace(' is str_ongly recommended', '')
+    line = line.replace('recommended', '')
+    return line
 
+def remove_leadership_experience(line):
     fix8 = ' plus \d{1,3} hours of leadership experience'
-    str_ = regex.sub(fix8, '', str_)
-    str_ = str_.replace(':', '')
+    return regex.sub(fix8, '', line)
 
-    return str_
+# TODO: show these as assumptions on UI
+def fixString(line):
+    """
+    Removes contextual information from pre-requisite string
 
-def parse(str_, code):
-    str_ = fixString(str_)
+    Attributes
+    ----------
+    line: str
+        original pre-requisite string
+    
+    Returns
+    ----------
+    line: str
+        modified pre-requisite string
+    """
+
+    line = remove_excluding_clause(line)
+    line = line.replace('A minimum of ', '')  # TODO: should minimum be represented in symbol? is it not of value?
+    line = remove_credit_clause(line)
+    line = line.replace('Completion of previous co-op work requirements in ', '')  # for co-op stuff
+    line = line.replace('4U Advanced Functions', '')  # for math
+    line = line.replace('Completion of ', '')  # music and engg
+    line = line.replace('Minimum of ','')  # TODO: should minimum be represented in symbol?
+    line = remove_minimum_grade_clause(line)
+    line = line.replace('the music core.', '')  # fix patch on Completion of
+    line = line.replace('including at least', ',')  # inconsistently removes line # TODO: check against remove_credit_clause
+    line = remove_all_phase_clause(line)
+    line = remove_minimum_cumulative_average(line)
+    line = remove_recommended(line)
+    line = line.replace('on piano', '')
+    line = line.replace('credit at', 'credits at')
+    line = line.replace(' or equivalent', '')
+    line = line.replace(' completed;', '')
+    line = line.replace('as appropriate to the topic of the course: ', '')
+    line = remove_leadership_experience(line)
+    line = line.replace(':', '')  # not sure if required
+
+    return line
+
+def group_extraction(line, code):
+    """
+    Identifies highest level of the recursive groups
+
+    Identifies the highest level of recursive groups in pre-requisites of the form (...info...) or [...info...] or 
+    a nested / recursive combination of them.
+
+    Attributes
+    ----------
+    line: str
+        original pre-requisite string
+    code: str
+        course code for e.g. ACCT*3330
+    silent: bool
+        silent if True, print otherwise
+    """
+
     matchObj = {}
 
-    str_ = str_.strip()
+    line = fixString(line)  # pre parse 
+    line = line.strip()
 
-    matches = regex.finditer(r'([\(\[]([^()[\]]|(?R))*[)\]])', str_)
+    matches = regex.finditer(r'([\(\[]([^()[\]]|(?R))*[)\]])', line)
     if matches != None:
-        for x in matches:
-            id = genId()
-            parsed = parse(x.group()[1:-1].strip(), code)
-            matchObj[id] = parsed
-            str_ = str_.replace(x.group().strip(), id)
+        for x in matches:  # x -> regex.Match object 
+            id = genId() # generate random id
+            matchObj[id] = x.group()  # {'id': 'string of the identified group'}
+            line = line.replace(x.group().strip(), id)  # replace group substring with id in line
+    
+    return matchObj, line
 
-    if len(re.findall(r'[\]\[\)\)]', str_)) > 0:
-        print('ERROR bracket', code, matchObj, str_)
-        exit()
+def get_and_count(line):
+    return line.count('and ')
 
-    andCount = str_.count('and ')
-    orCount = str_.count('or ')
+def get_or_count(line):
+    return line.count('or ')
+
+def get_and_or(line):
+    andCount = get_and_count(line)
+    orCount = get_or_count(line)
 
     if (andCount > 1 or orCount > 1):
         print('ERROR', code, matchObj, str_)
         exit()
-
-    type = 'AND'
-
+        
     if orCount > 0:
-        type = 'CHOOSE'
+        return 'CHOOSE'
+    else:
+        return 'AND'
 
-    numReg = r'(\d{1,}\.?\d{0,3})'
-    codeMatch = r'((\w{2,4}\*\d{2,4}(\/2)?)|(([A-Z]|\d){8}))'
-    codeList = '(^ )?' + codeMatch + "((\s?,?\s?)" + codeMatch + ")*(?=(,|$|\.|( or )|))(?!( or equivalent))"
-    codeListNoEnd = '^' + codeMatch + r"((\s?,?\s?)" + codeMatch + r")*"
+def choose_n_from_course_list(line, codeList, codeMatch):
+    """
+    Parse string of type "n of course code, course code, ... or course code" where course code 
+    is used interchangbly with placeholder #ids
 
-    creditMatch = r'(?<!of )' + numReg + ' credits(?!((,? in)|( from)|( of)|( at)))'
-    creditsInMatch = numReg + r' credits (in|of|at) .+?((?= or )|(?= from )|(?=,)|$)'
-    creditsIncludingX = numReg + ' credits(,)? including ' + codeList
-    listAnd = '(^ )?' + codeListNoEnd + ',? and ' + codeMatch + '(?=(,|$|\.| |))'
-    listOr = '(^ )?' + codeListNoEnd + ',? or ' + codeMatch + '(?=(,|$|\.| |))'
-    creditsIncludingXorY = numReg + ' credits(,)? including ' + codeMatch + ' or ' + codeMatch
-    creditsInIncluding = numReg + ' credits in .*,? including ' + codeMatch
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    codeList: str
+        used in regex expression to find a list of course codes
+    codeMatch: str
+        used in regex expression to find course code / placeholder #ids
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'CHOOSE',
+                'count': count of courses to choose,
+                'groups': list of courses to choose from
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
 
-    matches = re.finditer(r"\d( )?of " + codeList + '( or ((\w{2,4}\*\d{2,4}(\/2)?)|(([A-Z]|\d){8})))?', str_)
+    matchObj = {}
+    matches = re.finditer(r"\d( )?of " + codeList + '( or '+ codeMatch + ')?', line)
     if matches != None:
         for x in matches:
-            count = x.group()[0]
+            count = x.group()[0]  # 1st char is number -> \d
             codes = []
-            tmp = re.finditer(codeMatch, x.group())
+            tmp = re.finditer(codeMatch, x.group())  # iterate through all codes in the string
             for y in tmp:
                 addGroup = y.group().strip()
                 if addGroup in matchObj:
@@ -329,7 +410,7 @@ def parse(str_, code):
                 else:
                     addGroup = [addGroup]
 
-                codes += addGroup
+                codes += addGroup  # list concatenation
 
             id = genId()
             matchObj[id] = [{
@@ -337,15 +418,49 @@ def parse(str_, code):
                 'count': int(count),
                 'groups': codes
             }]
+            line = line.replace(x.group(), id)  # replace group in pre-requisite string with placeholder id
 
-            str_ = str_.replace(x.group(), id)
+    return matchObj, line
 
-    matches = re.finditer(creditsInIncluding, str_)
+def credits_in_subject_Including(line, creditsInIncluding):
+    """
+    Parse string of type "x credits in subject including course code" where course code 
+    is used interchangbly with placeholder #ids
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    creditsInIncluding: str
+        used in regex expression to find if "credits in subject including course code" pattern is matched
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'AND',
+                'groups': [
+                    {
+                        'type': 'CREDITS',
+                        'count': (float) number of credits to complete,
+                        'subject': (str) subject to have the completed credits in
+                    },
+                    (str) code of the course to have completed, including the subject credits mentioned
+                ]
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+    
+    matchObj = {}
+    matches = re.finditer(creditsInIncluding, line)
     if matches != None:
         for x in matches:
             spl = regex.split(r' credits in |,? including ', x.group())
             if len(spl) != 3:
-                print('ERROR creditsInIncluding', code, matchObj, str_)
+                print('ERROR creditsInIncluding', matchObj, line)
                 exit()
     
             count = spl[0]
@@ -370,14 +485,53 @@ def parse(str_, code):
 
             id = genId()
             matchObj[id] = [obj]
-            str_ = str_.replace(x.group(), id)
+            line = line.replace(x.group(), id)  # replace group substring with placeholder id
 
-    matches = re.finditer(creditsIncludingXorY, str_)
+    return matchObj, line
+
+def credits_including_X_or_Y(line, creditsIncludingXorY):
+    """
+    Parse string of type "x credits including course code or course code" where course code 
+    is used interchangbly with placeholder #ids
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    creditsIncludingXorY: str
+        used in regex expression to find if "x credits course code or course code" pattern is matched
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'AND',
+                'groups': [
+                    {
+                        'type': 'CREDITS',
+                        'count': (float) number of completed credits,
+                        'subject': 'any'
+                    },
+                    {
+                        'type': 'CHOOSE',
+                        'choose': 1,
+                        'groups': [(str) codeX,  (str) codeY]
+                    }
+                ]
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+
+    matchObj = {}
+    matches = re.finditer(creditsIncludingXorY, line)
     if matches != None:
         for x in matches:
             spl = regex.split(r' credits including | or ', x.group())
             if len(spl) != 3:
-                print('ERROR creditsInIncludingXorY', code, matchObj, str_)
+                print('ERROR creditsInIncludingXorY', code, matchObj, line)
                 exit()
 
             count = spl[0]
@@ -411,14 +565,48 @@ def parse(str_, code):
 
             id = genId()
             matchObj[id] = [obj]
-            str_ = str_.replace(x.group(), id)
+            line = line.replace(x.group(), id)  # replace group substring with placeholder id
 
-    matches = re.finditer(creditsIncludingX, str_)
+    return matchObj, line
+
+def credits_including_X(line, creditsIncludingX):
+    """
+    Parse string of type "x credits including course code" where course code 
+    is used interchangbly with placeholder #ids
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    creditsIncludingX: str
+        used in regex expression to find if "x credits including course code" pattern is matched
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'AND',
+                'groups': [
+                    {
+                        'type': 'CREDITS',
+                        'count': (float) number of completed credits
+                    },
+                    (str) code of the course to have completed 
+                ]
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+    
+    matchObj = {}
+    matches = re.finditer(creditsIncludingX, line)
     if matches != None:
         for x in matches:
             spl = regex.split(r' credits,? including |, ', x.group())
             if len(spl) < 2:
-                print('ERROR creditsIncludingX', code, matchObj, str_)
+                print('ERROR creditsIncludingX', matchObj, line)
                 exit()
 
             count = spl[0]
@@ -444,9 +632,38 @@ def parse(str_, code):
             }
             id = genId()
             matchObj[id] = [obj]
-            str_ = str_.replace(x.group(), id)
+            line = line.replace(x.group(), id)  # replace group substring with placeholder id
 
-    matches = re.finditer(creditMatch, str_)
+    return matchObj, line
+
+def credit_match(line, creditMatch):
+    """
+    Parse string of type "x credits" where subject must NOT be specified through 
+    links like "credits in", "credits at" or "credits of"
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    creditMatch: str
+        used in regex expression to find if "x credits" pattern is matched independent of a subject
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'CREDITS',
+                'count': (float) number of completed credits,
+                'subject': 'any'
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+
+    matchObj = {}
+    matches = re.finditer(creditMatch, line)
     if matches != None:
         for x in matches:
             obj = {
@@ -457,14 +674,42 @@ def parse(str_, code):
 
             id = genId()
             matchObj[id] = [obj]
-            str_ = str_.replace(x.group(), id)
+            line = line.replace(x.group(), id)  # replace group substring with placeholder id
 
-    matches = re.finditer(creditsInMatch, str_)
+    return matchObj, line
+
+def credits_in_subject(line, creditsInMatch):
+    """
+    Parse string of type "x credits in/at/of subject"
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    creditMatch: str
+        used in regex expression to find if "x credits in/at/of subject" pattern is matched
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'CREDITS',
+                'count': (float) number of completed credits,
+                'subject': (str) subject to have the completed credits in
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+
+    matchObj = {}
+    matches = re.finditer(creditsInMatch, line)
     if matches != None:
         for x in matches:
             spl = regex.split(r' credits in | credits at | credits of ', x.group())
             if len(spl) != 2:
-                print('ERROR credits in', code, matchObj, str_)
+                print('ERROR credits in', matchObj, line)
                 exit()
 
             count = spl[0]
@@ -478,9 +723,40 @@ def parse(str_, code):
 
             id = genId()
             matchObj[id] = [obj]
-            str_ = str_.replace(x.group(), id)
+            line = line.replace(x.group(), id)  # replace group substring with placeholder id
 
-    matches = re.finditer(r'^' + codeList, str_)
+    return matchObj, line
+
+def implied_and(line, codeList, codeMatch):
+    """
+    Parse string of type "course code, course code, course code ..." where course code 
+    is used interchangbly with placeholder #ids. The , implies
+    "course code and course code and course code ..."
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    codeList: str
+        used in regex expression to find a list of course codes
+    codeMatch: str
+        used in regex expression to find course code / placeholder #ids
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'AND',
+                'groups': [(str) code, (str) code, ...]
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+
+    matchObj = {}
+    matches = re.finditer(r'^' + codeList, line)
     if matches != None:
         for x in matches:
             if len(x.group().split(',')) > 1:
@@ -498,9 +774,37 @@ def parse(str_, code):
                     codes += addGroup
 
                 matchObj[id] = [{ 'type': 'AND', 'groups': codes }]
-                str_ = str_.replace(x.group(), id)
+                line = line.replace(x.group(), id)  # replace group substring with placeholder id
     
-    matches = regex.finditer(listAnd, str_)
+    return matchObj, line
+
+def explicit_and(line, listAnd):
+    """
+    Parse string of type "course code and course code and course code ..." where course code 
+    is used interchangbly with placeholder #ids
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    listAnd: str
+        used in regex expression to check if course codes are explicitly joined by "and"
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'AND',
+                'groups': [(str) code, (str) code, ...]
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+
+    matchObj = {}
+    matches = regex.finditer(listAnd, line)
     if matches != None:
         for x in matches:
             spl = regex.split(r' and |, ', x.group())
@@ -523,9 +827,38 @@ def parse(str_, code):
 
             id = genId()
             matchObj[id] = [obj]
-            str_ = str_.replace(x.group(), id)
+            line = line.replace(x.group(), id)  # replace group substring with placeholder id
 
-    matches = regex.finditer(listOr, str_)
+    return matchObj, line
+
+def explicit_or(line, listOr):
+    """
+    Parse string of type "course code or course code or course code ..." where course code 
+    is used interchangbly with placeholder #ids
+
+    Attributes
+    ---------
+    line: str
+        pre-requisite string
+    listOr: str
+        used in regex expression to check if course codes are explicitly joined by "or"
+    
+    Returns
+    ----------
+    matchObj: dict
+        dictionary with id as key and parsed json array as value as 
+        {'id': [{
+                'type': 'CHOOSE',
+                'count': 1,
+                'groups': [(str) code, (str) code, ...]
+            }]
+        }
+    line: str
+        modified pre-requisite string with group replaced by #id
+    """
+
+    matchObj = {}
+    matches = regex.finditer(listOr, line)
     if matches != None:
         for x in matches:
             spl = regex.split(r' or |, ', x.group())
@@ -549,95 +882,273 @@ def parse(str_, code):
 
             id = genId()
             matchObj[id] = [obj]
-            str_ = str_.replace(x.group(), id)
+            line = line.replace(x.group(), id)  # replace group substring with placeholder id
 
-    if str_.count(',') == 0 and orCount == 0 and andCount == 0:
+    return matchObj, line
+
+def check_missing_conditions(line, dictionary):
+    """
+    Checks if there are more than 1 course codes or placeholder ids with no mentioned way to connect them.
+
+    Attributes
+    ----------
+    line: str
+        pre-requisite string
+    dictionary: dict
+        dictionary of id value pair.
+        {'id': 'json parse', ...}
+    
+    Returns
+    ----------
+    False if no missing conditions. Exits program otherwise
+    """
+    # no connectors
+    if line.count(',') == 0 and get_or_count(line) == 0 and get_and_count(line) == 0:
         found = None
         count = 0
-
-        for x in matchObj:
-            if str_.find(x) > -1:
-                found = matchObj[x]
+        # iterate through each id
+        for x in dictionary:
+            # if the id is a substring of line
+            if line.find(x) > -1:
+                found = dictionary[x]
                 count += 1
-
+        # more than 1 ids with no connector
         if count > 1:
-            print('ERROR no comma', code, matchObj, str_)
+            print('ERROR no comma', dictionary, line)
             exit()
+    return False
 
-    if regex.match(codeMatch + r'[\s.,]*', str_) == None and len(str_) > 8:
-        print('ERROR found', code, matchObj, str_)
+def check_code_present(line, codeMatch):
+    """
+    Checks at least 1 course code or id is present in line
+
+    Attributes
+    ----------
+    line: str
+        pre-requisite string
+    codeMatch: str
+        used in regex to identify course code or placeholder id 
+    
+    Returns
+    ----------
+    True if code present. Exits program otherwise
+    """
+
+    if regex.match(codeMatch + r'[\s.,]*', line) == None and len(line) > 8:
+        print('ERROR found', line)
         exit()
+    return True
 
-    str_ = str_.strip().replace('.', '')
-    spl = str_.split(',')
+def cleanup_get_value(line, codeMatch, dictionary):
+    """
+    Makes final cleanups on parsed pre-requisite for this level (multiple levels due to recursion) and 
+    returns the parsed json where groups may still contain placeholder ids.
+
+    Attributes
+    ----------
+    line: str
+        pre-requisite string
+    codeMatch: str
+        used in regex to identify course code or placeholder id 
+    dictionary: dict
+        dictionary of id value pair.
+        {'id': 'json parse', ...}
+    
+    Returns
+    ----------
+    parsed json array [] and (str) describing it
+    """
+
+    line = line.strip().replace('.', '')
+    spl = line.split(',')  # , remains due to parsing 
     codes = []
-
+    
     for codeAnd in spl:
         codex = codeAnd.strip()
         if codex == '':
             continue
         matches = regex.match('^' + codeMatch + '$', codex)
         if matches == None:
-            print('NOTICE no match for code format', code, matchObj, codex)
+            print('NOTICE no match for code format', dictionary, codex)
             continue
 
-        if codex in matchObj:
-            codex = matchObj[codex]
+        if codex in dictionary:
+            codex = dictionary[codex]
         else:
             codex = [codex]
 
         codes += codex
-
+    
     obj = [{
         'type': 'AND',
         'groups': codes
     }]
 
     if len(codes) == 0:
-        return []
+        return [], 'no pre'
 
     if len(codes) == 1 and isinstance(codes[0], dict):
-        return [codes[0]]
+        return [codes[0]], 'complex pre'
 
-    return obj
+    return obj, 'single pre'
 
+def return_routine(codes, value, dictionary, code):
+    """
+    Checks if any placeholder id still remain on the parsed codes list.
+    If id is present and parsed, replace id with parsed value.
+    If id is present and unparsed (str), call parse() to get parsed value
+    If no id remain on parsed codes list, return it as final parsed pre-requisite for the course code
+
+    Attributes
+    ----------
+    codes: list
+        parsed json array returned from cleanup_get_value()
+    value: str
+        (str) returned from cleanup_get_value() describing codes list
+    dictionary: dict
+        dictionary of id value pair.
+        {'id': 'json parse', ...}
+    code: str
+        original course code the pre-requisite 
+    
+    Returns
+    ----------
+    codes: list
+        returns original codes list if no further parsing is required
+        updated codes list if parsed value for id is present in dictionary
+        updated codes list by calling parse() again for the unparsed group / id
+    """
+
+    if value == 'no pre' or value == 'single pre':
+        return codes  # no checks required, height = 0
+    else:
+        if 'groups' in codes[0]:
+            # iterate through the list of groups
+            for index, x in enumerate(codes[0]['groups']):
+                if isinstance(x, dict):
+                    # nested groups are possible, hence check if group's group has unparsed id
+                    codes[0]['groups'][index] = return_routine([x], value, dictionary, code)[0]
+                elif x in dictionary:  # x is (str) and is also a key of the dictionary
+                    if isinstance(dictionary[codes[0]['groups'][index]], list):  # value for x is parsed json in dictionary
+                        codes[0]['groups'][index] = dictionary[codes[0]['groups'][index]][0]
+                    else:  # value for x is (str) in dictionary and needs to be parsed
+                        codes[0]['groups'][index] = parse(dictionary[codes[0]['groups'][index]][1:-1], code)[0]
+                else:
+                    pass
+        return codes  # everything on this height and height above is parsed
+
+def parse(str_, code):
+    """
+    Parses pre-requisite string
+
+    Attributes
+    ----------
+    line: str
+        pre-requisite string
+    code: str
+        original course code the pre-requisite or substring of it
+
+    Returns
+    ----------
+    output from return_routine
+    """
+
+    dictionary = {}  # stores id value pair
+
+    matchObj, str_ = group_extraction(str_, code)
+    dictionary.update(matchObj)
+
+    # brackets / groups at the current height are identified as ids in group_extraction
+    # if they still remain, there is an error 
+    if len(re.findall(r'[\]\[\)\)]', str_)) > 0:
+        print('ERROR bracket', code, matchObj, str_)
+        exit()
+
+    logic = get_and_or(str_)  # logic to connect ids A and B, A or B?
+
+    # regex list
+    numReg = r'(\d{1,}\.?\d{0,3})'  # identify number
+    codeMatch = r'((\w{2,4}\*\d{2,4}(\/2)?)|(([A-Z]|\d){8}))'  # identify course code | placeholder id
+    codeList = '(^ )?' + codeMatch + "((\s?,?\s?)" + codeMatch + ")*(?=(,|$|\.|( or )|))(?!( or equivalent))"  # identify "list" of codes
+    codeListNoEnd = '^' + codeMatch + r"((\s?,?\s?)" + codeMatch + r")*"  # identify "list" of codes with no end - will match everything
+
+    creditMatch = r'(?<!of )' + numReg + ' credits(?!((,? in)|( from)|( of)|( at)))'  # match "n credits" with no "in, from, of, at" after it
+    creditsInMatch = numReg + r' credits (in|of|at) .+?((?= or )|(?= from )|(?=,)|$)'  # match "n credits in "
+    creditsIncludingX = numReg + ' credits(,)? including ' + codeList  # match "n credits including code, code, ..."
+    listAnd = '(^ )?' + codeListNoEnd + ',? and ' + codeMatch + '(?=(,|$|\.| |))'  # match "code and code"
+    listOr = '(^ )?' + codeListNoEnd + ',? or ' + codeMatch + '(?=(,|$|\.| |))'  # match "code or code"
+    creditsIncludingXorY = numReg + ' credits(,)? including ' + codeMatch + ' or ' + codeMatch  # match "n credits including code or code"
+    creditsInIncluding = numReg + ' credits in .*,? including ' + codeMatch  # match "n credits in subject including code"
+
+    matchObj, str_ = choose_n_from_course_list(str_, codeList, codeMatch)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = credits_in_subject_Including(str_, creditsInIncluding)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = credits_including_X_or_Y(str_, creditsIncludingXorY)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = credits_including_X(str_, creditsIncludingX)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = credit_match(str_, creditMatch)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = credits_in_subject(str_, creditsInMatch)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = implied_and(str_, codeList, codeMatch)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = explicit_and(str_, listAnd)
+    dictionary.update(matchObj)
+
+    matchObj, str_ = explicit_or(str_, listOr)
+    dictionary.update(matchObj)
+
+    check_missing_conditions(str_, dictionary)
+    check_code_present(str_, codeMatch)
+
+    codes, value = cleanup_get_value(str_, codeMatch, dictionary)
+    return return_routine(codes, value, dictionary, code)
 
 def createJSON(groupName):
+    """
+    Creates JSON file of pre-requisites
+
+    Attributes
+    ----------
+    groupName: str
+        (str) used in regex to match specific course code pattern
+        if '' then matches all courses
+    """
+
+    # r -> raw, f -> f-strings
+    # re.I ignores case
     code = re.compile(rf"{groupName}\*", re.I)
 
-    for found in collection.find({'School': 'Guelph', 'Code': { '$regex': code }}):
-        pre = found['Prerequisites'] if 'Prerequisites' in found else ""
-        exc = found['Exclusions'] if 'Exclusions' in found else ""
-        code = found['Code']
-
-        if ('Offered' not in found):
-            Level = 'Undergraduate' if int(int(code.split('*')[1])/1000)*100 <= 400 else 'Graduate'
-            found = getClasses.getDescription(({'Code': code, 'Level': Level}), False)
-
-        getDescriptions([pre, exc])
-        lookedup[code] = found
-
+    # find document where school is guelph and code has a * in it, * as a safety check for the parser 
+    # TODO: improve safety check by checking the the specific pattern
+    # pymongo.cursor.Cursor
+    all_courses_iterator = collection.find({'School': 'Guelph', 'Code': { '$regex': code }})
+    
     courseMapPre = {}
-    courseMapExc = {}
+    courseMapExc = {} # TODO: take restrictions into account
+    for course in all_courses_iterator:
+        pre = course['Prerequisites'] if 'Prerequisites' in course else ""  # if pre-requisites exist, get them
 
-    for found in lookedup:
-        found = lookedup[found]
-        pre = found['Prerequisites'] if 'Prerequisites' in found else ""
-        exc = found['Exclusions'] if 'Exclusions' in found else ""
-
-        # print('pre ->', pre)
-        if found['Code'] in preFixes:
-            pre = preFixes[found['Code']]
-
-        preParsed = parse(pre, found['Code'])
-        # print(preParsed)
-
-        courseMapPre[found['Code']] = preParsed
-
-    print(len(courseMapPre), "items found")
-
+        # if parsing is known to be incorrect get the fix
+        if course['Code'] in preFixes:
+            pre = preFixes[course['Code']]
+        
+        print('course: ', course['Code'])
+        courseMapPre[course['Code']] = parse(pre, course['Code'])
+        print('parsed: ', courseMapPre[course['Code']])
+    
     with open('./parsed/all.json', 'w') as outfile:
         json.dump({'prerequisites': courseMapPre, 'restrictions': courseMapExc}, outfile)
 
 if __name__ == '__main__':
-    createJSON('')
+    createJSON('') # iterates through all courses
+
