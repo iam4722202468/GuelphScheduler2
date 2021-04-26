@@ -117,9 +117,6 @@ def getDescription(courseInfo, silent=False):
         
         collection.replace_one({'Code': courseInfo['Code']}, courseInfo, upsert=True)
         
-        return courseInfo  # required in parseCourses
-    else:
-        return found  # required in parseCourses
 
 def fetchData():
     """
